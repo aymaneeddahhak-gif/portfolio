@@ -8,19 +8,502 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  --font-syne: var(--syne);
+  --font-jakarta: var(--jakarta);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: "Montserrat", sans-serif;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+.glow-effect::before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: 800px;
+  height: 800px;
+  background: radial-gradient(
+    circle,
+    rgba(138, 43, 226, 0.15) 0%,
+    rgba(255, 255, 255, 0) 70%
+  );
+  z-index: -1;
+  pointer-events: none;
+}
+
+.tech-icon {
+  filter: drop-shadow(0px 4px 6px rgba(0, 0, 0, 0.1));
+}
+
+.product-stage {
+  --stage-shift: 0px;
+  position: relative;
+  display: flex;
+  height: 600px;
+  width: 100%;
+  align-items: flex-end;
+  justify-content: center;
+  /* ponytail: -48px lifts the portrait so the arms aren't cut by the section edge */
+  transform: translate3d(var(--stage-shift), -48px, 0);
+  transition: transform 650ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: transform;
+}
+
+.product-stage--mobile {
+  --stage-shift: min(12vw, 180px);
+}
+
+.product-stage--web {
+  --stage-shift: max(-12vw, -180px);
+}
+
+.product-stage__portrait {
+  position: relative;
+  z-index: 2;
+  flex: none;
+}
+
+.product-overlay {
+  --overlay-rotation: 0deg;
+  position: absolute;
+  z-index: 1;
+  /* ponytail: 18vh keeps the top edge below the fixed-height navbar at common sizes */
+  bottom: 18vh;
+  left: 50%;
+  width: min(860px, 55vw);
+  height: auto;
+  opacity: 0;
+  transform: translate3d(-50%, 10px, 0) scale(0.98)
+    rotate(var(--overlay-rotation));
+  transform-origin: 50% 82%;
+  filter: drop-shadow(0 18px 22px rgba(15, 23, 42, 0.18));
+  transition:
+    opacity 500ms ease,
+    transform 550ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: opacity, transform;
+}
+
+.product-overlay--mobile {
+  --overlay-rotation: -0.8deg;
+  /* ponytail: phones sit beside the head; at 18vh the store icons hide behind the body */
+  bottom: 300px;
+  /* ponytail: phones.mp4 is H.264 with no alpha channel (the webm overlays are
+     VP8 alpha), so its near-white studio backdrop paints as an opaque box.
+     brightness() lifts that 243-255 backdrop to pure white and multiply drops
+     it into the page, keeping the clip's own soft shadow around the phones.
+     The base drop-shadow is replaced here because it would follow the video's
+     rectangle instead of the phone silhouettes. */
+  filter: brightness(1.05);
+  mix-blend-mode: multiply;
+}
+
+.product-overlay--web {
+  --overlay-rotation: 0.8deg;
+}
+
+.product-overlay.is-active {
+  opacity: 1;
+  transform: translate3d(-50%, 0, 0) rotate(var(--overlay-rotation));
+}
+
+.hero-work-link {
+  display: inline-flex;
+  align-items: center;
+  gap: 12px;
+  margin-top: 34px;
+  padding: 13px 18px;
+  border: 1px solid rgba(17, 24, 39, 0.12);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.62);
+  color: #16181c;
+  font-size: 0.72rem;
+  font-weight: 800;
+  letter-spacing: 0.13em;
+  box-shadow: 0 12px 26px rgba(15, 23, 42, 0.08);
+  transition:
+    color 220ms ease,
+    background-color 220ms ease,
+    border-color 220ms ease,
+    transform 220ms ease,
+    box-shadow 220ms ease;
+}
+
+.hero-work-link span {
+  font-size: 1rem;
+  line-height: 1;
+  transition: transform 220ms ease;
+}
+
+.hero-work-link:hover,
+.hero-work-link:focus-visible {
+  transform: translateY(-3px);
+  color: #ffffff;
+  box-shadow: 0 18px 32px rgba(15, 23, 42, 0.14);
+}
+
+.hero-work-link:hover span,
+.hero-work-link:focus-visible span {
+  transform: translate(2px, -2px);
+}
+
+.hero-work-link--mobile:hover,
+.hero-work-link--mobile:focus-visible {
+  border-color: #7c3aed;
+  background: #7c3aed;
+}
+
+.hero-work-link--web:hover,
+.hero-work-link--web:focus-visible {
+  border-color: #2563eb;
+  background: #2563eb;
+}
+
+/* 2026 motion system: a single, quiet entrance language shared by the page. */
+.portfolio-boot {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: grid;
+  place-items: center;
+  overflow: hidden;
+  /* ponytail: transparent — mascot floats over the site background, not a white sheet */
+  background: transparent;
+  pointer-events: auto;
+  transition: opacity 260ms ease, visibility 0s linear 260ms;
+}
+
+.portfolio-boot[data-phase="handoff"] {
+  animation: portfolio-boot-retract 720ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  pointer-events: none;
+}
+
+.portfolio-boot[data-phase="complete"] {
+  opacity: 0;
+  visibility: hidden;
+  pointer-events: none;
+}
+
+.portfolio-boot__video {
+  position: relative;
+  display: block;
+  /* ponytail: big centred card, not fullscreen cover */
+  width: min(880px, 86vw);
+  height: auto;
+  max-height: 64vh;
+  border: 0;
+  background: transparent;
+  object-fit: contain;
+  object-position: center;
+  pointer-events: none;
+  opacity: 1;
+  /* ponytail: firstlodingvideor.mp4 is H.264 with no alpha channel (the old
+     webm was VP8 alpha), so its gray studio gradient paints as an opaque
+     card. Its backdrop dips to lum ~176, so the clamp has to push 176 above
+     255: 176 x 1.5 = 264 -> clips to 255. Below that the leftover gray multiplied over the
+     hero's purple glow reads as a visible card shape behind the mascot.
+     Multiply then drops the (now white) card into the page so the mascot
+     sits directly on the site, like the phones hero overlay. */
+  filter: brightness(1.5);
+  mix-blend-mode: multiply;
+  transform-origin: center;
+}
+
+/* ponytail: alpha mascot settles (shrink + fade) while the hero reveals underneath */
+.portfolio-boot[data-phase="handoff"] .portfolio-boot__video {
+  animation: portfolio-boot-video-out 720ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.portfolio-boot__video::-webkit-media-controls,
+.portfolio-boot__video::-webkit-media-controls-enclosure,
+.portfolio-boot__video::-webkit-media-controls-panel,
+.portfolio-boot__video::-webkit-media-controls-play-button,
+.portfolio-boot__video::-webkit-media-controls-start-playback-button {
+  display: none !important;
+  -webkit-appearance: none;
+}
+
+@media (max-width: 767px) {
+.portfolio-boot__video {
+    width: min(560px, 92vw);
+    max-height: 52vh;
+  }
+}
+
+/* ponytail: skip rendering the showcase while it's offscreen — the blur layers + video cost frames on hero scroll */
+.showcase-section {
+  content-visibility: auto;
+  contain-intrinsic-size: auto 640px;
+}
+
+.site-nav[data-boot-state="loading"] .nav-motion-logo,
+.site-nav[data-boot-state="loading"] .nav-motion-link,
+.site-nav[data-boot-state="loading"] .nav-motion-cta {
+  opacity: 0;
+}
+
+.site-nav[data-boot-state="handoff"] .nav-motion-logo,
+.site-nav[data-boot-state="complete"] .nav-motion-logo {
+  animation: motion-nav-logo 520ms 80ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.site-nav__logo {
+  position: relative;
+  width: 200px;
+  height: 112px;
+  flex: none;
+  overflow: hidden;
+  background: transparent;
+}
+
+.site-nav__logo-item {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border: 0;
+  object-position: center;
+  animation: nav-logo-media-in 220ms ease both;
+  pointer-events: none;
+}
+
+.site-nav__logo-item--image {
+  object-fit: contain;
+}
+
+.site-nav__logo-item--video {
+  object-fit: contain;
+}
+
+.site-nav__logo-item::-webkit-media-controls,
+.site-nav__logo-item::-webkit-media-controls-enclosure,
+.site-nav__logo-item::-webkit-media-controls-panel,
+.site-nav__logo-item::-webkit-media-controls-play-button,
+.site-nav__logo-item::-webkit-media-controls-start-playback-button {
+  display: none !important;
+  -webkit-appearance: none;
+}
+
+.site-nav[data-boot-state="handoff"] .nav-motion-link,
+.site-nav[data-boot-state="complete"] .nav-motion-link {
+  animation: motion-fade-up 480ms var(--motion-delay, 0ms) cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.site-nav[data-boot-state="handoff"] .nav-motion-cta,
+.site-nav[data-boot-state="complete"] .nav-motion-cta {
+  animation: motion-nav-cta 560ms 220ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.nav-motion-underline {
+  transform: scaleX(0);
+  transform-origin: left center;
+}
+
+.site-nav[data-boot-state="handoff"] .nav-motion-underline,
+.site-nav[data-boot-state="complete"] .nav-motion-underline {
+  animation: motion-draw-line 420ms 330ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.hero-section[data-motion-state="idle"] .hero-heading,
+.hero-section[data-motion-state="idle"] .hero-description,
+.hero-section[data-motion-state="idle"] .hero-tech-list,
+.hero-section[data-motion-state="idle"] .hero-action,
+.hero-section[data-motion-state="idle"] .hero-portrait-motion {
+  opacity: 0;
+}
+
+.hero-heading,
+.hero-description,
+.hero-tech-list,
+.hero-action,
+.hero-portrait-motion {
+  will-change: opacity, transform, clip-path;
+}
+
+.hero-section[data-motion-state="entered"] .hero-portrait-motion {
+  animation: hero-portrait-reveal 760ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.hero-section[data-motion-state="entered"] .hero-heading--mobile {
+  animation: hero-heading-in-left 680ms 160ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.hero-section[data-motion-state="entered"] .hero-heading--web {
+  animation: hero-heading-in-right 680ms 160ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.hero-section[data-motion-state="entered"] .hero-accent {
+  animation: motion-draw-line 430ms 390ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  transform-origin: left center;
+}
+
+.hero-heading--web .hero-accent {
+  transform-origin: right center;
+}
+
+.hero-section[data-motion-state="entered"] .hero-description {
+  animation: motion-fade-up 520ms 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.hero-section[data-motion-state="entered"] .hero-tech-list {
+  animation: motion-fade-up 500ms 505ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.hero-section[data-motion-state="entered"] .hero-tech-list > div {
+  animation: hero-tech-in 430ms calc(540ms + (var(--tech-index, 0) * 40ms)) cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+.hero-tech-list > div:nth-child(1) { --tech-index: 0; }
+.hero-tech-list > div:nth-child(2) { --tech-index: 1; }
+.hero-tech-list > div:nth-child(3) { --tech-index: 2; }
+.hero-tech-list > div:nth-child(4) { --tech-index: 3; }
+.hero-tech-list > div:nth-child(5) { --tech-index: 4; }
+.hero-tech-list > div:nth-child(6) { --tech-index: 5; }
+.hero-tech-list > div:nth-child(7) { --tech-index: 6; }
+.hero-tech-list > div:nth-child(8) { --tech-index: 7; }
+
+.hero-section[data-motion-state="entered"] .hero-action {
+  animation: motion-fade-up 520ms 760ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
+}
+
+.hero-section[data-motion-reentry="true"][data-motion-state="entered"] .hero-portrait-motion,
+.hero-section[data-motion-reentry="true"][data-motion-state="entered"] .hero-heading,
+.hero-section[data-motion-reentry="true"][data-motion-state="entered"] .hero-description,
+.hero-section[data-motion-reentry="true"][data-motion-state="entered"] .hero-tech-list,
+.hero-section[data-motion-reentry="true"][data-motion-state="entered"] .hero-action {
+  animation-duration: 620ms;
+}
+
+@keyframes portfolio-boot-retract {
+  from { opacity: 1; transform: scale(1); }
+  to { opacity: 0; transform: scale(1.035); }
+}
+
+/* ponytail: finale — the clip's last scene scales the logo up to fill its
+   frame, so the boot video zooms with it until the logo covers the viewport:
+   the "entering the website" beat before the hero reveal takes over. 2.4x of
+   the 880px card clears a 1920px viewport. */
+.portfolio-boot[data-zoomed="true"] .portfolio-boot__video {
+  animation: portfolio-boot-expand 900ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes portfolio-boot-expand {
+  to { transform: scale(2.4); }
+}
+
+@keyframes portfolio-boot-video-out {
+  from { opacity: 1; transform: scale(1) translateY(0); }
+  to { opacity: 0; transform: scale(0.9) translateY(12px); }
+}
+
+@keyframes motion-fade-up {
+  from { opacity: 0; transform: translate3d(0, 14px, 0); }
+  to { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+
+@keyframes motion-nav-cta {
+  from { opacity: 0; transform: translate3d(18px, 0, 0); }
+  to { opacity: 1; transform: translate3d(0, 0, 0); }
+}
+
+@keyframes motion-nav-logo {
+  from { opacity: 0; transform: translateX(-100%); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes nav-logo-media-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+@keyframes motion-draw-line {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+@keyframes hero-portrait-reveal {
+  from { opacity: 0; clip-path: inset(100% 0 0 0); transform: translateY(12px); }
+  to { opacity: 1; clip-path: inset(0 0 0 0); transform: translateY(0); }
+}
+
+@keyframes hero-heading-in-left {
+  from { opacity: 0; transform: translateX(-22px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes hero-heading-in-right {
+  from { opacity: 0; transform: translateX(22px); }
+  to { opacity: 1; transform: translateX(0); }
+}
+
+@keyframes hero-tech-in {
+  from { opacity: 0; transform: translateY(10px) scale(0.96); }
+  to { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+@keyframes portfolio-boot-reduced {
+  from { opacity: 1; transform: translateY(0); }
+  to { opacity: 0; transform: translateY(-20px); }
+}
+
+@media (max-width: 767px) {
+  .hero-work-link {
+    margin-top: 28px;
+  }
+
+  .hero-section[data-motion-state="entered"] .hero-heading--mobile,
+  .hero-section[data-motion-state="entered"] .hero-heading--web { animation-duration: 560ms; }
+  .hero-section[data-motion-state="entered"] .hero-tech-list > div { animation-duration: 360ms; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .hero-work-link,
+  .hero-work-link span {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .product-stage {
+    transition: none;
+  }
+
+  .product-overlay {
+    transform: translate3d(-50%, 0, 0);
+    transition: opacity 180ms linear;
+  }
+
+  .product-overlay.is-active {
+    transform: translate3d(-50%, 0, 0);
+  }
+
+  .portfolio-boot { animation: none !important; transition: opacity 160ms linear, visibility 0s linear 160ms; }
+  .portfolio-boot[data-phase="loading"] { animation: portfolio-boot-reduced 300ms 60ms both; }
+  .portfolio-boot[data-phase="handoff"] { animation: portfolio-boot-reduced 180ms both; }
+  .portfolio-boot[data-zoomed="true"] .portfolio-boot__video { animation: none !important; transform: none; }
+
+  .hero-section[data-motion-state="idle"] .hero-heading,
+  .hero-section[data-motion-state="idle"] .hero-description,
+  .hero-section[data-motion-state="idle"] .hero-tech-list,
+  .hero-section[data-motion-state="idle"] .hero-action,
+  .hero-section[data-motion-state="idle"] .hero-portrait-motion { opacity: 1; }
+
+  .hero-section[data-motion-state="entered"] * {
+    animation-duration: 1ms !important;
+    animation-delay: 0ms !important;
+  }
 }

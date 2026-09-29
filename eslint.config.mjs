@@ -12,6 +12,9 @@ const eslintConfig = defineConfig([
     "out/**",
     "build/**",
     "next-env.d.ts",
+    // Standalone Vite source folders, not part of the Next.js app:
+    "appshwocaselsite/**",
+    "contact/**",
   ]),
 ]);
 
