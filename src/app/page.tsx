@@ -475,6 +475,7 @@ export default function Home() {
         className="hero-section container mx-auto px-6 relative z-10 pt-4 sm:pt-6 lg:pt-8 pb-16 lg:pb-24"
         data-motion-state={heroMotion.motionState}
         data-motion-reentry={heroMotion.isReentry ? "true" : "false"}
+        data-has-entered={heroMotion.motionState === "entered" ? "true" : undefined}
       >
         <div className="flex flex-col lg:flex-row justify-between items-center lg:items-start relative h-full min-h-[580px] lg:min-h-[720px] pt-4 sm:pt-6 lg:pt-8">
           <h1 className="sr-only">Aymane Eddahak — Mobile and Web Developer</h1>
@@ -656,15 +657,15 @@ export default function Home() {
               </div>
             </div>
 
-            <div className="hero-description relative mb-1 max-w-sm mx-auto lg:mx-0 lg:ml-auto w-full text-center lg:text-right transition-all duration-300">
+            <div className="hero-description relative mb-1 max-w-sm mx-auto lg:mx-0 lg:ml-auto w-full text-center lg:text-left transition-all duration-300">
               {effectiveSection === "web" && (
                 <div className="animate-fade-in">
                   <ParticleText
                     key={`web-full-${lang}`}
                     text={`${t.hero.webDesc} ${t.hero.webTypewriter}`}
                     color="#374151"
-                    className="text-gray-700 text-sm md:text-base leading-relaxed font-medium lg:text-right"
-                    duration={950}
+                    className="text-gray-700 text-sm md:text-base leading-relaxed font-medium text-center lg:text-left"
+                    duration={800}
                   />
                 </div>
               )}

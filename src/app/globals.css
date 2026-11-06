@@ -449,12 +449,25 @@ html {
   animation: motion-draw-line 420ms 330ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-.hero-section[data-motion-state="idle"] .hero-heading,
-.hero-section[data-motion-state="idle"] .hero-description,
-.hero-section[data-motion-state="idle"] .hero-tech-list,
-.hero-section[data-motion-state="idle"] .hero-action,
-.hero-section[data-motion-state="idle"] .hero-portrait-motion {
+.hero-section[data-motion-state="idle"]:not([data-has-entered="true"]) .hero-heading,
+.hero-section[data-motion-state="idle"]:not([data-has-entered="true"]) .hero-description,
+.hero-section[data-motion-state="idle"]:not([data-has-entered="true"]) .hero-tech-list,
+.hero-section[data-motion-state="idle"]:not([data-has-entered="true"]) .hero-action,
+.hero-section[data-motion-state="idle"]:not([data-has-entered="true"]) .hero-portrait-motion {
   opacity: 0;
+}
+
+/* Once entered, hero content and portrait permanently stay visible — zero scroll-up disappearance */
+.hero-section[data-has-entered="true"] .hero-heading,
+.hero-section[data-has-entered="true"] .hero-description,
+.hero-section[data-has-entered="true"] .hero-tech-list,
+.hero-section[data-has-entered="true"] .hero-action {
+  opacity: 1 !important;
+}
+
+.hero-section[data-has-entered="true"] .hero-portrait-motion {
+  opacity: 1 !important;
+  clip-path: none !important;
 }
 
 .hero-heading,
@@ -475,6 +488,34 @@ html {
 
 .hero-section[data-motion-state="entered"] .hero-heading--web {
   animation: hero-heading-in-right 680ms 160ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* Direct on-exact-text reveal animation */
+@keyframes direct-text-reveal {
+  0% {
+    opacity: 0;
+    transform: translateY(6px);
+    filter: blur(3px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+    filter: blur(0);
+  }
+}
+
+.animate-direct-text-reveal {
+  animation-name: direct-text-reveal;
+  animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-direct-text-reveal {
+    animation: none !important;
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+  }
 }
 
 /* ------------------------------------------------- hero device mockups */

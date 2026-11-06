@@ -122,8 +122,6 @@ export function PortfolioBootOverlay({
   );
 }
 
-const REARM_COOLDOWN = 800;
-
 export function useReducedMotionPreference() {
   const [reduced, setReduced] = useState(false);
 
@@ -179,81 +177,74 @@ export function useReplaySection<T extends HTMLElement>(
   sectionRef: RefObject<T | null>,
   {
     enabled = true,
-    enterThreshold = 0.27,
-    exitThreshold = 0.09,
   }: ReplayOptions = {},
 ) {
   const reducedMotion = useReducedMotionPreference();
-  const [motionState, setMotionState] = useState<MotionState>("idle");
-  const [isVisible, setIsVisible] = useState(false);
-  const [entryCount, setEntryCount] = useState(0);
-  const armed = useRef(true);
-  const lastEntryAt = useRef(0);
-  const rearmTimer = useRef<number | null>(null);
+  const [motionState, setMotionState] = useState<MotionState>(() =>
+    reducedMotion ? "entered" : "idle",
+  );
 
   useEffect(() => {
-    const section = sectionRef.current;
-    if (!section) return;
-
     if (reducedMotion) {
       return;
     }
 
-    const rearm = () => {
-      armed.current = true;
-      setMotionState("idle");
+    if (!enabled) return;
+
+    if (motionState === "entered") {
+      return;
+    }
+
+    let rafId = 0;
+    const enter = () => {
+      rafId = requestAnimationFrame(() => {
+        setMotionState("entered");
+      });
     };
+
+    // If near the top on load/scroll, enter immediately!
+    if (typeof window !== "undefined" && window.scrollY < 400) {
+      enter();
+      return () => cancelAnimationFrame(rafId);
+    }
+
+    const section = sectionRef.current;
+    if (!section) {
+      enter();
+      return () => cancelAnimationFrame(rafId);
+    }
 
     const observer = new IntersectionObserver(
       ([entry]) => {
-        const ratio = entry?.intersectionRatio ?? 0;
-        setIsVisible(ratio > 0);
-
-        if (!enabled) return;
-
-        if (ratio > exitThreshold && rearmTimer.current !== null) {
-          window.clearTimeout(rearmTimer.current);
-          rearmTimer.current = null;
-        }
-
-        if (ratio >= enterThreshold && armed.current) {
-          armed.current = false;
-          lastEntryAt.current = performance.now();
-          setEntryCount((count) => count + 1);
-          setMotionState("entered");
-          if (rearmTimer.current !== null) {
-            window.clearTimeout(rearmTimer.current);
-            rearmTimer.current = null;
-          }
-          return;
-        }
-
-        if (ratio <= exitThreshold && !armed.current) {
-          const wait = Math.max(
-            0,
-            REARM_COOLDOWN - (performance.now() - lastEntryAt.current),
-          );
-          if (rearmTimer.current !== null) window.clearTimeout(rearmTimer.current);
-          rearmTimer.current = window.setTimeout(rearm, wait);
+        if (entry?.isIntersecting || (entry?.intersectionRatio ?? 0) > 0) {
+          enter();
+          observer.disconnect();
         }
       },
-      { threshold: [0, exitThreshold, enterThreshold, 0.5, 1] },
+      { threshold: [0, 0.05, 0.2] },
     );
 
     observer.observe(section);
-    return () => {
-      observer.disconnect();
-      if (rearmTimer.current !== null) window.clearTimeout(rearmTimer.current);
-    };
-  }, [enabled, enterThreshold, exitThreshold, reducedMotion, sectionRef]);
 
-  const visibleMotionState = reducedMotion ? "entered" : motionState;
-  const visibleIsVisible = reducedMotion ? true : isVisible;
+    const onScroll = () => {
+      if (window.scrollY < 400) {
+        enter();
+        window.removeEventListener("scroll", onScroll);
+      }
+    };
+    window.addEventListener("scroll", onScroll, { passive: true });
+
+    return () => {
+      cancelAnimationFrame(rafId);
+      observer.disconnect();
+      window.removeEventListener("scroll", onScroll);
+    };
+  }, [enabled, motionState, reducedMotion, sectionRef]);
 
   return {
-    motionState: visibleMotionState,
-    isVisible: visibleIsVisible,
-    isReentry: entryCount > 1,
+    motionState: reducedMotion ? "entered" : motionState,
+    isVisible: true,
+    isReentry: false,
     reducedMotion,
   };
 }
