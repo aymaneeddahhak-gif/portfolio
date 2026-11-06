@@ -220,29 +220,6 @@ function ProductOverlayVideo({
   );
 }
 
-interface HeroTechItem {
-  name: string;
-  image?: string;
-  iconClass?: string;
-  textBadge?: string;
-  aboutId?: string;
-}
-
-const HERO_MOBILE_TECH: HeroTechItem[] = [
-  { name: "Flutter", image: "/images/tech/flutter.webp", aboutId: "flutter" },
-  { name: "Android", iconClass: "fa-brands fa-android text-emerald-500" },
-  { name: "iOS", iconClass: "fa-brands fa-apple text-neutral-900" },
-  { name: "Firebase", iconClass: "fa-solid fa-fire text-amber-500" },
-  { name: "Supabase", image: "/images/tech/supabase.webp", aboutId: "supabase" },
-];
-
-const HERO_WEB_TECH: HeroTechItem[] = [
-  { name: "Next.js", image: "/images/tech/nextjs.webp", aboutId: "nextjs" },
-  { name: "React", image: "/images/tech/react.webp", aboutId: "react" },
-  { name: "JavaScript", image: "/images/tech/javascript.webp", aboutId: "javascript" },
-  { name: "Tailwind", image: "/images/tech/tailwind.webp", aboutId: "tailwind" },
-  { name: "Laravel", image: "/images/tech/laravel.webp", aboutId: "laravel" },
-];
 
 export default function Home() {
   const { lang, setLang, t } = useTranslation();
@@ -291,12 +268,6 @@ export default function Home() {
     );
   };
 
-  const handleSelectTech = (aboutId?: string) => {
-    if (!aboutId) return;
-    window.dispatchEvent(
-      new CustomEvent("select-about-tech", { detail: { techId: aboutId } }),
-    );
-  };
 
   // Only the overlay that is actually on screen plays; the hidden one is
   // paused (not rewound) so it resumes exactly where it left off. Decoding
@@ -530,51 +501,9 @@ export default function Home() {
               )}
             </div>
 
-            {/* 5 Tech Icons + View all link */}
-            <div className="hero-tech-list flex items-center justify-center lg:justify-start gap-2.5 sm:gap-3 mt-4 mb-4 sm:mb-5 flex-wrap">
-              {HERO_MOBILE_TECH.map((tech) => {
-                const isClickable = Boolean(tech.aboutId);
-                return (
-                  <div
-                    key={tech.name}
-                    onClick={() => handleSelectTech(tech.aboutId)}
-                    title={isClickable ? `Explore ${tech.name} in About Me` : tech.name}
-                    className={`flex flex-col items-center gap-1 transition-transform duration-200 ${
-                      isClickable ? "hover:scale-110 cursor-pointer group/tech" : "opacity-90"
-                    }`}
-                  >
-                    <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-xl bg-white/80 border border-neutral-200/90 shadow-2xs flex items-center justify-center p-1.5 backdrop-blur-xs group-hover/tech:border-purple-400 group-hover/tech:shadow-xs transition-all">
-                      {tech.image ? (
-                        /* eslint-disable-next-line @next/next/no-img-element */
-                        <img
-                          src={tech.image}
-                          alt={tech.name}
-                          className="h-full w-full object-contain pointer-events-none drop-shadow-2xs"
-                        />
-                      ) : tech.iconClass ? (
-                        <i className={`${tech.iconClass} text-xl pointer-events-none`} />
-                      ) : null}
-                    </div>
-                    <span className="text-[10px] font-bold text-gray-500 tracking-tight whitespace-nowrap group-hover/tech:text-purple-600 transition-colors">
-                      {tech.name}
-                    </span>
-                  </div>
-                );
-              })}
-
-              <a
-                href="#about"
-                className="inline-flex items-center gap-1 ml-1 px-2.5 py-1.5 rounded-lg text-xs font-bold text-neutral-700 hover:text-black bg-neutral-100/90 hover:bg-neutral-200/90 border border-neutral-200/90 transition-all cursor-pointer whitespace-nowrap shadow-2xs self-center"
-                title="View all skills in About Me"
-              >
-                <span>{t.hero.viewAll}</span>
-                <span aria-hidden="true">→</span>
-              </a>
-            </div>
-
             <a
               href="#projects"
-              className="hero-work-link hero-work-link--mobile hero-action transition-transform duration-300"
+              className="hero-work-link hero-work-link--mobile hero-action transition-transform duration-300 mt-3 sm:mt-4"
               onClick={() => handleViewWork("a-task")}
               aria-label="View our mobile app work"
             >
@@ -671,51 +600,9 @@ export default function Home() {
               )}
             </div>
 
-            {/* 5 Tech Icons + View all link */}
-            <div className="hero-tech-list flex items-center justify-center lg:justify-end gap-2.5 sm:gap-3 mt-4 mb-4 sm:mb-5 flex-wrap">
-              {HERO_WEB_TECH.map((tech) => {
-                const isClickable = Boolean(tech.aboutId);
-                return (
-                  <div
-                    key={tech.name}
-                    onClick={() => handleSelectTech(tech.aboutId)}
-                    title={isClickable ? `Explore ${tech.name} in About Me` : tech.name}
-                    className={`flex flex-col items-center gap-1 transition-transform duration-200 ${
-                      isClickable ? "hover:scale-110 cursor-pointer group/tech" : "opacity-90"
-                    }`}
-                  >
-                    <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-xl bg-white/80 border border-neutral-200/90 shadow-2xs flex items-center justify-center p-1.5 backdrop-blur-xs group-hover/tech:border-blue-400 group-hover/tech:shadow-xs transition-all">
-                      {tech.image ? (
-                        /* eslint-disable-next-line @next/next/no-img-element */
-                        <img
-                          src={tech.image}
-                          alt={tech.name}
-                          className="h-full w-full object-contain pointer-events-none drop-shadow-2xs"
-                        />
-                      ) : tech.iconClass ? (
-                        <i className={`${tech.iconClass} text-xl pointer-events-none`} />
-                      ) : null}
-                    </div>
-                    <span className="text-[10px] font-bold text-gray-500 tracking-tight whitespace-nowrap group-hover/tech:text-blue-600 transition-colors">
-                      {tech.name}
-                    </span>
-                  </div>
-                );
-              })}
-
-              <a
-                href="#about"
-                className="inline-flex items-center gap-1 ml-1 px-2.5 py-1.5 rounded-lg text-xs font-bold text-neutral-700 hover:text-black bg-neutral-100/90 hover:bg-neutral-200/90 border border-neutral-200/90 transition-all cursor-pointer whitespace-nowrap shadow-2xs self-center"
-                title="View all skills in About Me"
-              >
-                <span>{t.hero.viewAll}</span>
-                <span aria-hidden="true">→</span>
-              </a>
-            </div>
-
             <a
               href="#projects"
-              className="hero-work-link hero-work-link--web hero-action transition-transform duration-300"
+              className="hero-work-link hero-work-link--web hero-action transition-transform duration-300 mt-3 sm:mt-4"
               onClick={() => handleViewWork("a-store")}
               aria-label="View our web app work"
             >
