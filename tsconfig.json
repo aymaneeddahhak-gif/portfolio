@@ -30,5 +30,5 @@
     ".next/dev/types/**/*.ts",
     "**/*.mts"
   ],
-  "exclude": ["node_modules", "appshwocaselsite", "contact"]
+  "exclude": ["node_modules", "appshwocaselsite", "contact", "aboutmedesing", "newdesigndevis-3Dcard"]
 }

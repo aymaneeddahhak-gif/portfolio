@@ -2,15 +2,15 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Laptop, Smartphone, LayoutGrid } from "lucide-react";
-import { SHOWCASE_APPS } from "./showcase-apps";
+import { SHOWCASE_APPS, type ShowcaseApp } from "./showcase-apps";
 import { AbstractBackdrop } from "./showcase/AbstractBackdrop";
 import { AppViewer } from "./showcase/AppViewer";
-import { AppHeader } from "./showcase/AppHeader";
 import { AppDetailPanel } from "./showcase/AppDetailPanel";
 import { AppCarousel } from "./showcase/AppCarousel";
+import { LivePreviewModal } from "./showcase/LivePreviewModal";
+import { useTranslation } from "@/i18n/LanguageContext";
 
 type PlatformFilter = "all" | "web" | "mobile";
-type ViewTab = "overview" | "features";
 
 const FILTERS: { id: PlatformFilter; label: string; icon: React.ReactNode }[] = [
   { id: "all", label: "All", icon: <LayoutGrid className="w-4 h-4" /> },
@@ -19,10 +19,12 @@ const FILTERS: { id: PlatformFilter; label: string; icon: React.ReactNode }[] = 
 ];
 
 export default function ProjectShowcase() {
+  const { lang } = useTranslation();
   const [currentAppIndex, setCurrentAppIndex] = useState(0);
   const [direction, setDirection] = useState(1);
-  const [viewTab, setViewTab] = useState<ViewTab>("overview");
   const [platformFilter, setPlatformFilter] = useState<PlatformFilter>("all");
+  const [previewModalApp, setPreviewModalApp] = useState<ShowcaseApp | null>(null);
+  const [isPreviewModalOpen, setIsPreviewModalOpen] = useState(false);
 
   const sectionRef = useRef<HTMLElement>(null);
   const [isVisible, setIsVisible] = useState(false);
@@ -94,11 +96,17 @@ export default function ProjectShowcase() {
     setCurrentAppIndex(index);
   };
 
+  const handleOpenLivePreview = (appToPreview?: ShowcaseApp) => {
+    const target = appToPreview || currentApp;
+    setPreviewModalApp(target);
+    setIsPreviewModalOpen(true);
+  };
+
   return (
     <section
       id="projects"
       ref={sectionRef}
-      className="showcase-section relative w-full bg-white py-10 sm:py-14 overflow-hidden selection:bg-amber-500 selection:text-white"
+      className="showcase-section relative w-full bg-transparent py-10 sm:py-14 overflow-hidden selection:bg-amber-500 selection:text-white"
       aria-label="App showcase"
     >
       <div className="relative w-full max-w-[1440px] mx-auto min-h-[640px] lg:aspect-[16/10] flex flex-col justify-between">
@@ -130,27 +138,34 @@ export default function ProjectShowcase() {
                   }`}
                 >
                   {filter.icon}
-                  <span className="hidden sm:inline">{filter.label}</span>
+                  <span className="hidden sm:inline">
+                    {filter.id === "all"
+                      ? (lang === "fr" ? "Tous" : "All")
+                      : filter.id === "web"
+                        ? "Web"
+                        : "Mobile"}
+                  </span>
                 </button>
               ))}
             </div>
           </header>
 
-          {/* Main stage */}
-          <div className="relative flex-1 grid grid-cols-1 lg:grid-cols-12 gap-4 sm:gap-6 items-center my-auto min-h-0 py-2 sm:py-4">
-            <div className="lg:col-span-5 flex items-center justify-center py-1 sm:py-3">
-              <AppViewer app={currentApp} direction={direction} active={isVisible} />
+          {/* Main stage: balanced 2-column layout */}
+          <div className="relative flex-1 grid grid-cols-1 lg:grid-cols-12 gap-6 lg:gap-10 items-center my-auto min-h-0 py-2 sm:py-4">
+            <div className="lg:col-span-6 flex items-center justify-center py-1 sm:py-3">
+              <AppViewer
+                app={currentApp}
+                direction={direction}
+                active={isVisible}
+                onOpenLivePreview={() => handleOpenLivePreview(currentApp)}
+              />
             </div>
 
-            <div className="lg:col-span-4 flex flex-col justify-center px-1 sm:px-3 text-center lg:text-left items-center lg:items-start">
-              <AppHeader app={currentApp} direction={direction} />
-            </div>
-
-            <div className="lg:col-span-3 flex justify-center lg:justify-end w-full">
+            <div className="lg:col-span-6 flex justify-center lg:justify-end w-full">
               <AppDetailPanel
                 app={currentApp}
-                viewTab={viewTab}
-                onChangeTab={setViewTab}
+                direction={direction}
+                onViewApp={(app) => handleOpenLivePreview(app)}
               />
             </div>
           </div>
@@ -167,6 +182,13 @@ export default function ProjectShowcase() {
           </div>
         </div>
       </div>
+
+      {/* Live Preview Modal */}
+      <LivePreviewModal
+        app={previewModalApp}
+        isOpen={isPreviewModalOpen}
+        onClose={() => setIsPreviewModalOpen(false)}
+      />
     </section>
   );
 }

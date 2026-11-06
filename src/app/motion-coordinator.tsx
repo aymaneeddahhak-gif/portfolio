@@ -16,6 +16,9 @@ export type MotionStyle = CSSProperties & {
   "--motion-delay"?: string;
 };
 
+// Playback speed for the intro boot video (1.5x cuts duration from ~4.1s to ~2.7s for a snappier load)
+const BOOT_VIDEO_PLAYBACK_RATE = 1.5;
+
 export function PortfolioBootOverlay({
   phase,
   reducedMotion,
@@ -35,8 +38,14 @@ export function PortfolioBootOverlay({
     if (phase !== "loading" || reducedMotion) return;
 
     const video = videoRef.current;
+    if (video) {
+      video.playbackRate = BOOT_VIDEO_PLAYBACK_RATE;
+    }
+
     const startTimer = window.setTimeout(() => {
       if (!video || video.ended) return;
+
+      video.playbackRate = BOOT_VIDEO_PLAYBACK_RATE;
 
       // Strict Mode can pause the same media element between effect passes.
       // Resume it from its current frame, but never rewind or replay it.
@@ -45,18 +54,17 @@ export function PortfolioBootOverlay({
         playbackFailureTimer.current = window.setTimeout(onFinished, 250);
       });
     }, 0);
-    const fallbackTimer = window.setTimeout(onFinished, 8000);
+    const fallbackTimer = window.setTimeout(onFinished, 5000);
 
-    // The clip's last ~0.5s scales the logo up to fill the frame. Start the
-    // full-screen zoom slightly before that so the logo visually swallows the
-    // page as we "enter" the site. Timer (not rAF) so it still fires when the
-    // tab is not painting.
+    // firstldgvideo.mp4 (4.06s): the character types at his laptop, the camera
+    // pans around behind him, and zooms into the laptop screen with AED SOLUTIONS.
+    // At ~2.9s the zoom into the logo begins and lands at 4.0s.
     const finaleWatcher = window.setInterval(() => {
-      if (video && !video.ended && video.currentTime >= 1.7) {
+      if (video && !video.ended && video.currentTime >= 2.9) {
         setZoomed(true);
         window.clearInterval(finaleWatcher);
       }
-    }, 100);
+    }, 80);
 
     return () => {
       window.clearTimeout(startTimer);
@@ -92,11 +100,21 @@ export function PortfolioBootOverlay({
         playsInline
         preload={reducedMotion ? "metadata" : "auto"}
         tabIndex={-1}
+        onLoadedMetadata={(e) => {
+          e.currentTarget.playbackRate = BOOT_VIDEO_PLAYBACK_RATE;
+        }}
+        onPlay={(e) => {
+          e.currentTarget.playbackRate = BOOT_VIDEO_PLAYBACK_RATE;
+        }}
         onEnded={onFinished}
         onError={onFinished}
       >
         <source
-          src="/videos/firstlodingvideor.mp4"
+          src="/videos/firstldgvideo.webm"
+          type="video/webm"
+        />
+        <source
+          src="/videos/firstldgvideo.mp4"
           type="video/mp4"
         />
       </video>
@@ -133,7 +151,7 @@ export function usePortfolioBoot() {
     setPhase("handoff");
     handoffTimer.current = window.setTimeout(() => {
       setPhase("complete");
-    }, 720);
+    }, 520);
   }, []);
 
   useEffect(() => {

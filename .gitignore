@@ -35,6 +35,14 @@ yarn-error.log*
 .freebuff/
 .playwright-mcp/
 
+# design prototype drafts & archives
+aboutmedesing/
+contact/
+newdesigndevis-3Dcard/
+metadata.json
+start-dev.bat
+*.zip
+
 # env files (can opt-in for committing if needed)
 .env*
 

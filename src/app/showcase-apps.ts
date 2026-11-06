@@ -1,11 +1,11 @@
-﻿export interface AppFeature {
+export interface AppFeature {
   id: string;
   name: string;
   detail: string;
 }
 
 export interface ShowcaseApp {
-  id: "estate-elite" | "a-store" | (string & {});
+  id: "a-task" | "a-store" | (string & {});
   platformFilter: "all" | "web" | "mobile";
   rankLabel: string;
   namePart1: string;
@@ -13,7 +13,9 @@ export interface ShowcaseApp {
   shortName: string;
   category: string;
   platform: string;
-  videoUrl: string;
+  videoUrl: string; // Commerce/promo video (empty while awaiting user generation)
+  livePreviewVideoUrl?: string; // Live preview walkthrough shown when clicking "View App"
+  livePreviewType?: "video" | "interactive";
   ambientColor: string;
   accentColor: string;
   description: string;
@@ -27,65 +29,69 @@ export interface ShowcaseApp {
 
 export const SHOWCASE_APPS: ShowcaseApp[] = [
   {
-    id: "estate-elite",
+    id: "a-task",
     platformFilter: "mobile",
-    rankLabel: "Mobile App",
-    namePart1: "ESTATE",
-    namePart2: "ELITE",
-    shortName: "Estate Elite",
-    category: "Real Estate Mobile App",
+    rankLabel: "MOBILE APP",
+    namePart1: "A-",
+    namePart2: "TASK",
+    shortName: "A-Task",
+    category: "TASK MANAGEMENT APP",
     platform: "Android · iOS",
-    videoUrl: "/videos/mobileapp.mp4",
+    videoUrl: "/videos/atask_showcase.webm",
+    livePreviewType: "interactive",
     ambientColor: "rgba(147, 51, 234, 0.35)",
     accentColor: "#9333EA",
     description:
-      "A mobile property experience for discovering curated stays, filtering destinations, saving listings, reviewing property details, and moving smoothly into a booking flow.",
+      "A task management mobile application built for streamlined productivity, smart task prioritization, categorization, and offline daily workflows.",
     price: "Flutter · Cross-platform",
     techStack: "Flutter • React Native • Firebase • Android • iOS",
-    githubUrl: "https://github.com/aymaneeddahhak-gif",
-    liveUrl: "#contact",
+    githubUrl: "https://github.com/aymaneeddahhak-gif/A-Task",
+    liveUrl: "/a-task",
     features: [
       {
         id: "f1",
-        name: "Curated Discovery",
-        detail: "Filter destinations and save favourite listings instantly",
+        name: "Smart Task Prioritization",
+        detail: "Organize, tag, and filter high-priority daily milestones",
       },
       {
         id: "f2",
-        name: "Smooth Booking Flow",
-        detail: "Property details to reservation without friction",
+        name: "Offline-First Sync",
+        detail: "Manage and update tasks with seamless cloud synchronization",
       },
       {
         id: "f3",
         name: "Cross-Platform",
-        detail: "One codebase, native feel on Android and iOS",
+        detail: "One codebase, native performance on Android and iOS",
       },
       {
         id: "f4",
         name: "Firebase Backend",
-        detail: "Auth, storage and realtime data out of the box",
+        detail: "Real-time updates, secure auth, and cloud storage",
       },
     ],
-    tags: ["Flutter", "Mobile", "Firebase", "Real Estate"],
+    tags: ["Flutter", "Mobile", "Firebase", "Productivity"],
   },
   {
     id: "a-store",
     platformFilter: "web",
-    rankLabel: "Web App",
-    namePart1: "A",
+    rankLabel: "WEB APP",
+    namePart1: "A-",
     namePart2: "STORE",
-    shortName: "A-STORE",
-    category: "E-Commerce Web App",
+    shortName: "A-Store",
+    category: "E-COMMERCE APP",
     platform: "Responsive Web",
-    videoUrl: "/videos/website.mp4",
+    // Empty: reserved for official commerce video to be generated later
+    videoUrl: "",
+    livePreviewVideoUrl: "/videos/website.mp4",
+    livePreviewType: "video",
     ambientColor: "rgba(37, 99, 235, 0.32)",
     accentColor: "#2563EB",
     description:
-      "The A-STORE commerce build — catalogue discovery, product detail views, reviews, shopping guidance, related products and a focused cart-to-checkout journey, shaped around the problems real shoppers actually run into.",
+      "The A-Store commerce build — catalogue discovery, product detail views, reviews, shopping guidance, related products and a focused cart-to-checkout journey.",
     price: "Next.js · Full-stack",
     techStack: "React • Next.js • TypeScript • Laravel • Node.js",
     githubUrl: "https://github.com/aymaneeddahhak-gif/A-store",
-    liveUrl: "#contact",
+    liveUrl: "https://github.com/aymaneeddahhak-gif/A-store",
     features: [
       {
         id: "f1",
@@ -108,6 +114,6 @@ export const SHOWCASE_APPS: ShowcaseApp[] = [
         detail: "TypeScript front of house, Laravel API behind it",
       },
     ],
-    tags: ["Next.js", "A-STORE", "TypeScript", "Laravel"],
+    tags: ["Next.js", "A-Store", "TypeScript", "Laravel"],
   },
 ];

@@ -1,7 +1,9 @@
 @import "tailwindcss";
 
 :root {
-  --background: #ffffff;
+  /* The ambient stage colour of the whole site — the same cool off-white
+     the About stage uses, lit by the fixed <SiteBackdrop /> orbs. */
+  --background: #edf0f8;
   --foreground: #171717;
 }
 
@@ -58,20 +60,21 @@ html {
   display: flex;
   height: 600px;
   width: 100%;
-  align-items: flex-end;
+  align-items: flex-start;
   justify-content: center;
-  /* ponytail: -48px lifts the portrait so the arms aren't cut by the section edge */
-  transform: translate3d(var(--stage-shift), -48px, 0);
+  transform: translate3d(var(--stage-shift), 0px, 0);
   transition: transform 650ms cubic-bezier(0.22, 1, 0.36, 1);
   will-change: transform;
 }
 
 .product-stage--mobile {
-  --stage-shift: min(12vw, 180px);
+  --stage-shift: min(20vw, 290px);
 }
 
 .product-stage--web {
-  --stage-shift: max(-12vw, -180px);
+  /* Web context pulls portrait and overlay video further to the far left side
+     so it stays completely clear of the WEB SERVICE headline text. */
+  --stage-shift: -27vw;
 }
 
 .product-stage__portrait {
@@ -82,6 +85,9 @@ html {
 
 .product-overlay {
   --overlay-rotation: 0deg;
+  /* ponytail: both hover videos hug the portrait's centreline by default;
+     this nudges them a little to the side of the head. */
+  --overlay-shift-x: 34px;
   position: absolute;
   z-index: 1;
   /* ponytail: 18vh keeps the top edge below the fixed-height navbar at common sizes */
@@ -90,7 +96,8 @@ html {
   width: min(860px, 55vw);
   height: auto;
   opacity: 0;
-  transform: translate3d(-50%, 10px, 0) scale(0.98)
+  transform: translate3d(calc(-50% + var(--overlay-shift-x)), 10px, 0)
+    scale(0.98)
     rotate(var(--overlay-rotation));
   transform-origin: 50% 82%;
   filter: drop-shadow(0 18px 22px rgba(15, 23, 42, 0.18));
@@ -104,14 +111,20 @@ html {
   --overlay-rotation: -0.8deg;
   /* ponytail: phones sit beside the head; at 18vh the store icons hide behind the body */
   bottom: 300px;
-  /* ponytail: phones.mp4 is H.264 with no alpha channel (the webm overlays are
-     VP8 alpha), so its near-white studio backdrop paints as an opaque box.
-     brightness() lifts that 243-255 backdrop to pure white and multiply drops
-     it into the page, keeping the clip's own soft shadow around the phones.
-     The base drop-shadow is replaced here because it would follow the video's
-     rectangle instead of the phone silhouettes. */
-  filter: brightness(1.05);
-  mix-blend-mode: multiply;
+  /* ponytail: the clip has no alpha channel, so its studio backdrop is keyed
+     out into a mask instead (see .video-mask) — the video paints only where
+     the mask is opaque, so the phones float on the ambient background and the
+     old white-plate look is gone. The brightness()/multiply pair is retired:
+     it only ever worked on a pure-white page, and now that the page is lit
+     there is no white left for it to multiply against. */
+  -webkit-mask-image: url("/videos/mobilecontexxt-mask.webp");
+  mask-image: url("/videos/mobilecontexxt-mask.webp");
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
 }
 
 .product-overlay--web {
@@ -120,59 +133,105 @@ html {
 
 .product-overlay.is-active {
   opacity: 1;
-  transform: translate3d(-50%, 0, 0) rotate(var(--overlay-rotation));
+  transform: translate3d(calc(-50% + var(--overlay-shift-x)), 0, 0)
+    rotate(var(--overlay-rotation));
 }
 
+/* Video mattes — the hover/contact clips are studio renders on a near-white
+   backdrop with no alpha channel. Their backdrop is keyed into a greyscale
+   mask (union of every frame, then feathered), and the mask is applied to the
+   video element: opaque where the subject and its soft shadow are, fully
+   transparent everywhere the backdrop used to box it in. contain + centre
+   lines the mask up with the video's own object-fit, so both scale together. */
+.video-mask--contact {
+  -webkit-mask-image: url("/videos/conatct-mask.webp");
+  mask-image: url("/videos/conatct-mask.webp");
+  -webkit-mask-size: contain;
+  mask-size: contain;
+  -webkit-mask-position: center;
+  mask-position: center;
+  -webkit-mask-repeat: no-repeat;
+  mask-repeat: no-repeat;
+}
+
+/* Uiverse Cksunandh — neumorphic square "VIEW OUR WORK" button: a soft
+   double-shadow card with the label centred in the middle of the square
+   (the old gear mark in the top-right corner is gone); hovering lifts the
+   label and scales the card, pressing flattens it. */
 .hero-work-link {
-  display: inline-flex;
-  align-items: center;
-  gap: 12px;
-  margin-top: 34px;
-  padding: 13px 18px;
-  border: 1px solid rgba(17, 24, 39, 0.12);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.62);
-  color: #16181c;
-  font-size: 0.72rem;
-  font-weight: 800;
-  letter-spacing: 0.13em;
-  box-shadow: 0 12px 26px rgba(15, 23, 42, 0.08);
-  transition:
-    color 220ms ease,
-    background-color 220ms ease,
-    border-color 220ms ease,
-    transform 220ms ease,
-    box-shadow 220ms ease;
-}
-
-.hero-work-link span {
-  font-size: 1rem;
-  line-height: 1;
-  transition: transform 220ms ease;
+  position: relative;
+  display: grid;
+  place-items: center;
+  margin-top: 10px;
+  padding: 0;
+  width: 100px;
+  height: 100px;
+  border: 2px solid #888888;
+  outline: none;
+  background-color: #f4f5f6;
+  border-radius: 20px;
+  box-shadow:
+    -3px -10px 15px #ffffff,
+    -3px -5px 8px #ffffff,
+    -10px 0px 15px #ffffff,
+    3px 10px 12px rgba(0, 0, 0, 0.2);
+  transition: 0.3s ease-in-out;
+  cursor: pointer;
+  color: inherit;
+  text-decoration: none;
 }
 
 .hero-work-link:hover,
 .hero-work-link:focus-visible {
-  transform: translateY(-3px);
-  color: #ffffff;
-  box-shadow: 0 18px 32px rgba(15, 23, 42, 0.14);
+  transform: scale(1.1);
+  box-shadow:
+    -3px -15px 20px #ffffff,
+    -3px -10px 10px #ffffff,
+    -10px 0px 15px #ffffff,
+    5px 15px 15px rgba(0, 0, 0, 0.3);
 }
 
-.hero-work-link:hover span,
-.hero-work-link:focus-visible span {
-  transform: translate(2px, -2px);
+.hero-work-link:active {
+  transform: scale(0.95);
+  box-shadow: none;
 }
 
-.hero-work-link--mobile:hover,
-.hero-work-link--mobile:focus-visible {
-  border-color: #7c3aed;
-  background: #7c3aed;
+.hero-work-link__content {
+  position: relative;
+  display: grid;
+  place-items: center;
+  padding: 10px;
+  width: 100%;
+  height: 100%;
+  box-shadow:
+    inset 0px -4px 0px #dddddd,
+    0px -4px 0px #f4f5f6;
+  border-radius: 20px;
+  transition: 0.3s ease-in-out;
+  z-index: 1;
 }
 
-.hero-work-link--web:hover,
-.hero-work-link--web:focus-visible {
-  border-color: #2563eb;
-  background: #2563eb;
+.hero-work-link__text {
+  position: relative;
+  transform: translate3d(0px, -2px, 0px);
+  margin: 0;
+  align-self: center;
+  justify-self: center;
+  text-align: center;
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.15;
+  background-color: #888888;
+  color: transparent;
+  text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.5);
+  -webkit-background-clip: text;
+  background-clip: text;
+  transition: 0.3s ease-in-out;
+}
+
+.hero-work-link:hover .hero-work-link__text,
+.hero-work-link:focus-visible .hero-work-link__text {
+  transform: translateY(-5px);
 }
 
 /* 2026 motion system: a single, quiet entrance language shared by the page. */
@@ -183,14 +242,18 @@ html {
   display: grid;
   place-items: center;
   overflow: hidden;
-  /* ponytail: transparent — mascot floats over the site background, not a white sheet */
-  background: transparent;
+  /* ponytail: opaque white — during boot ONLY the loading mascot shows.
+     The old transparent sheet let whatever sat behind it leak through
+     (hero portrait + phones on mobile, contact video after a reload on
+     the contact anchor). White reads as the page backdrop and multiply
+     blending is unaffected: mascot x white = mascot. */
+  background: #ffffff;
   pointer-events: auto;
   transition: opacity 260ms ease, visibility 0s linear 260ms;
 }
 
 .portfolio-boot[data-phase="handoff"] {
-  animation: portfolio-boot-retract 720ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: portfolio-boot-retract 520ms cubic-bezier(0.22, 1, 0.36, 1) both;
   pointer-events: none;
 }
 
@@ -203,31 +266,38 @@ html {
 .portfolio-boot__video {
   position: relative;
   display: block;
-  /* ponytail: big centred card, not fullscreen cover */
-  width: min(880px, 86vw);
-  height: auto;
-  max-height: 64vh;
+  /* firstldgvideo (1280x720, 4.06s). Fit by height so the mascot & desk
+     comfortably fill the boot sheet; its near-white backdrop is pushed to
+     pure white by brightness(1.15) contrast(1.02), and multiply drops it
+     seamlessly into the opaque white boot sheet with zero visible boundary. */
+  width: auto;
+  height: min(78vh, 86vw * 9 / 16);
+  max-height: none;
   border: 0;
   background: transparent;
   object-fit: contain;
   object-position: center;
   pointer-events: none;
   opacity: 1;
-  /* ponytail: firstlodingvideor.mp4 is H.264 with no alpha channel (the old
-     webm was VP8 alpha), so its gray studio gradient paints as an opaque
-     card. Its backdrop dips to lum ~176, so the clamp has to push 176 above
-     255: 176 x 1.5 = 264 -> clips to 255. Below that the leftover gray multiplied over the
-     hero's purple glow reads as a visible card shape behind the mascot.
-     Multiply then drops the (now white) card into the page so the mascot
-     sits directly on the site, like the phones hero overlay. */
-  filter: brightness(1.5);
+  filter: brightness(1.15) contrast(1.02);
   mix-blend-mode: multiply;
   transform-origin: center;
 }
 
+/* ponytail: with the boot sheet now opaque white, nothing behind it may
+     bleed through during loading — including fixed videos further down
+     the page (contact mascot) when a reload happens on the #contact
+     anchor. Keep them suppressed until the boot finishes. */
+.portfolio-boot:not([data-phase="complete"]) ~ * video {
+  visibility: hidden;
+}
+.portfolio-boot[data-phase="complete"] ~ * video {
+  visibility: visible;
+}
+
 /* ponytail: alpha mascot settles (shrink + fade) while the hero reveals underneath */
 .portfolio-boot[data-phase="handoff"] .portfolio-boot__video {
-  animation: portfolio-boot-video-out 720ms cubic-bezier(0.22, 1, 0.36, 1) both;
+  animation: portfolio-boot-video-out 520ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .portfolio-boot__video::-webkit-media-controls,
@@ -241,15 +311,75 @@ html {
 
 @media (max-width: 767px) {
 .portfolio-boot__video {
-    width: min(560px, 92vw);
-    max-height: 52vh;
+    /* phone: same fit-by-height rule, smaller so it never overflows */
+    width: auto;
+    height: min(52vh, 92vw * 9 / 16);
+    max-height: none;
+  }
+
+  /* ponytail: portrait stage joins the mobile flow — scale the fixed 600px
+     desktop stage down, drop the desktop side-shift and the vh-based
+     overlay offset (meaningless when the stage is only 300px tall) */
+  .product-stage {
+    height: 300px;
+    transform: translate3d(0, 0, 0);
+  }
+
+  .product-overlay {
+    bottom: 130px;
+    width: min(860px, 88vw);
+    /* the side nudge shrinks with the artwork on phones */
+    --overlay-shift-x: 14px;
+  }
+}
+
+@media (min-width: 768px) and (max-width: 1023px) {
+  /* tablet: stage scales between the phone and desktop sizes */
+  .product-stage {
+    height: 420px;
+    transform: translate3d(0, -24px, 0);
+  }
+
+  .product-overlay {
+    bottom: 200px;
+    width: min(860px, 70vw);
+  }
+
+  /* ponytail: webcntx.webm's browser mockup only fills y 215–618 of its
+     720p frame (the rest is real alpha), so at the shared offset it read
+     both lower and smaller than the mobile context's phones — lift and
+     widen it so the artwork lands where the mobile one does. */
+  .product-overlay--web {
+    bottom: 250px;
+    width: min(1000px, 70vw);
+  }
+}
+
+@media (min-width: 1024px) {
+  /* ponytail: on laptop screens the hover video should read at the top of the
+     page instead of drifting towards the middle, because the fixed 600px
+     stage sits in a short viewport. The artwork floats inside transparent
+     padding (the web webm's browser only fills y 215–618 of 720), so anchors
+     are pulled up by each frame's own inset: this pins both artwork tops to
+     ~200px — level with each other, ~50px under the navbar. */
+  .product-overlay {
+    --overlay-w: min(860px, 55vw);
+    width: var(--overlay-w);
+    bottom: auto;
+    top: calc(-58px - 0.0625 * var(--overlay-w));
+  }
+
+  /* 1090px keeps the web frame's top inset (0.168 × width) equal to the
+     mobile frame's, so the two contexts cannot drift apart as it grows. */
+  .product-overlay--web {
+    --overlay-w: min(1090px, 70vw);
+    top: calc(-58px - 0.168 * var(--overlay-w));
   }
 }
 
 /* ponytail: skip rendering the showcase while it's offscreen — the blur layers + video cost frames on hero scroll */
 .showcase-section {
-  content-visibility: auto;
-  contain-intrinsic-size: auto 640px;
+  contain: layout style;
 }
 
 .site-nav[data-boot-state="loading"] .nav-motion-logo,
@@ -347,6 +477,32 @@ html {
   animation: hero-heading-in-right 680ms 160ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
+/* ------------------------------------------------- hero device mockups */
+/* The heading words sit BESIDE the device, not printed on its glass (see
+   hero-devices.tsx), so they are sized as type rather than as screen art and
+   wrap to whatever the concept column allows. */
+.hero-heading__text {
+  color: #151722;
+  font-size: 26px;
+  font-weight: 900;
+  line-height: 1;
+  letter-spacing: -0.02em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+@media (min-width: 640px) {
+  .hero-heading__text {
+    font-size: 32px;
+  }
+}
+
+@media (min-width: 1024px) {
+  .hero-heading__text {
+    font-size: 38px;
+  }
+}
+
 .hero-section[data-motion-state="entered"] .hero-accent {
   animation: motion-draw-line 430ms 390ms cubic-bezier(0.22, 1, 0.36, 1) both;
   transform-origin: left center;
@@ -360,12 +516,21 @@ html {
   animation: motion-fade-up 520ms 420ms cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
-.hero-section[data-motion-state="entered"] .hero-tech-list {
-  animation: motion-fade-up 500ms 505ms cubic-bezier(0.22, 1, 0.36, 1) both;
+.hero-tech-list {
+  opacity: 0;
+  transform: translateY(10px);
+  pointer-events: none;
+  transition: opacity 350ms ease, transform 350ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.hero-section[data-motion-state="entered"] .hero-tech-list > div {
-  animation: hero-tech-in 430ms calc(540ms + (var(--tech-index, 0) * 40ms)) cubic-bezier(0.22, 1, 0.36, 1) both;
+.hero-tech-list.is-visible {
+  opacity: 1;
+  transform: translateY(0);
+  pointer-events: auto;
+}
+
+.hero-tech-list.is-visible > div {
+  animation: hero-tech-in 380ms calc(var(--tech-index, 0) * 35ms) cubic-bezier(0.22, 1, 0.36, 1) both;
 }
 
 .hero-tech-list > div:nth-child(1) { --tech-index: 0; }
@@ -376,6 +541,8 @@ html {
 .hero-tech-list > div:nth-child(6) { --tech-index: 5; }
 .hero-tech-list > div:nth-child(7) { --tech-index: 6; }
 .hero-tech-list > div:nth-child(8) { --tech-index: 7; }
+.hero-tech-list > div:nth-child(9) { --tech-index: 8; }
+.hero-tech-list > div:nth-child(10) { --tech-index: 9; }
 
 .hero-section[data-motion-state="entered"] .hero-action {
   animation: motion-fade-up 520ms 760ms cubic-bezier(0.22, 1, 0.36, 1) backwards;
@@ -399,11 +566,11 @@ html {
    the "entering the website" beat before the hero reveal takes over. 2.4x of
    the 880px card clears a 1920px viewport. */
 .portfolio-boot[data-zoomed="true"] .portfolio-boot__video {
-  animation: portfolio-boot-expand 900ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation: portfolio-boot-expand 700ms cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
 @keyframes portfolio-boot-expand {
-  to { transform: scale(2.4); }
+  to { transform: scale(1.35); }
 }
 
 @keyframes portfolio-boot-video-out {
@@ -463,7 +630,7 @@ html {
 
 @media (max-width: 767px) {
   .hero-work-link {
-    margin-top: 28px;
+    margin-top: 6px;
   }
 
   .hero-section[data-motion-state="entered"] .hero-heading--mobile,
@@ -483,12 +650,12 @@ html {
   }
 
   .product-overlay {
-    transform: translate3d(-50%, 0, 0);
+    transform: translate3d(calc(-50% + var(--overlay-shift-x)), 0, 0);
     transition: opacity 180ms linear;
   }
 
   .product-overlay.is-active {
-    transform: translate3d(-50%, 0, 0);
+    transform: translate3d(calc(-50% + var(--overlay-shift-x)), 0, 0);
   }
 
   .portfolio-boot { animation: none !important; transition: opacity 160ms linear, visibility 0s linear 160ms; }
@@ -506,4 +673,1352 @@ html {
     animation-duration: 1ms !important;
     animation-delay: 0ms !important;
   }
+}
+
+
+/* Field material borrowed from the Send Message button above it: the same
+   #f7f8f7 → #e7e7e7 surface and soft dark hairline, at its 14px radius. */
+.contact-field {
+  --send-neutral-1: #f7f8f7;
+  --send-neutral-2: #e7e7e7;
+  --send-radius: 14px;
+
+  border-radius: var(--send-radius);
+  border: 2px solid transparent;
+  background:
+    linear-gradient(var(--send-neutral-1), var(--send-neutral-2)) padding-box,
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.45))
+      border-box;
+  box-shadow:
+    inset 0 1px 2px rgba(255, 255, 255, 0.9),
+    0 1px 1px rgba(0, 0, 0, 0.06);
+  transition: all 0.3s ease;
+}
+
+.contact-field:hover {
+  background:
+    linear-gradient(#f9faf9, #eaeaea) padding-box,
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.14), rgba(0, 0, 0, 0.5))
+      border-box;
+}
+
+.contact-field:focus {
+  background:
+    linear-gradient(#ffffff, #f1f2f1) padding-box,
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.25), rgba(0, 0, 0, 0.55))
+      border-box;
+  box-shadow:
+    inset 0 1px 2px rgba(255, 255, 255, 0.9),
+    0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+/* ponytail: Uiverse junaid_3671 — sliding radio cards, shrunk to fit the
+   form's 10px label / 12px body scale and used as the options list of a
+   custom select. The list drops out on hover (pointer devices only, so
+   tap-to-open stays a clean toggle on touch); a click pins it open until
+   the trigger is clicked again or an option is picked. The panel's own
+   box starts flush with the trigger — its top gap lives in the padding,
+   not in a margin — otherwise the gap is a dead zone and the panel
+   vanishes as the cursor crosses it. Namespaced to avoid site collisions. */
+.contact-select-panel {
+  position: absolute;
+  z-index: 50;
+  top: 100%;
+  left: 0;
+  right: 0;
+
+  display: none;
+  flex-direction: column;
+  gap: 8px;
+
+  padding: 10px 6px 6px;
+  border-radius: 16px;
+
+  background: rgba(255, 255, 255, 0.94);
+  border: 1px solid #e5e5e5;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.14);
+  backdrop-filter: blur(12px);
+}
+
+@media (hover: hover) {
+  .contact-select:hover .contact-select-panel {
+    display: flex;
+  }
+}
+
+.contact-select[data-open="true"] .contact-select-panel {
+  display: flex;
+}
+
+.contact-select-chevron {
+  transition: transform 0.3s ease;
+}
+
+.contact-select:hover .contact-select-chevron,
+.contact-select[data-open="true"] .contact-select-chevron {
+  transform: rotate(180deg);
+}
+
+.contact-radio {
+  position: relative;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+
+  padding: 10px 10px;
+
+  border: 1px solid #ddd;
+  border-radius: 12px;
+
+  background: #fff;
+  color: #111;
+
+  cursor: pointer;
+
+  overflow: hidden;
+
+  transition:
+    transform 0.3s ease,
+    border-color 0.3s ease,
+    box-shadow 0.3s ease,
+    background 0.3s ease,
+    color 0.3s ease;
+}
+
+.contact-radio input {
+  display: none;
+}
+
+.contact-radio:hover {
+  transform: translateX(3px);
+  border-color: #111;
+
+  box-shadow: 0 8px 25px rgba(0, 0, 0, 0.08);
+}
+
+.contact-radio:active {
+  transform: scale(0.97);
+}
+
+.contact-radio-circle {
+  position: relative;
+
+  width: 18px;
+  height: 18px;
+
+  flex-shrink: 0;
+
+  border: 2px solid #111;
+  border-radius: 50%;
+
+  transition:
+    transform 0.35s ease,
+    background 0.35s ease;
+}
+
+.contact-radio-circle::after {
+  content: "";
+
+  position: absolute;
+
+  width: 6px;
+  height: 6px;
+
+  top: 50%;
+  left: 50%;
+
+  border-radius: 50%;
+
+  background: #fff;
+
+  transform: translate(-50%, -50%) scale(0);
+
+  transition: transform 0.3s cubic-bezier(0.68, -0.55, 0.27, 1.55);
+}
+
+.contact-radio-circle::before {
+  content: "";
+
+  position: absolute;
+
+  inset: -6px;
+
+  border: 1px solid #111;
+  border-radius: 50%;
+
+  opacity: 0;
+  transform: scale(0.4);
+
+  transition:
+    transform 0.4s ease,
+    opacity 0.4s ease;
+}
+
+.contact-radio input:checked + .contact-radio-circle {
+  background: #111;
+  transform: scale(1.08);
+}
+
+.contact-radio input:checked + .contact-radio-circle::after {
+  transform: translate(-50%, -50%) scale(1);
+}
+
+.contact-radio input:checked + .contact-radio-circle::before {
+  opacity: 0.25;
+  transform: scale(1);
+}
+
+.contact-radio-text {
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  line-height: 1.15;
+
+  transition: transform 0.3s ease;
+}
+
+.contact-radio:hover .contact-radio-text {
+  transform: translateX(2px);
+}
+
+.contact-radio:has(input:checked) {
+  background: #111;
+  color: #fff;
+  border-color: #111;
+
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.15);
+}
+
+.contact-radio:has(input:checked) .contact-radio-circle,
+.contact-radio:has(input:checked) .contact-radio-circle::before {
+  border-color: #fff;
+}
+
+/* ponytail: Uiverse marcelodolza — "Send Message" button with the paper
+   plane that lands on load, takes off on click, and a rotating outline
+   shine on hover. Class names namespaced to avoid site collisions; the
+   form's React state drives it: focus/active shows the Sent state, and
+   while isSending the default state reads "Sending". */
+.uiverse-send-btn {
+  --send-primary: #ff5569;
+  --send-neutral-1: #f7f8f7;
+  --send-neutral-2: #e7e7e7;
+  --send-radius: 14px;
+
+  cursor: pointer;
+  border-radius: var(--send-radius);
+  text-shadow: 0 1px 1px rgba(0, 0, 0, 0.3);
+  border: none;
+  box-shadow: 0 0.5px 0.5px 1px rgba(255, 255, 255, 0.2),
+    0 10px 20px rgba(0, 0, 0, 0.2), 0 4px 5px 0px rgba(0, 0, 0, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  transition: all 0.3s ease;
+  min-width: 150px;
+  padding: 14px;
+  height: 52px;
+  font-family: inherit;
+  font-style: normal;
+  font-size: 15px;
+  font-weight: 600;
+  color: #1c1c1c;
+}
+.uiverse-send-btn:hover {
+  transform: scale(1.02);
+  box-shadow: 0 0 1px 2px rgba(255, 255, 255, 0.3),
+    0 15px 30px rgba(0, 0, 0, 0.3), 0 10px 3px -3px rgba(0, 0, 0, 0.04);
+}
+.uiverse-send-btn:active {
+  transform: scale(1);
+  box-shadow: 0 0 1px 2px rgba(255, 255, 255, 0.3),
+    0 10px 3px -3px rgba(0, 0, 0, 0.2);
+}
+.uiverse-send-btn:disabled {
+  cursor: wait;
+  opacity: 0.7;
+}
+.uiverse-send-btn:after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  border-radius: var(--send-radius);
+  border: 2.5px solid transparent;
+  background: linear-gradient(var(--send-neutral-1), var(--send-neutral-2)) padding-box,
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.1), rgba(0, 0, 0, 0.45)) border-box;
+  z-index: 0;
+  transition: all 0.4s ease;
+}
+.uiverse-send-btn:hover::after {
+  transform: scale(1.05, 1.1);
+  box-shadow: inset 0 -1px 3px 0 rgba(255, 255, 255, 1);
+}
+.uiverse-send-btn::before {
+  content: "";
+  inset: 7px 6px 6px 6px;
+  position: absolute;
+  background: linear-gradient(to top, var(--send-neutral-1), var(--send-neutral-2));
+  border-radius: 30px;
+  filter: blur(0.5px);
+  z-index: 2;
+}
+.uiverse-send-state p {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.uiverse-send-state .uiverse-send-icon {
+  position: absolute;
+  left: 0;
+  top: 0;
+  bottom: 0;
+  margin: auto;
+  transform: scale(1.25);
+  transition: all 0.3s ease;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.uiverse-send-state .uiverse-send-icon svg {
+  overflow: visible;
+}
+
+/* Outline shine */
+.uiverse-send-outline {
+  position: absolute;
+  border-radius: inherit;
+  overflow: hidden;
+  z-index: 1;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  inset: -2px -3.5px;
+}
+.uiverse-send-outline::before {
+  content: "";
+  position: absolute;
+  inset: -100%;
+  background: conic-gradient(
+    from 180deg,
+    transparent 60%,
+    white 80%,
+    transparent 100%
+  );
+  animation: uiverse-send-spin 2s linear infinite;
+  animation-play-state: paused;
+}
+@keyframes uiverse-send-spin {
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
+}
+.uiverse-send-btn:hover .uiverse-send-outline {
+  opacity: 1;
+}
+.uiverse-send-btn:hover .uiverse-send-outline::before {
+  animation-play-state: running;
+}
+
+/* Letters */
+.uiverse-send-state p span {
+  display: block;
+  opacity: 0;
+  animation: uiverse-send-slide-down 0.8s ease forwards calc(var(--i) * 0.03s);
+}
+.uiverse-send-btn:hover p span {
+  opacity: 1;
+  animation: uiverse-send-wave 0.5s ease forwards calc(var(--i) * 0.02s);
+}
+.uiverse-send-btn:focus p span,
+.uiverse-send-btn:focus-visible p span {
+  opacity: 1;
+  animation: uiverse-send-disapear 0.6s ease forwards calc(var(--i) * 0.03s);
+}
+@keyframes uiverse-send-wave {
+  30% { opacity: 1; transform: translateY(4px) translateX(0) rotate(0); }
+  50% { opacity: 1; transform: translateY(-3px) translateX(0) rotate(0); color: var(--send-primary); }
+  100% { opacity: 1; transform: translateY(0) translateX(0) rotate(0); }
+}
+@keyframes uiverse-send-slide-down {
+  0% { opacity: 0; transform: translateY(-20px) translateX(5px) rotate(-90deg); color: var(--send-primary); filter: blur(5px); }
+  30% { opacity: 1; transform: translateY(4px) translateX(0) rotate(0); filter: blur(0); }
+  50% { opacity: 1; transform: translateY(-3px) translateX(0) rotate(0); }
+  100% { opacity: 1; transform: translateY(0) translateX(0) rotate(0); }
+}
+@keyframes uiverse-send-disapear {
+  from { opacity: 1; }
+  to { opacity: 0; transform: translateX(5px) translateY(20px); color: var(--send-primary); filter: blur(5px); }
+}
+
+/* Plane */
+.uiverse-send-state--default .uiverse-send-icon svg {
+  animation: uiverse-send-land 0.6s ease forwards;
+}
+.uiverse-send-btn:hover .uiverse-send-state--default .uiverse-send-icon {
+  transform: rotate(45deg) scale(1.25);
+}
+.uiverse-send-btn:focus .uiverse-send-state--default svg,
+.uiverse-send-btn:focus-visible .uiverse-send-state--default svg {
+  animation: uiverse-send-takeoff 0.8s linear forwards;
+}
+.uiverse-send-btn:focus .uiverse-send-state--default .uiverse-send-icon,
+.uiverse-send-btn:focus-visible .uiverse-send-state--default .uiverse-send-icon {
+  transform: rotate(0) scale(1.25);
+}
+@keyframes uiverse-send-takeoff {
+  0% { opacity: 1; }
+  60% { opacity: 1; transform: translateX(70px) rotate(45deg) scale(2); }
+  100% { opacity: 0; transform: translateX(160px) rotate(45deg) scale(0); }
+}
+@keyframes uiverse-send-land {
+  0% { transform: translateX(-60px) translateY(30px) rotate(-50deg) scale(2); opacity: 0; filter: blur(3px); }
+  100% { transform: translateX(0) translateY(0) rotate(0); opacity: 1; filter: blur(0); }
+}
+
+/* Contrail */
+.uiverse-send-state--default .uiverse-send-icon:before {
+  content: "";
+  position: absolute;
+  top: 50%;
+  height: 2px;
+  width: 0;
+  left: -5px;
+  background: linear-gradient(to right, transparent, rgba(0, 0, 0, 0.5));
+}
+.uiverse-send-btn:focus .uiverse-send-state--default .uiverse-send-icon:before,
+.uiverse-send-btn:focus-visible .uiverse-send-state--default .uiverse-send-icon:before {
+  animation: uiverse-send-contrail 0.8s linear forwards;
+}
+@keyframes uiverse-send-contrail {
+  0% { width: 0; opacity: 1; }
+  8% { width: 15px; }
+  60% { opacity: 0.7; width: 80px; }
+  100% { opacity: 0; width: 160px; }
+}
+
+/* States */
+.uiverse-send-state {
+  padding-left: 29px;
+  z-index: 2;
+  display: flex;
+  position: relative;
+}
+.uiverse-send-state--default span:nth-child(4) {
+  margin-right: 5px;
+}
+.uiverse-send-state--sent {
+  display: none;
+}
+.uiverse-send-state--sent svg {
+  transform: scale(1.25);
+  margin-right: 8px;
+}
+.uiverse-send-btn:focus .uiverse-send-state--default,
+.uiverse-send-btn:focus-visible .uiverse-send-state--default {
+  position: absolute;
+}
+.uiverse-send-btn:focus .uiverse-send-state--sent,
+.uiverse-send-btn:focus-visible .uiverse-send-state--sent {
+  display: flex;
+}
+.uiverse-send-btn:focus .uiverse-send-state--sent span,
+.uiverse-send-btn:focus-visible .uiverse-send-state--sent span {
+  opacity: 0;
+  animation: uiverse-send-slide-down 0.8s ease forwards calc(var(--i) * 0.2s);
+}
+.uiverse-send-btn:focus .uiverse-send-state--sent .uiverse-send-icon svg,
+.uiverse-send-btn:focus-visible .uiverse-send-state--sent .uiverse-send-icon svg {
+  opacity: 0;
+  animation: uiverse-send-appear 1.2s ease forwards 0.8s;
+}
+@keyframes uiverse-send-appear {
+  0% { opacity: 0; transform: scale(4) rotate(-40deg); color: var(--send-primary); filter: blur(4px); }
+  30% { opacity: 1; transform: scale(0.6); filter: blur(1px); }
+  50% { opacity: 1; transform: scale(1.2); filter: blur(0); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+/* ponytail: Uiverse alexmaracinaru — expanding pill CTA. A pill
+   covering "LET'S W" in resting state with original soft cyan-blue (#b1dae7), stretching into full pill on hover. */
+.uiverse-cta .uiverse-cta-pill {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 86px;
+  height: 100%;
+  border-radius: 50px;
+  background: #b1dae7;
+  transition: all 0.3s ease;
+}
+
+.uiverse-cta:hover .uiverse-cta-pill {
+  width: 100%;
+}
+
+.uiverse-cta .uiverse-cta-text {
+  position: relative;
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.05em;
+  color: #234567;
+  z-index: 1;
+}
+
+.uiverse-cta .uiverse-cta-arrow {
+  position: relative;
+  margin-left: 8px;
+  fill: none;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  stroke: #234567;
+  stroke-width: 2;
+  transform: translateX(-5px);
+  transition: all 0.3s ease;
+  z-index: 1;
+}
+
+.uiverse-cta:hover .uiverse-cta-arrow {
+  transform: translateX(0);
+}
+
+.uiverse-cta:active {
+  transform: scale(0.96);
+}
+
+/* =========================================================================
+   Ambient stage — the levitating orbs, float keyframes and illustrative
+   shadows shared by <SiteBackdrop /> (site-wide) and the About stage (the
+   portrait with the held badge, the description card and the tool rail).
+   Every helper below is namespaced `about-` so the illustrative shadows,
+   gradients and float keyframes cannot leak onto the rest of the site.
+   ========================================================================= */
+
+.about-section {
+  font-family: var(--jakarta), "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
+}
+
+/* ---------------------------------------------------------- float motion */
+@keyframes about-float-slow {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(-10px) rotate(0.8deg); }
+}
+
+/* The held badge is the one thing that has to read as levitating from across
+   the room, so it travels about a third of its own height instead of a few
+   pixels, and tips as it rises. */
+@keyframes about-float-badge {
+  0%, 100% { transform: translateY(0) rotate(-1.4deg) scale(1); }
+  50% { transform: translateY(-22px) rotate(1.4deg) scale(1.06); }
+}
+
+@keyframes about-float-reverse {
+  0%, 100% { transform: translateY(0) rotate(0deg); }
+  50% { transform: translateY(8px) rotate(-0.8deg); }
+}
+
+@keyframes about-float-orb {
+  0%, 100% { transform: translateY(0) scale(1); }
+  50% { transform: translateY(-15px) scale(1.04); }
+}
+
+@keyframes about-fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+.about-float-slow { animation: about-float-slow 6s ease-in-out infinite; }
+.about-float-badge { animation: about-float-badge 4.5s ease-in-out infinite; }
+.about-float-reverse { animation: about-float-reverse 7s ease-in-out infinite; }
+.about-float-orb { animation: about-float-orb 8s ease-in-out infinite; }
+
+.about-fade-in { animation: about-fade-in 200ms ease both; }
+
+/* --------------------------------------------------- illustrative depth */
+.about-card-shadow {
+  box-shadow:
+    0 20px 45px -10px rgba(27, 39, 87, 0.12),
+    0 0 1px 1px rgba(255, 255, 255, 0.9) inset;
+}
+
+.about-orb-gradient {
+  background: radial-gradient(
+    circle at 35% 35%,
+    rgba(255, 255, 255, 0.95),
+    rgba(215, 225, 245, 0.6) 60%,
+    rgba(180, 195, 230, 0.4) 100%
+  );
+  box-shadow:
+    inset -6px -6px 14px rgba(120, 140, 190, 0.25),
+    0 16px 32px rgba(80, 100, 160, 0.12);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .about-float-slow,
+  .about-float-badge,
+  .about-float-reverse,
+  .about-float-orb {
+    animation: none !important;
+  }
+}
+
+/* =========================================================================
+   About Me 3D card — the describe-me plate, ported from the uiverse 3D card
+   (newdesigndevis-3Dcard). It keeps its rotate3d perspective at rest: a
+   coloured plate, a frosted glass sheet floating 26px in front of it, the
+   technology's own 3D icon floating free of any plate 95px out, and the
+   official-site pill 42px out on the card's right-hand side. Hovering eases
+   the tilt back, lifts the card and pushes every layer deeper — the folder's
+   motion, nothing else. The list still cycles on its own, so the card
+   restyles itself with whatever technology is in focus: every colour here
+   derives from that item's `accentHue`.
+   ========================================================================= */
+/* ponytail: Uiverse Yaya12085 — segmented radio group, stacked into a
+   column instead of the original 300px row so it keeps its place on the
+   rail's right. One grey trough with the active discipline lifted out on
+   white; real radios, so checked state and arrow keys come free. Sized by
+   its own content — no width or height of its own — so it never fights the
+   rail for space. Namespaced to avoid site collisions. */
+.about-filter {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  box-sizing: border-box;
+  padding: 0.25rem;
+  border-radius: 0.85rem;
+  width: 175px;
+  max-width: 175px;
+  /* Uiverse's #eee vanishes against this section's pale backdrop; one step
+     down is the same neutral read with the trough actually visible. */
+  background-color: #d9dde2;
+  box-shadow: 0 0 0 1px rgba(0, 0, 0, 0.08);
+}
+
+.about-filter__option {
+  display: block;
+  text-align: center;
+  width: 100%;
+}
+
+.about-filter__option input {
+  display: none;
+}
+
+.about-filter__label {
+  display: flex;
+  cursor: pointer;
+  align-items: center;
+  justify-content: center;
+  border-radius: 0.6rem;
+  border: none;
+  padding: 0.35rem 0.65rem;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  white-space: nowrap;
+  color: rgba(51, 65, 85, 1);
+  transition:
+    background-color 0.15s ease-in-out,
+    color 0.15s ease-in-out,
+    transform 0.15s ease-in-out;
+}
+
+.about-filter__option:hover .about-filter__label {
+  color: #151722;
+  transform: translateY(-1px);
+}
+
+.about-filter__option input:checked + .about-filter__label {
+  background-color: #fff;
+  color: #151722;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.12);
+  transform: translateY(-1px);
+}
+
+.about3d-parent {
+  position: relative;
+  width: 100%;
+  height: 452px;
+  perspective: 1000px;
+  /* The active technology's own hue, set inline from the item's icon. Every
+     colour below reads from this one number. */
+  --about3d-hue: 220;
+}
+
+.about3d-card {
+  position: relative;
+  height: 100%;
+  border-radius: 44px;
+  transform-style: preserve-3d;
+  transform: rotate3d(1, 1, 0, 18deg);
+  background: linear-gradient(
+    135deg,
+    hsl(var(--about3d-hue) 82% 64%) 0%,
+    hsl(calc(var(--about3d-hue) - 16) 74% 44%) 100%
+  );
+  box-shadow:
+    hsl(var(--about3d-hue) 60% 25% / 0) 40px 50px 25px -40px,
+    hsl(var(--about3d-hue) 60% 25% / 0.3) 32px 50px 30px -30px;
+  transition: all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+
+.about3d-glass {
+  position: absolute;
+  inset: 8px;
+  border-radius: 38px;
+  border-top-right-radius: 104px;
+  background: linear-gradient(0deg, rgba(255, 255, 255, 0.42) 0%, rgba(255, 255, 255, 0.9) 100%);
+  border-left: 1.5px solid rgba(255, 255, 255, 0.9);
+  border-top: 1.5px solid rgba(255, 255, 255, 0.9);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+  transform: translate3d(0, 0, 26px);
+  transform-style: preserve-3d;
+  transition: all 0.5s ease-in-out;
+}
+
+/* ---------------------------------------------------------- card content */
+.about3d-content {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  /* Clears the logo block at the top-right, then the write-up fills the
+     rest of the plate down to the official-site pill. */
+  padding: 150px 26px 0;
+  transform: translate3d(0, 0, 28px);
+}
+
+.about3d-category {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: hsl(var(--about3d-hue) 62% 30% / 0.75);
+}
+
+.about3d-title {
+  display: block;
+  font-size: 27px;
+  font-weight: 900;
+  line-height: 1.2;
+  letter-spacing: -0.015em;
+  color: hsl(var(--about3d-hue) 78% 25%);
+}
+
+.about3d-text {
+  /* The stack cycles on its own: a fixed frame keeps the card from
+     resizing as descriptions change length. min-height tracks line-height
+     (~4.7 lines either way) so loosening the leading costs no card height. */
+  min-height: 136px;
+  margin-top: 14px;
+  font-size: 13.5px;
+  font-weight: 500;
+  line-height: 2.15;
+  letter-spacing: 0.012em;
+  color: hsl(var(--about3d-hue) 45% 27% / 0.9);
+}
+
+/* ------------------------------------------------------------- logo mark */
+/* No disc, no ring: the icon sits straight on the plate the way the rail's
+   icons sit on the backdrop — only its own artwork and depth shadow. */
+.about3d-logo {
+  position: absolute;
+  top: 26px;
+  right: 28px;
+  transform-style: preserve-3d;
+}
+
+.about3d-logo-slot {
+  display: grid;
+  place-content: center;
+  width: 104px;
+  height: 104px;
+  transform: translate3d(0, 0, 95px);
+  transition: transform 0.5s ease-in-out;
+}
+
+.about3d-logo-img {
+  width: 96px;
+  height: 96px;
+  object-fit: contain;
+  filter: drop-shadow(0 14px 18px hsl(var(--about3d-hue) 60% 22% / 0.32));
+  pointer-events: none;
+  user-select: none;
+}
+
+/* ---------------------------------------------------- official-site pill */
+.about3d-bottom {
+  position: absolute;
+  bottom: 24px;
+  left: 22px;
+  right: 22px;
+  display: flex;
+  align-items: center;
+  /* The official link hugs the card's right-hand side — the edge that faces
+     the portrait's open hand. */
+  justify-content: flex-end;
+  transform: translate3d(0, 0, 32px);
+  transform-style: preserve-3d;
+}
+
+.about3d-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 9px;
+  padding: 13px 22px;
+  border-radius: 9999px;
+  background: #ffffff;
+  color: hsl(var(--about3d-hue) 78% 26%);
+  font-size: 12.5px;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  text-decoration: none;
+  text-transform: uppercase;
+  box-shadow: rgba(0, 0, 0, 0.16) -2px 10px 18px 0px;
+  transform: translate3d(0, 0, 42px);
+  transform-style: preserve-3d;
+  transition: all 0.3s ease-in-out;
+}
+
+.about3d-link:hover,
+.about3d-link:focus-visible {
+  background: #151722;
+  color: #ffffff;
+  transform: translate3d(0, 0, 55px) scale(1.04);
+}
+
+.about3d-link__icon {
+  width: 15px;
+  height: 15px;
+}
+
+/* --------------------------------------------------- the folder's motion */
+.about3d-parent:hover .about3d-card,
+.about3d-parent:focus-within .about3d-card {
+  transform: rotate3d(1, 1, 0, 12deg) translateY(-8px) scale(1.02);
+  box-shadow:
+    hsl(var(--about3d-hue) 60% 25% / 0.4) 36px 58px 32px -30px,
+    hsl(var(--about3d-hue) 60% 25% / 0.24) 0px 30px 35px 0px;
+}
+
+.about3d-parent:hover .about3d-logo-slot,
+.about3d-parent:focus-within .about3d-logo-slot {
+  transform: translate3d(0, 0, 120px);
+}
+
+/* ------------------------------------------------------ monochrome plates */
+/* GitHub and Next.js have no brand colour to sample — their marks are black
+   on black. Those two cards take the logo's own dark tone instead (the hue
+   only tints the grey), the glass sheet turns opaque enough to hold dark ink,
+   and the write-up switches from the hue-tinted palette to neutral. The logo
+   keeps a light halo so the dark mark still separates from the dark plate. */
+.about3d-parent[data-tone="dark"] .about3d-card {
+  background: linear-gradient(
+    135deg,
+    hsl(var(--about3d-hue) 6% 30%) 0%,
+    hsl(var(--about3d-hue) 8% 9%) 100%
+  );
+  box-shadow:
+    hsl(var(--about3d-hue) 20% 6% / 0.5) 40px 50px 25px -40px,
+    hsl(var(--about3d-hue) 20% 6% / 0.55) 32px 50px 30px -30px;
+}
+
+.about3d-parent[data-tone="dark"] .about3d-glass {
+  background: linear-gradient(
+    0deg,
+    rgba(255, 255, 255, 0.72) 0%,
+    rgba(255, 255, 255, 0.94) 100%
+  );
+}
+
+.about3d-parent[data-tone="dark"] .about3d-logo-img {
+  filter:
+    drop-shadow(0 14px 18px rgba(0, 0, 0, 0.5))
+    drop-shadow(0 0 22px rgba(255, 255, 255, 0.35));
+}
+
+.about3d-parent[data-tone="dark"] .about3d-category {
+  color: rgba(21, 23, 34, 0.6);
+}
+
+.about3d-parent[data-tone="dark"] .about3d-title {
+  color: #151722;
+}
+
+.about3d-parent[data-tone="dark"] .about3d-text {
+  color: rgba(43, 48, 60, 0.92);
+}
+
+/* Only the resting pill needs the neutral ink — hovering it flips to the dark
+   fill with white text, which the base rules already handle. */
+.about3d-parent[data-tone="dark"] .about3d-link {
+  color: #151722;
+}
+
+.about3d-parent[data-tone="dark"]:hover .about3d-card,
+.about3d-parent[data-tone="dark"]:focus-within .about3d-card {
+  box-shadow:
+    hsl(var(--about3d-hue) 20% 6% / 0.55) 36px 58px 32px -30px,
+    hsl(var(--about3d-hue) 20% 6% / 0.4) 0px 30px 35px 0px;
+}
+
+.about3d-parent:hover .about3d-link,
+.about3d-parent:focus-within .about3d-link {
+  transform: translate3d(0, 0, 52px);
+  box-shadow: rgba(0, 0, 0, 0.24) -4px 14px 20px 0px;
+}
+
+/* The slot the card lives in. Up to 1280px the portrait still claims its full
+   750px, so the plate takes exactly the room left of his arm — it steps in
+   from 330px as the viewport narrows, never sliding under the silhouette. */
+@media (min-width: 1024px) {
+  .about3d-slot {
+    width: min(330px, calc(50vw - 280px));
+  }
+}
+
+/* The narrow end of that range is a smaller card, so its type and its logo
+   step down together to keep the write-up clear of the official-site pill. */
+@media (min-width: 1024px) and (max-width: 1279px) {
+  .about3d-content {
+    padding: 130px 20px 0;
+  }
+
+  .about3d-category {
+    font-size: 9.5px;
+  }
+
+  .about3d-title {
+    font-size: 23px;
+  }
+
+  .about3d-text {
+    min-height: 127px;
+    margin-top: 12px;
+    font-size: 12.5px;
+    line-height: 2;
+  }
+
+  .about3d-logo {
+    top: 18px;
+    right: 16px;
+  }
+
+  .about3d-logo-slot {
+    width: 88px;
+    height: 88px;
+  }
+
+  .about3d-logo-img {
+    width: 80px;
+    height: 80px;
+  }
+
+  .about3d-bottom {
+    bottom: 20px;
+    left: 18px;
+    right: 18px;
+  }
+
+  .about3d-link {
+    padding: 11px 18px;
+    font-size: 11.5px;
+  }
+}
+
+@media (max-width: 1023px) {
+
+.about3d-parent {
+    height: 424px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .about3d-card,
+  .about3d-logo-slot,
+  .about3d-glass,
+  .about3d-link,
+  .about3d-logo-img {
+    animation: none !important;
+    transition: none !important;
+  }
+
+  .about3d-parent:hover .about3d-card,
+  .about3d-parent:focus-within .about3d-card {
+    transform: rotate3d(1, 1, 0, 18deg);
+  }
+}
+
+/* =========================================================================
+   Neo-Brutalist Showcase Card (Uiverse by seoulchik)
+   ========================================================================= */
+.neo-card {
+  --primary: #ff3e00;
+  --primary-hover: #ff6d43;
+  --secondary: #4d61ff;
+  --secondary-hover: #5e70ff;
+  --accent: #00e0b0;
+  --text: #050505;
+  --bg: #ffffff;
+  --shadow-color: #000000;
+  --pattern-color: #cfcfcf;
+
+  position: relative;
+  width: 100%;
+  max-width: 500px;
+  background: var(--bg);
+  border: 4px solid var(--text);
+  border-radius: 16px;
+  box-shadow:
+    8px 8px 0 var(--shadow-color),
+    inset 0 0 0 2px rgba(0, 0, 0, 0.05);
+  transition: all 0.35s cubic-bezier(0.23, 1, 0.32, 1);
+  overflow: hidden;
+  font-family: var(--font-jakarta, ui-sans-serif, system-ui, sans-serif);
+  transform-origin: center;
+  margin: 0 auto;
+}
+
+.neo-card:hover {
+  transform: translate(-3px, -3px);
+  box-shadow: 12px 12px 0 var(--shadow-color);
+}
+
+.neo-card:hover .neo-card-pattern-grid,
+.neo-card:hover .neo-card-overlay-dots {
+  opacity: 1;
+}
+
+.neo-card::before {
+  content: "";
+  position: absolute;
+  top: -16px;
+  right: -16px;
+  width: 60px;
+  height: 60px;
+  background: var(--accent);
+  transform: rotate(45deg);
+  z-index: 10;
+  border-bottom: 3px solid var(--text);
+}
+
+.neo-card::after {
+  content: "★";
+  position: absolute;
+  top: 5px;
+  right: 6px;
+  color: var(--text);
+  font-size: 18px;
+  font-weight: 900;
+  z-index: 12;
+  line-height: 1;
+}
+
+.neo-card-pattern-grid {
+  position: absolute;
+  inset: 0;
+  background-image: linear-gradient(
+      to right,
+      rgba(0, 0, 0, 0.06) 1px,
+      transparent 1px
+    ),
+    linear-gradient(to bottom, rgba(0, 0, 0, 0.06) 1px, transparent 1px);
+  background-size: 10px 10px;
+  pointer-events: none;
+  opacity: 0.6;
+  transition: opacity 0.4s ease;
+  z-index: 1;
+}
+
+.neo-card-overlay-dots {
+  position: absolute;
+  inset: 0;
+  background-image: radial-gradient(var(--pattern-color) 1px, transparent 1px);
+  background-size: 16px 16px;
+  background-position: -8px -8px;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.4s ease;
+  z-index: 1;
+}
+
+.neo-bold-pattern {
+  position: absolute;
+  top: 0;
+  right: 0;
+  width: 90px;
+  height: 90px;
+  opacity: 0.15;
+  pointer-events: none;
+  z-index: 1;
+}
+
+.neo-card-title-area {
+  position: relative;
+  padding: 1.1rem 1.4rem;
+  background: var(--primary);
+  color: var(--bg);
+  font-weight: 900;
+  font-size: 1.25rem;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 4px solid var(--text);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  z-index: 5;
+  overflow: hidden;
+}
+
+.neo-card-title-area::before {
+  content: "";
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: repeating-linear-gradient(
+    45deg,
+    rgba(0, 0, 0, 0.15),
+    rgba(0, 0, 0, 0.15) 8px,
+    transparent 8px,
+    transparent 16px
+  );
+  pointer-events: none;
+  opacity: 0.35;
+}
+
+.neo-card-tag {
+  background: var(--bg);
+  color: var(--text);
+  font-size: 0.65rem;
+  font-weight: 900;
+  padding: 0.35rem 0.75rem;
+  border: 2px solid var(--text);
+  border-radius: 6px;
+  box-shadow: 3px 3px 0 var(--shadow-color);
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  transform: rotate(3deg);
+  transition: all 0.3s ease;
+  margin-right: 28px;
+}
+
+.neo-card:hover .neo-card-tag {
+  transform: rotate(-2deg) scale(1.08);
+  box-shadow: 4px 4px 0 var(--shadow-color);
+}
+
+.neo-card-body {
+  position: relative;
+  padding: 1.35rem 1.4rem 1.4rem;
+  z-index: 5;
+}
+
+.neo-card-description {
+  margin-bottom: 1.2rem;
+  color: var(--text);
+  font-size: 0.88rem;
+  line-height: 1.55;
+  font-weight: 600;
+}
+
+.neo-feature-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.75rem 0.85rem;
+  margin-bottom: 1.25rem;
+}
+
+.neo-feature-item {
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  transition: transform 0.2s ease;
+}
+
+.neo-feature-item:hover {
+  transform: translateX(4px);
+}
+
+.neo-feature-icon {
+  width: 2.2rem;
+  height: 2.2rem;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--bg);
+  border: 2.5px solid var(--text);
+  border-radius: 8px;
+  box-shadow: 2.5px 2.5px 0 var(--shadow-color);
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  overflow: hidden;
+  padding: 3px;
+}
+
+.neo-feature-item:hover .neo-feature-icon {
+  transform: rotate(-6deg) scale(1.05);
+}
+
+.neo-feature-text {
+  font-size: 0.82rem;
+  font-weight: 800;
+  color: var(--text);
+  line-height: 1.25;
+}
+
+.neo-card-actions {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 1.15rem;
+  padding-top: 1.1rem;
+  border-top: 2px dashed rgba(0, 0, 0, 0.22);
+  position: relative;
+}
+
+.neo-card-actions::before {
+  content: "✂";
+  position: absolute;
+  top: -12px;
+  left: 50%;
+  transform: translateX(-50%) rotate(90deg);
+  background: var(--bg);
+  padding: 0 0.5rem;
+  font-size: 0.95rem;
+  color: rgba(0, 0, 0, 0.5);
+  font-weight: bold;
+}
+
+.neo-price {
+  position: relative;
+  font-size: 1.15rem;
+  font-weight: 900;
+  color: var(--text);
+  line-height: 1.1;
+  text-transform: uppercase;
+  letter-spacing: 0.02em;
+}
+
+.neo-price::before {
+  content: "";
+  position: absolute;
+  bottom: 2px;
+  left: 0;
+  width: 100%;
+  height: 6px;
+  background: var(--accent);
+  z-index: -1;
+  opacity: 0.7;
+}
+
+.neo-price-period {
+  display: block;
+  font-size: 0.55rem;
+  font-weight: 800;
+  color: rgba(0, 0, 0, 0.6);
+  margin-top: 2px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.neo-card-button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  background: var(--secondary);
+  color: var(--bg);
+  font-size: 0.85rem;
+  font-weight: 900;
+  padding: 0.65rem 1.2rem;
+  border: 3px solid var(--text);
+  border-radius: 8px;
+  box-shadow: 4px 4px 0 var(--shadow-color);
+  cursor: pointer;
+  transition: all 0.2s ease;
+  overflow: hidden;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  text-decoration: none;
+}
+
+.neo-card-button:hover {
+  background: var(--secondary-hover);
+  transform: translate(-2px, -2px);
+  box-shadow: 6px 6px 0 var(--shadow-color);
+}
+
+.neo-card-button:active {
+  transform: translate(2px, 2px);
+  box-shadow: 2px 2px 0 var(--shadow-color);
+}
+
+.neo-dots-pattern {
+  position: absolute;
+  bottom: 24px;
+  left: -20px;
+  width: 100px;
+  height: 50px;
+  opacity: 0.25;
+  transform: rotate(-10deg);
+  pointer-events: none;
+  z-index: 1;
+}
+
+.neo-accent-shape {
+  position: absolute;
+  width: 30px;
+  height: 30px;
+  background: var(--secondary);
+  border: 3px solid var(--text);
+  border-radius: 6px;
+  transform: rotate(45deg);
+  bottom: -14px;
+  right: 28px;
+  z-index: 2;
+  transition: transform 0.3s ease;
+}
+
+.neo-card:hover .neo-accent-shape {
+  transform: rotate(55deg) scale(1.1);
+}
+
+.neo-stamp {
+  position: absolute;
+  bottom: 18px;
+  left: 18px;
+  width: 62px;
+  height: 62px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid rgba(0, 0, 0, 0.35);
+  border-radius: 50%;
+  transform: rotate(-15deg);
+  opacity: 0.22;
+  z-index: 1;
+  pointer-events: none;
+}
+
+.neo-stamp-text {
+  font-size: 0.62rem;
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+
+.neo-corner-slice {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  width: 20px;
+  height: 20px;
+  background: var(--bg);
+  border-right: 3px solid var(--text);
+  border-top: 3px solid var(--text);
+  border-radius: 0 8px 0 0;
+  z-index: 1;
 }

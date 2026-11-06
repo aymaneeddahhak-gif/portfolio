@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState, type FormEvent } from "react";
+import { useEffect, useRef, useState, type CSSProperties, type FormEvent } from "react";
 import { motion } from "motion/react";
-import { ArrowRight, ArrowUpRight, Check, CheckCircle2, Copy, Mail, MessageCircle, Phone } from "lucide-react";
+import { CheckCircle2, ChevronDown, Mail, Phone } from "lucide-react";
+import { useTranslation } from "@/i18n/LanguageContext";
 
 function ContourPattern({ className = "" }: { className?: string }) {
   return (
@@ -54,13 +55,229 @@ function ContourPattern({ className = "" }: { className?: string }) {
   );
 }
 
-const CONTACT_EMAIL = "ayman7dahhak@gmail.com";
+const CONTACT_EMAIL = "aedsolutionsdev@gmail.com";
 const CONTACT_PHONE = "+212617415506";
 const CONTACT_PHONE_DISPLAY = "+212 617 415 506";
 const GITHUB_URL = "https://github.com/aymaneeddahhak-gif";
-const WHATSAPP_URL = "https://wa.me/212617415506";
+const SERVICES = ["Web Service", "Mobile Service", "Other Service"];
+const DEFAULT_INQUIRY_SUBJECT = "Project Collaboration Inquiry — AED Solutions";
+const DEFAULT_WHATSAPP_BODY =
+  "Hi AED Solutions! I checked out your portfolio and have a project in mind. Are you available for a quick discussion?";
+const DEFAULT_GMAIL_BODY = `Hi AED Solutions,
+
+I came across your portfolio and I'm interested in collaborating on a new project.
+
+Quick details:
+• Project Type: [Mobile App / Web App / AI Solution]
+• Target Timeline: [e.g. 1 month / ASAP]
+• Brief Goal: [What problem we want to solve]
+
+Let me know your current availability for a short discussion.
+
+Best regards,`;
+
+const WHATSAPP_URL = `https://wa.me/212617415506?text=${encodeURIComponent(
+  DEFAULT_WHATSAPP_BODY,
+)}`;
+
+const GMAIL_COMPOSE_URL = `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(
+  CONTACT_EMAIL,
+)}&su=${encodeURIComponent(DEFAULT_INQUIRY_SUBJECT)}&body=${encodeURIComponent(
+  DEFAULT_GMAIL_BODY,
+)}`;
+
+const MAILTO_COMPOSE_URL = `mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent(
+  DEFAULT_INQUIRY_SUBJECT,
+)}&body=${encodeURIComponent(DEFAULT_GMAIL_BODY)}`;
+
+function TurnstileWidget({
+  onVerify,
+  onExpire,
+  resetRef,
+}: {
+  onVerify: (token: string) => void;
+  onExpire?: () => void;
+  resetRef?: React.MutableRefObject<(() => void) | null>;
+}) {
+  const containerRef = useRef<HTMLDivElement>(null);
+  const widgetIdRef = useRef<string | null>(null);
+  const [hasDomainError, setHasDomainError] = useState(false);
+  const onVerifyRef = useRef(onVerify);
+  onVerifyRef.current = onVerify;
+  const onExpireRef = useRef(onExpire);
+  onExpireRef.current = onExpire;
+
+  useEffect(() => {
+    const isLocalhost =
+      typeof window !== "undefined" &&
+      (window.location.hostname === "localhost" ||
+        window.location.hostname === "127.0.0.1" ||
+        window.location.hostname.startsWith("192.168."));
+
+    const envKey = process.env.NEXT_PUBLIC_CLOUDFLARE_TURNSTILE_SITE_KEY;
+    // Use the real site key so Cloudflare does not display the "À des fins de test uniquement" testing banner
+    const siteKey =
+      envKey && envKey !== "1x00000000000000000000AA"
+        ? envKey
+        : "0x4AAAAAAFZUKl9F9SjyS8H9";
+
+    const renderTurnstile = () => {
+      const turnstile = (
+        window as unknown as {
+          turnstile?: {
+            render: (el: HTMLElement, opt: Record<string, unknown>) => string;
+            reset: (id: string) => void;
+            remove: (id: string) => void;
+          };
+        }
+      ).turnstile;
+
+      if (turnstile && containerRef.current) {
+        if (widgetIdRef.current) {
+          try {
+            turnstile.remove(widgetIdRef.current);
+          } catch {}
+        }
+        try {
+          widgetIdRef.current = turnstile.render(containerRef.current, {
+            sitekey: siteKey,
+            action: "contact",
+            theme: "light",
+            size: "normal",
+            callback: (token: string) => {
+              setHasDomainError(false);
+              onVerifyRef.current(token);
+            },
+            "expired-callback": () => {
+              onExpireRef.current?.();
+            },
+            "error-callback": (err: unknown) => {
+              console.warn("[Cloudflare Turnstile] Widget error:", err);
+              if (isLocalhost) {
+                setHasDomainError(true);
+                onVerifyRef.current("dev-dummy-turnstile-token");
+              } else {
+                onExpireRef.current?.();
+              }
+            },
+          });
+        } catch (err) {
+          console.error("[Cloudflare Turnstile] Render error:", err);
+          if (isLocalhost) {
+            setHasDomainError(true);
+            onVerifyRef.current("dev-dummy-turnstile-token");
+          }
+        }
+      }
+    };
+
+    if (resetRef) {
+      resetRef.current = () => {
+        if (typeof window !== "undefined" && widgetIdRef.current) {
+          const turnstile = (
+            window as unknown as {
+              turnstile?: { reset: (id: string) => void };
+            }
+          ).turnstile;
+          try {
+            turnstile?.reset(widgetIdRef.current);
+          } catch {}
+        }
+      };
+    }
+
+    if (
+      typeof window !== "undefined" &&
+      (window as unknown as { turnstile?: unknown }).turnstile
+    ) {
+      renderTurnstile();
+    } else {
+      let script = document.querySelector(
+        'script[src*="turnstile"]',
+      ) as HTMLScriptElement;
+      if (!script) {
+        script = document.createElement("script");
+        script.src =
+          "https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit";
+        script.async = true;
+        script.defer = true;
+        document.head.appendChild(script);
+      }
+      script.addEventListener("load", renderTurnstile, { once: true });
+      const interval = setInterval(() => {
+        if (
+          typeof window !== "undefined" &&
+          (window as unknown as { turnstile?: unknown }).turnstile
+        ) {
+          clearInterval(interval);
+          renderTurnstile();
+        }
+      }, 150);
+      return () => {
+        clearInterval(interval);
+        script.removeEventListener("load", renderTurnstile);
+      };
+    }
+
+    return () => {
+      if (resetRef) {
+        resetRef.current = null;
+      }
+      if (widgetIdRef.current) {
+        try {
+          const turnstile = (
+            window as unknown as {
+              turnstile?: { remove: (id: string) => void };
+            }
+          ).turnstile;
+          if (turnstile) turnstile.remove(widgetIdRef.current);
+        } catch {}
+      }
+    };
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
+  if (hasDomainError) {
+    return (
+      <div className="w-full min-h-[46px] flex items-center justify-start py-1">
+        <div className="inline-flex items-center gap-2 rounded-xl bg-neutral-50 border border-neutral-200/90 px-3 py-2 text-xs text-neutral-600 font-medium shadow-2xs">
+          <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
+          <span>Security check passed (Local Development Mode)</span>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-full min-h-[65px] flex items-center justify-start bg-transparent">
+      <div ref={containerRef} className="w-full" />
+    </div>
+  );
+}
 
 export default function ContactSection() {
+  const { t, lang } = useTranslation();
+  const contactVideoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    const video = contactVideoRef.current;
+    if (!video) return;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        if (entry.isIntersecting) {
+          video.play().catch(() => {});
+        } else {
+          video.pause();
+        }
+      },
+      { threshold: 0.1 },
+    );
+
+    observer.observe(video);
+    return () => observer.disconnect();
+  }, []);
+
   const [formData, setFormData] = useState({
     name: "",
     email: "",
@@ -69,109 +286,134 @@ export default function ContactSection() {
     message: "",
   });
   const [isSubmitted, setIsSubmitted] = useState(false);
-  const [copied, setCopied] = useState(false);
-  const [videoExpanded, setVideoExpanded] = useState(false);
-  const [entered, setEntered] = useState(false);
+  const [isSending, setIsSending] = useState(false);
+  const [sendFailed, setSendFailed] = useState(false);
+  const [turnstileToken, setTurnstileToken] = useState<string>("");
+  const [captchaError, setCaptchaError] = useState(false);
+  const turnstileResetRef = useRef<(() => void) | null>(null);
+  // Prefilled hand-off links, built at submit time so the visitor can still
+  // reach the inbox from their own Gmail if the API call fails.
+  const [fallbackLinks, setFallbackLinks] = useState<{
+    gmail: string;
+    mailto: string;
+  } | null>(null);
+  const [serviceOpen, setServiceOpen] = useState(false);
   const sectionRef = useRef<HTMLElement>(null);
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const playedRef = useRef(false);
 
-  // First time the contact section is seen: the mascot wipes in left to
-  // right (driven by this observer — motion's whileInView never fires here
-  // because the card flips to a fullscreen overlay on entry).
-  useEffect(() => {
-    const section = sectionRef.current;
-    if (!section) return;
-    const observer = new IntersectionObserver(
-      ([entry]) => {
-        if (!entry.isIntersecting || playedRef.current) return;
-        playedRef.current = true;
-        setEntered(true);
-        setVideoExpanded(true);
-        videoRef.current?.play().catch(() => {});
-        window.setTimeout(() => setVideoExpanded(false), 1500);
-        observer.disconnect();
-      },
-      { threshold: 0.35 },
-    );
-    observer.observe(section);
-    return () => observer.disconnect();
-  }, []);
+  const handleResetForm = () => {
+    setIsSubmitted(false);
+    setSendFailed(false);
+    setFormData({
+      name: "",
+      email: "",
+      service: "",
+      budget: "",
+      message: "",
+    });
+    setTurnstileToken("");
+    setTimeout(() => {
+      turnstileResetRef.current?.();
+    }, 100);
+  };
 
-  const handleSubmit = (e: FormEvent) => {
+  // Primary path: Web3Forms delivers the inquiry straight to the inbox that
+  // owns NEXT_PUBLIC_WEB3FORMS_KEY. Web3Forms replies with HTTP 200 even for
+  // some rejections, so the body's `success` flag — not just res.ok — decides
+  // whether we may tell the visitor the message was delivered.
+  // Fallback: hand-off links (Gmail compose + mailto) prefilled with the
+  // message, shown as buttons so nothing depends on a blocked popup.
+  const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
-    const subject = encodeURIComponent(
-      `Project inquiry from ${formData.name || "portfolio visitor"}`,
-    );
-    const body = encodeURIComponent(
-      [
-        `Name: ${formData.name}`,
-        `Email: ${formData.email}`,
-        `Service: ${formData.service}`,
-        `Timeline / Scope: ${formData.budget}`,
-        "",
-        formData.message,
-      ].join("\n"),
-    );
-    window.location.href = `mailto:${CONTACT_EMAIL}?subject=${subject}&body=${body}`;
-    setIsSubmitted(true);
-    setTimeout(() => setIsSubmitted(false), 5000);
-  };
-
-  // The form hands off to the visitor's mail app, so keep a copy-able
-  // address on screen for anyone without a mail client configured.
-  const flagCopied = () => {
-    setCopied(true);
-    window.setTimeout(() => setCopied(false), 2000);
-  };
-
-  const handleCopyEmail = async () => {
-    try {
-      await navigator.clipboard.writeText(CONTACT_EMAIL);
-      flagCopied();
+    if (!turnstileToken) {
+      setCaptchaError(true);
       return;
-    } catch {
-      // Clipboard API blocked (unfocused document, non-secure context, older
-      // Safari) — fall through to the legacy selection + execCommand path.
     }
+    setCaptchaError(false);
+    setIsSending(true);
+    setSendFailed(false);
+    const accessKey = process.env.NEXT_PUBLIC_WEB3FORMS_KEY;
+    const subject = `New ${formData.service || "project"} inquiry from ${formData.name || "portfolio visitor"}`;
+    const plainBody = [
+      `Name: ${formData.name}`,
+      `Email: ${formData.email}`,
+      `Service: ${formData.service}`,
+      `Timeline / Scope: ${formData.budget}`,
+      "",
+      formData.message,
+    ].join("\n");
 
-    const field = document.createElement("textarea");
-    field.value = CONTACT_EMAIL;
-    field.setAttribute("readonly", "");
-    field.style.position = "fixed";
-    field.style.opacity = "0";
-    document.body.appendChild(field);
-    field.select();
     try {
-      if (document.execCommand("copy")) flagCopied();
+      if (!accessKey) throw new Error("missing access key");
+      const res = await fetch("https://api.web3forms.com/submit", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Accept: "application/json" },
+        body: JSON.stringify({
+          access_key: accessKey,
+          // Cloudflare Turnstile verification response
+          "cf-turnstile-response": turnstileToken,
+          // Honeypot: hidden from humans; bots that autofill every field get
+          // silently rejected by Web3Forms.
+          botcheck: false,
+          subject,
+          from_name: "Portfolio Contact Form",
+          // Web3Forms uses this field as the Reply-To address, so hitting
+          // "Reply" in Gmail answers the visitor directly.
+          replyto: formData.email,
+          name: formData.name,
+          email: formData.email,
+          project: formData.service,
+          timeline: formData.budget,
+          message: formData.message,
+        }),
+      });
+      const data = (await res.json().catch(() => null)) as
+        | { success?: boolean; message?: string }
+        | null;
+      if (!res.ok || data?.success === false) {
+        throw new Error(data?.message ?? `web3forms ${res.status}`);
+      }
+      setIsSubmitted(true);
     } catch {
-      // Nothing left to try — the mailto link beside this button still works.
+      turnstileResetRef.current?.();
+      setTurnstileToken("");
+      const encodedSubject = encodeURIComponent(subject);
+      const encodedBody = encodeURIComponent(plainBody);
+      setFallbackLinks({
+        gmail: `https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(
+          CONTACT_EMAIL,
+        )}&su=${encodedSubject}&body=${encodedBody}`,
+        mailto: `mailto:${CONTACT_EMAIL}?subject=${encodedSubject}&body=${encodedBody}`,
+      });
+      setSendFailed(true);
+      setIsSubmitted(true);
+    } finally {
+      setIsSending(false);
     }
-    document.body.removeChild(field);
   };
+
 
   return (
     <section
       id="contact"
       ref={sectionRef}
       aria-labelledby="contact-heading"
-      className="relative w-full bg-white text-[#111827] overflow-x-hidden"
+      className="relative w-full bg-transparent text-[#111827] overflow-x-hidden lg:flex lg:min-h-[100svh] lg:items-center"
     >
       <ContourPattern className="text-neutral-300/40" />
 
-      <div className="relative z-10 px-3 sm:px-6 lg:px-12 py-10 sm:py-14 lg:py-16 max-w-7xl mx-auto w-full">
+      <div className="relative z-10 px-3 sm:px-6 lg:px-12 py-8 sm:py-10 lg:py-4 max-w-7xl mx-auto w-full">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 sm:gap-6 lg:gap-8 items-stretch">
-          {/* Form card — appears after the video settles into place */}
+          {/* Form card */}
           <motion.div
-            initial={{ opacity: 0, y: 28 }}
+            initial={{ opacity: 0, y: 24 }}
             whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.25 }}
-            transition={{ duration: 0.6, delay: 1.6, ease: "easeOut" }}
-            className="relative overflow-hidden rounded-3xl sm:rounded-[2.5rem] bg-white border border-neutral-200/80 shadow-[0_4px_35px_rgba(0,0,0,0.03)] p-5 sm:p-7 md:p-9 lg:p-10 flex flex-col justify-between min-h-[440px] lg:min-h-[500px]"
+            viewport={{ once: true, amount: 0.2 }}
+            transition={{ duration: 0.5, ease: "easeOut" }}
+            className="relative overflow-hidden rounded-3xl sm:rounded-[2.5rem] bg-gradient-to-b from-[#f7f8f7] to-[#e7e7e7] border border-neutral-200/80 shadow-[0_4px_35px_rgba(0,0,0,0.03)] p-4 sm:p-6 lg:p-6 flex flex-col justify-between"
           >
             <div className="absolute top-0 left-0 right-0 h-28 sm:h-32 overflow-hidden pointer-events-none opacity-30">
               <ContourPattern className="text-neutral-400/70 -top-10" />
-              <div className="absolute inset-0 bg-gradient-to-b from-transparent via-white/60 to-white" />
+              <div className="absolute inset-0 bg-gradient-to-b from-transparent via-[#f7f8f7]/60 to-[#f7f8f7]" />
             </div>
 
             {isSubmitted ? (
@@ -183,168 +425,326 @@ export default function ContactSection() {
                   id="contact-heading"
                   className="text-xl sm:text-2xl lg:text-3xl font-bold text-neutral-900 tracking-tight font-jakarta"
                 >
-                  Inquiry Ready!
+                  {sendFailed ? "One more tap" : "Message sent!"}
                 </h2>
                 <p className="text-xs sm:text-sm text-neutral-500 max-w-sm mx-auto leading-relaxed px-4">
-                  Your mail app just opened with the project details filled in — hit send
-                  and we will get back to you within 24 hours. If nothing opened, write to{" "}
-                  <a
-                    href={`mailto:${CONTACT_EMAIL}`}
-                    className="font-semibold text-neutral-900 underline decoration-neutral-300 underline-offset-2 hover:decoration-neutral-900 transition-colors"
-                  >
-                    {CONTACT_EMAIL}
-                  </a>
-                  .
+                  {sendFailed ? (
+                    <>
+                      The automatic delivery didn&apos;t go through. Your details are ready
+                      to send — open Gmail and press send, or write to{" "}
+                      <a
+                        href={`mailto:${CONTACT_EMAIL}`}
+                        className="font-semibold text-neutral-900 underline decoration-neutral-300 underline-offset-2 hover:decoration-neutral-900 transition-colors"
+                      >
+                        {CONTACT_EMAIL}
+                      </a>
+                      .
+                    </>
+                  ) : (
+                    <>
+                      Thanks for reaching out! Your inquiry landed in my inbox and I&apos;ll
+                      get back to you within 24 hours.
+                    </>
+                  )}
                 </p>
+                {sendFailed && fallbackLinks && (
+                  <div className="flex flex-wrap items-center justify-center gap-2 pt-1">
+                    <a
+                      href={fallbackLinks.gmail}
+                      target="_blank"
+                      rel="noreferrer"
+                      className="inline-flex items-center gap-2 rounded-full bg-neutral-900 px-4 py-2 text-xs font-semibold text-white transition-transform hover:-translate-y-0.5"
+                    >
+                      <Mail className="h-3.5 w-3.5" />
+                      Open in Gmail
+                    </a>
+                    <a
+                      href={fallbackLinks.mailto}
+                      className="inline-flex items-center gap-2 rounded-full border border-neutral-300 px-4 py-2 text-xs font-semibold text-neutral-800 transition-colors hover:border-neutral-900"
+                    >
+                      Use my mail app
+                    </a>
+                  </div>
+                )}
+                <div className="pt-2">
+                  <button
+                    type="button"
+                    onClick={handleResetForm}
+                    className="text-xs font-medium text-neutral-500 hover:text-neutral-900 underline underline-offset-4 transition-colors cursor-pointer"
+                  >
+                    {sendFailed ? "← Try again with form" : "← Send another message"}
+                  </button>
+                </div>
               </div>
             ) : (
-              <div className="relative z-10 flex flex-col justify-between h-full space-y-4 sm:space-y-5">
+              <div className="relative z-10 flex flex-col justify-between h-full space-y-3 sm:space-y-4">
                 <div className="space-y-1 pt-1">
-                  <p className="text-[10px] sm:text-[11px] font-bold tracking-[0.25em] text-neutral-400 uppercase">
-                    Let&apos;s Work Together
-                  </p>
-                  <h2
-                    id="contact-heading"
-                    className="text-2xl sm:text-3xl lg:text-4xl font-extrabold tracking-tight text-neutral-950 font-jakarta leading-tight"
-                  >
-                    Start Your Project with{" "}
-                    <span className="font-syne tracking-wider text-neutral-400">AED</span>
-                  </h2>
+                  {/* Brand mark sits inline on the heading's line, so the logo
+                      finishes the sentence instead of stacking under it. */}
+                  <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                    <h2
+                      id="contact-heading"
+                      className="text-xl sm:text-2xl lg:text-[1.75rem] font-extrabold tracking-tight text-neutral-950 font-jakarta leading-tight"
+                    >
+                      {t.contact.title}
+                    </h2>
+                    <img
+                      src="/images/logosultion.png"
+                      alt="Logosolution"
+                      className="h-8 sm:h-9 lg:h-11 w-auto max-w-full self-center"
+                    />
+                  </div>
                   <p className="text-xs sm:text-sm text-neutral-500 font-medium">
-                    Have a project in mind? Fill out the details below for an estimate &amp;
-                    timeline.
+                    {t.contact.subtitle}
                   </p>
                 </div>
 
-                <form onSubmit={handleSubmit} className="space-y-2.5 sm:space-y-3.5">
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
+                <form onSubmit={handleSubmit} className="space-y-2 sm:space-y-2.5">
+                  {/* Honeypot — invisible to humans, catnip to bots */}
+                  <input
+                    type="checkbox"
+                    name="botcheck"
+                    tabIndex={-1}
+                    aria-hidden="true"
+                    className="hidden"
+                    style={{ display: "none" }}
+                  />
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-2.5">
                     <div className="space-y-1">
-                      <label className="block text-[11px] font-semibold text-neutral-700">
-                        Full Name
+                      <label className="block text-[10px] font-semibold text-neutral-700">
+                        {t.contact.nameLabel}
                       </label>
                       <input
                         required
                         type="text"
-                        placeholder="e.g. Alex Morgan"
+                        placeholder={t.contact.namePlaceholder}
                         value={formData.name}
                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                        className="w-full rounded-xl bg-[#f4f5f7] border border-transparent px-3.5 py-2.5 text-xs sm:text-sm text-neutral-900 placeholder:text-neutral-400 focus:bg-white focus:border-neutral-300 focus:outline-none transition-all"
+                        className="contact-field w-full px-3 py-2 text-xs sm:text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none"
                       />
                     </div>
                     <div className="space-y-1">
-                      <label className="block text-[11px] font-semibold text-neutral-700">
-                        Email Address
+                      <label className="block text-[10px] font-semibold text-neutral-700">
+                        {t.contact.emailLabel}
                       </label>
                       <input
                         required
                         type="email"
-                        placeholder="alex@company.com"
+                        placeholder={t.contact.emailPlaceholder}
                         value={formData.email}
                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                        className="w-full rounded-xl bg-[#f4f5f7] border border-transparent px-3.5 py-2.5 text-xs sm:text-sm text-neutral-900 placeholder:text-neutral-400 focus:bg-white focus:border-neutral-300 focus:outline-none transition-all"
+                        className="contact-field w-full px-3 py-2 text-xs sm:text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none"
                       />
                     </div>
                   </div>
 
-                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 sm:gap-3">
+                  <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-2.5">
                     <div className="space-y-1">
-                      <label className="block text-[11px] font-semibold text-neutral-700">
-                        Service / Project Type
-                      </label>
-                      <input
-                        type="text"
-                        placeholder="e.g. Full-Stack Web App, MVP"
-                        value={formData.service}
-                        onChange={(e) => setFormData({ ...formData, service: e.target.value })}
-                        className="w-full rounded-xl bg-[#f4f5f7] border border-transparent px-3.5 py-2.5 text-xs sm:text-sm text-neutral-900 placeholder:text-neutral-400 focus:bg-white focus:border-neutral-300 focus:outline-none transition-all"
-                      />
+                      <span
+                        id="service-label"
+                        className="block text-[10px] font-semibold text-neutral-700"
+                      >
+                        {t.contact.serviceLabel}
+                      </span>
+                      <div
+                        className="contact-select relative"
+                        data-open={serviceOpen ? "true" : undefined}
+                      >
+                        <button
+                          type="button"
+                          aria-labelledby="service-label"
+                          aria-haspopup="true"
+                          aria-expanded={serviceOpen}
+                          onClick={() => setServiceOpen((open) => !open)}
+                          className="contact-field flex w-full cursor-pointer items-center justify-between gap-2 px-3 py-2 text-left text-xs sm:text-sm focus:outline-none"
+                        >
+                          <span className={formData.service ? "" : "text-neutral-400"}>
+                            {formData.service || "Project type"}
+                          </span>
+                          <ChevronDown className="contact-select-chevron h-4 w-4 shrink-0 text-neutral-400" />
+                        </button>
+
+                        <div
+                          role="radiogroup"
+                          aria-labelledby="service-label"
+                          className="contact-select-panel"
+                        >
+                          {SERVICES.map((service) => (
+                            <label key={service} className="contact-radio">
+                              <input
+                                required
+                                type="radio"
+                                name="service"
+                                value={service}
+                                checked={formData.service === service}
+                                onChange={(e) => {
+                                  setFormData({ ...formData, service: e.target.value });
+                                  setServiceOpen(false);
+                                }}
+                              />
+                              <span className="contact-radio-circle" />
+                              <span className="contact-radio-text">{service}</span>
+                            </label>
+                          ))}
+                        </div>
+                      </div>
                     </div>
                     <div className="space-y-1">
-                      <label className="block text-[11px] font-semibold text-neutral-700">
+                      <label className="block text-[10px] font-semibold text-neutral-700">
                         Timeline / Scope
                       </label>
                       <input
                         type="text"
-                        placeholder="e.g. 2-4 weeks, $5k-$15k"
+                        placeholder="e.g. MVP in 3-4 weeks, flexible budget"
                         value={formData.budget}
                         onChange={(e) => setFormData({ ...formData, budget: e.target.value })}
-                        className="w-full rounded-xl bg-[#f4f5f7] border border-transparent px-3.5 py-2.5 text-xs sm:text-sm text-neutral-900 placeholder:text-neutral-400 focus:bg-white focus:border-neutral-300 focus:outline-none transition-all"
+                        className="contact-field w-full px-3 py-2 text-xs sm:text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none"
                       />
                     </div>
                   </div>
 
                   <div className="space-y-1">
-                    <label className="block text-[11px] font-semibold text-neutral-700">
-                      Project Details
+                    <label className="block text-[10px] font-semibold text-neutral-700">
+                      {t.contact.messageLabel}
                     </label>
                     <textarea
                       rows={2}
-                      placeholder="Tell us briefly about your goals, features, or architecture..."
+                      placeholder={t.contact.messagePlaceholder}
                       value={formData.message}
                       onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                      className="w-full rounded-xl bg-[#f4f5f7] border border-transparent px-3.5 py-2.5 text-xs sm:text-sm text-neutral-900 placeholder:text-neutral-400 focus:bg-white focus:border-neutral-300 focus:outline-none transition-all resize-none"
+                      className="contact-field w-full px-3 py-2 text-xs sm:text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none resize-none"
                     />
                   </div>
 
-                  <div className="pt-2 flex flex-wrap sm:flex-nowrap items-center gap-2.5 sm:gap-3">
-                    <button
-                      type="submit"
-                      className="group flex-1 sm:flex-initial inline-flex items-center justify-between gap-3 bg-black hover:bg-neutral-800 text-white text-xs sm:text-sm font-semibold pl-5 sm:pl-6 pr-2 sm:pr-2.5 py-2.5 rounded-full transition-all duration-200 shadow-sm hover:shadow-md cursor-pointer active:scale-95"
-                    >
-                      <span>Send Project Inquiry</span>
-                      <div className="flex items-center justify-center h-6 w-6 sm:h-7 sm:w-7 rounded-full bg-white/20 group-hover:bg-white group-hover:text-black transition-colors">
-                        <ArrowRight className="h-3 w-3 sm:h-3.5 sm:w-3.5" />
-                      </div>
-                    </button>
+                  {/* Cloudflare Turnstile Captcha */}
+                  <div className="space-y-1 pt-0.5">
+                    <span className="block text-[10px] font-semibold text-neutral-700">
+                      {t.contact.securityVerification}
+                    </span>
+                    <TurnstileWidget
+                      resetRef={turnstileResetRef}
+                      onVerify={(token) => {
+                        setTurnstileToken(token);
+                        setCaptchaError(false);
+                      }}
+                      onExpire={() => setTurnstileToken("")}
+                    />
+                    {captchaError && (
+                      <p className="text-[11px] font-bold text-red-500">
+                        {lang === "fr"
+                          ? "Veuillez compléter la vérification de sécurité Cloudflare avant d'envoyer."
+                          : "Please complete the Cloudflare security verification before sending."}
+                      </p>
+                    )}
+                  </div>
 
+                  <div className="pt-1 flex items-center gap-2.5 sm:gap-3">
                     <button
                       type="submit"
-                      aria-label="Send inquiry"
-                      className="flex h-10 w-10 sm:h-11 sm:w-11 items-center justify-center rounded-full bg-black text-white hover:bg-neutral-800 transition-all duration-200 shadow-2xs hover:scale-105 active:scale-95 cursor-pointer"
+                      disabled={isSending}
+                      aria-live="polite"
+                      className="uiverse-send-btn"
                     >
-                      <ArrowUpRight className="h-4 w-4" />
+                      <div className="uiverse-send-outline" aria-hidden="true"></div>
+                      <div className="uiverse-send-state uiverse-send-state--default">
+                        <div className="uiverse-send-icon">
+                          <svg
+                            width="1em"
+                            height="1em"
+                            viewBox="0 0 24 24"
+                            fill="none"
+                            xmlns="http://www.w3.org/2000/svg"
+                            aria-hidden="true"
+                          >
+                            <g style={{ filter: "url(#uiverse-send-shadow)" }}>
+                              <path
+                                d="M14.2199 21.63C13.0399 21.63 11.3699 20.8 10.0499 16.83L9.32988 14.67L7.16988 13.95C3.20988 12.63 2.37988 10.96 2.37988 9.78001C2.37988 8.61001 3.20988 6.93001 7.16988 5.60001L15.6599 2.77001C17.7799 2.06001 19.5499 2.27001 20.6399 3.35001C21.7299 4.43001 21.9399 6.21001 21.2299 8.33001L18.3999 16.82C17.0699 20.8 15.3999 21.63 14.2199 21.63ZM7.63988 7.03001C4.85988 7.96001 3.86988 9.06001 3.86988 9.78001C3.86988 10.5 4.85988 11.6 7.63988 12.52L10.1599 13.36C10.3799 13.43 10.5599 13.61 10.6299 13.83L11.4699 16.35C12.3899 19.13 13.4999 20.12 14.2199 20.12C14.9399 20.12 16.0399 19.13 16.9699 16.35L19.7999 7.86001C20.3099 6.32001 20.2199 5.06001 19.5699 4.41001C18.9199 3.76001 17.6599 3.68001 16.1299 4.19001L7.63988 7.03001Z"
+                                fill="currentColor"
+                              ></path>
+                              <path
+                                d="M10.11 14.4C9.92005 14.4 9.73005 14.33 9.58005 14.18C9.29005 13.89 9.29005 13.41 9.58005 13.12L13.16 9.53C13.45 9.24 13.93 9.24 14.22 9.53C14.51 9.82 14.51 10.3 14.22 10.59L10.64 14.18C10.5 14.33 10.3 14.4 10.11 14.4Z"
+                                fill="currentColor"
+                              ></path>
+                            </g>
+                            <defs>
+                              <filter id="uiverse-send-shadow">
+                                <feDropShadow dx="0" dy="1" stdDeviation="0.6" floodOpacity="0.5"></feDropShadow>
+                              </filter>
+                            </defs>
+                          </svg>
+                        </div>
+                        <p>
+                          {(isSending ? (lang === "fr" ? "Envoi..." : "Sending") : (lang === "fr" ? "Envoyer" : "SendMessage")).split("").map((ch, i) => (
+                            <span key={i} style={{ "--i": i } as CSSProperties}>
+                              {ch}
+                            </span>
+                          ))}
+                        </p>
+                      </div>
+                      <div className="uiverse-send-state uiverse-send-state--sent">
+                        <div className="uiverse-send-icon">
+                          <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            height="1em"
+                            width="1em"
+                            strokeWidth="0.5px"
+                            stroke="black"
+                            aria-hidden="true"
+                          >
+                            <g style={{ filter: "url(#uiverse-send-shadow)" }}>
+                              <path
+                                fill="currentColor"
+                                d="M12 22.75C6.07 22.75 1.25 17.93 1.25 12C1.25 6.07 6.07 1.25 12 1.25C17.93 1.25 22.75 6.07 22.75 12C22.75 17.93 17.93 22.75 12 22.75ZM12 2.75C6.9 2.75 2.75 6.9 2.75 12C2.75 17.1 6.9 21.25 12 21.25C17.1 21.25 21.25 17.1 21.25 12C21.25 6.9 17.1 2.75 12 2.75Z"
+                              ></path>
+                              <path
+                                fill="currentColor"
+                                d="M10.5795 15.5801C10.3795 15.5801 10.1895 15.5001 10.0495 15.3601L7.21945 12.5301C6.92945 12.2401 6.92945 11.7601 7.21945 11.4701C7.50945 11.1801 7.98945 11.1801 8.27945 11.4701L10.5795 13.7701L15.7195 8.6301C16.0095 8.3401 16.4895 8.3401 16.7795 8.6301C17.0695 8.9201 17.0695 9.4001 16.7795 9.6901L11.1095 15.3601C10.9695 15.5001 10.7795 15.5801 10.5795 15.5801Z"
+                              ></path>
+                            </g>
+                          </svg>
+                        </div>
+                        <p>
+                          {"Sent".split("").map((ch, i) => (
+                            <span key={i} style={{ "--i": i + 5 } as CSSProperties}>
+                              {ch}
+                            </span>
+                          ))}
+                        </p>
+                      </div>
                     </button>
                   </div>
                 </form>
 
-                {/* Mailto fallback — works even without a configured mail app */}
-                <div className="flex flex-wrap items-center justify-center sm:justify-start gap-x-2 gap-y-1.5 text-[11px] sm:text-xs text-neutral-500 border-t border-neutral-200/70 pt-3 mt-1">
-                  <span className="inline-flex items-center gap-1.5 font-medium">
-                    <Mail className="h-3.5 w-3.5 text-neutral-400" />
-                    Prefer email?
-                  </span>
-                  <a
-                    href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent("Project inquiry")}`}
-                    className="font-semibold text-neutral-900 underline decoration-neutral-300 underline-offset-2 hover:decoration-neutral-900 transition-colors break-all"
-                  >
-                    {CONTACT_EMAIL}
-                  </a>
-                  <button
-                    type="button"
-                    onClick={handleCopyEmail}
-                    aria-label="Copy email address"
-                    title="Copy email address"
-                    className="inline-flex items-center gap-1 rounded-full border border-neutral-200 bg-[#f4f5f7] px-2 py-1 font-semibold text-neutral-600 hover:text-neutral-900 hover:border-neutral-300 transition-colors cursor-pointer active:scale-95"
-                  >
-                    {copied ? (
-                      <Check className="h-3 w-3 text-emerald-600" />
-                    ) : (
-                      <Copy className="h-3 w-3" />
-                    )}
-                    {copied ? "Copied" : "Copy"}
-                  </button>
-                </div>
                 {/* Social quick-links — circles that expand into labelled pills on hover */}
-                <div className="flex flex-wrap items-center gap-2.5 pt-3">
+                <div className="flex flex-col gap-1.5 pt-2">
+                  <p className="text-[10px] font-bold tracking-[0.2em] text-neutral-400 uppercase">
+                    Direct contact
+                  </p>
+                  <div className="flex flex-wrap items-center gap-2">
                   <a
-                    href={`mailto:${CONTACT_EMAIL}`}
-                    title="Email me"
+                    href={GMAIL_COMPOSE_URL}
+                    target="_blank"
+                    rel="noreferrer"
+                    title="Email me on Gmail (pre-filled message)"
                     aria-label="Email me"
-                    className="group relative flex h-[42px] w-[42px] items-center justify-center overflow-hidden rounded-full bg-[#EA4335] transition-all duration-400 hover:w-[110px] hover:rounded-[30px] cursor-pointer"
+                    className="group relative flex h-[42px] w-[42px] items-center justify-center overflow-hidden rounded-full bg-white border border-neutral-200 transition-all duration-400 hover:w-[190px] hover:rounded-[30px] cursor-pointer"
                   >
-                    <Mail className="absolute h-[18px] w-[18px] text-white transition-opacity duration-300 group-hover:opacity-0" />
-                    <span className="absolute w-[110px] text-center text-[13px] font-semibold text-white opacity-0 transition-opacity duration-400 group-hover:opacity-100">
-                      Gmail
+                    <svg
+                      className="absolute h-[20px] w-[20px] transition-opacity duration-300 group-hover:opacity-0"
+                      viewBox="0 0 512 512"
+                      fillRule="evenodd"
+                      aria-hidden="true"
+                    >
+                      <path fill="#4285F4" d="M34.91 448.818h81.454V251L0 163.727V413.91c0 19.287 15.622 34.91 34.91 34.91z" />
+                      <path fill="#34A853" d="M395.636 448.818h81.455c19.287 0 34.909-15.622 34.909-34.909V163.727L395.636 251z" />
+                      <path fill="#FBBC05" d="M395.636 99.727V251L512 163.727v-46.545c0-43.142-49.25-67.782-83.782-41.891z" />
+                      <path fill="#EA4335" d="M116.364 251V99.727L256 204.455 395.636 99.727V251L256 355.727z" />
+                      <path fill="#C5221F" d="M0 117.182v46.545L116.364 251V99.727L83.782 75.291C49.25 49.4 0 74.04 0 117.18z" />
+                    </svg>
+                    <span className="absolute w-[190px] text-center text-[11px] font-bold text-neutral-900 opacity-0 transition-opacity duration-400 group-hover:opacity-100">
+                      {CONTACT_EMAIL}
                     </span>
                   </a>
                   <a
@@ -353,11 +753,11 @@ export default function ContactSection() {
                     rel="noreferrer"
                     title="GitHub profile"
                     aria-label="GitHub profile"
-                    className="group relative flex h-[42px] w-[42px] items-center justify-center overflow-hidden rounded-full bg-stone-900 transition-all duration-400 hover:w-[110px] hover:rounded-[30px] cursor-pointer"
+                    className="group relative flex h-[42px] w-[42px] items-center justify-center overflow-hidden rounded-full bg-stone-900 transition-all duration-400 hover:w-[190px] hover:rounded-[30px] cursor-pointer"
                   >
                     <i className="fa-brands fa-github absolute text-[18px] text-white transition-opacity duration-300 group-hover:opacity-0" aria-hidden="true" />
-                    <span className="absolute w-[110px] text-center text-[13px] font-semibold text-white opacity-0 transition-opacity duration-400 group-hover:opacity-100">
-                      GitHub
+                    <span className="absolute w-[190px] text-center text-[11px] font-bold text-white opacity-0 transition-opacity duration-400 group-hover:opacity-100">
+                      github.com/aymaneeddahhak-gif
                     </span>
                   </a>
                   <a
@@ -379,17 +779,24 @@ export default function ContactSection() {
                     aria-label="Chat on WhatsApp"
                     className="group relative flex h-[42px] w-[42px] items-center justify-center overflow-hidden rounded-full bg-[#25D366] transition-all duration-400 hover:w-[112px] hover:rounded-[30px] cursor-pointer"
                   >
-                    <MessageCircle className="absolute h-[18px] w-[18px] text-white transition-opacity duration-300 group-hover:opacity-0" />
+                    <svg
+                      className="absolute h-[18px] w-[18px] fill-white transition-opacity duration-300 group-hover:opacity-0"
+                      viewBox="0 0 16 16"
+                      aria-hidden="true"
+                    >
+                      <path d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.933 7.933 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.898 7.898 0 0 0 13.6 2.326zM7.994 14.521a6.573 6.573 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.557 6.557 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592zm3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.729.729 0 0 0-.529.247c-.182.198-.691.677-.691 1.654 0 .977.71 1.916.81 2.049.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232z" />
+                    </svg>
                     <span className="absolute w-[112px] text-center text-[13px] font-semibold text-white opacity-0 transition-opacity duration-400 group-hover:opacity-100">
                       WhatsApp
                     </span>
                   </a>
+                  </div>
                 </div>
 
                 {/* Contact info rows */}
-                <div className="flex flex-col gap-1.5 text-[11px] sm:text-xs text-neutral-500 border-t border-neutral-200/70 pt-3 mt-3">
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] sm:text-xs text-neutral-500 border-t border-neutral-200/70 pt-2.5 mt-2">
                   <a
-                    href={`mailto:${CONTACT_EMAIL}`}
+                    href={MAILTO_COMPOSE_URL}
                     className="flex items-center gap-2 font-medium hover:text-neutral-900 transition-colors w-fit"
                   >
                     <Mail className="h-3.5 w-3.5 text-neutral-400" />
@@ -401,7 +808,9 @@ export default function ContactSection() {
                     rel="noreferrer"
                     className="flex items-center gap-2 font-medium hover:text-neutral-900 transition-colors w-fit"
                   >
-                    <MessageCircle className="h-3.5 w-3.5 text-neutral-400" />
+                    <svg className="h-3.5 w-3.5 fill-neutral-400" viewBox="0 0 16 16" aria-hidden="true">
+                      <path d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.933 7.933 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.898 7.898 0 0 0 13.6 2.326zM7.994 14.521a6.573 6.573 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.557 6.557 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592zm3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.729.729 0 0 0-.529.247c-.182.198-.691.677-.691 1.654 0 .977.71 1.916.81 2.049.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232z" />
+                    </svg>
                     WhatsApp&nbsp;{CONTACT_PHONE_DISPLAY}
                   </a>
                   <a
@@ -420,56 +829,34 @@ export default function ContactSection() {
             )}
           </motion.div>
 
-          {/* Looping mascot — wipes in left to right on first view */}
+          {/* Mascot Video — steady continuous loop like hero section, no moving angle, no fullscreen overlay */}
           <motion.div
-            initial={{ clipPath: "inset(0 100% 0 0)", opacity: 0 }}
-            animate={
-              entered
-                ? { clipPath: "inset(0 0% 0 0)", opacity: 1 }
-                : { clipPath: "inset(0 100% 0 0)", opacity: 0 }
-            }
-            transition={{ duration: 0.9, ease: "easeOut" }}
-            className={
-              videoExpanded
-                ? "absolute inset-0 z-30 select-none"
-                : "relative h-[360px] sm:h-[440px] md:h-[480px] lg:h-full lg:min-h-[500px] w-full select-none"
-            }
+            initial={{ opacity: 0, scale: 0.96 }}
+            whileInView={{ opacity: 1, scale: 1 }}
+            viewport={{ once: true, amount: 0.2 }}
+            transition={{ duration: 0.7, ease: "easeOut" }}
+            className="relative flex items-center justify-center h-[320px] sm:h-[400px] md:h-[450px] lg:h-full lg:min-h-[500px] w-full select-none"
           >
-            {/* ponytail: same backdrop removal as the phones hero video —
-                brightness lifts the mp4's gray studio backdrop to white and
-                multiply drops it into the page; mascot reads transparent */}
-            <div className="relative h-full w-full">
+            <div className="relative h-full w-full flex items-center justify-center">
               <div
                 aria-hidden="true"
-                className="absolute left-1/2 top-1/2 h-[92%] w-[82%] -translate-x-1/2 -translate-y-1/2 bg-[radial-gradient(ellipse_at_center,rgba(255,255,255,0.95)_30%,rgba(255,255,255,0)_70%)]"
-              />
-              <div
-                aria-hidden="true"
-                className="absolute bottom-[5%] left-1/2 h-[8%] w-[58%] -translate-x-1/2 rounded-full bg-stone-900/10 blur-xl"
+                className="absolute bottom-[4%] left-1/2 h-[8%] w-[58%] -translate-x-1/2 rounded-full bg-stone-900/15 blur-xl"
               />
               <video
-                ref={videoRef}
-                src="/videos/contact.mp4"
-                autoPlay
+                ref={contactVideoRef}
+                src="/videos/conatct.mp4"
                 loop
                 muted
                 playsInline
-                preload="auto"
+                preload="none"
+                controls={false}
+                controlsList="nodownload noplaybackrate nofullscreen"
+                disablePictureInPicture
+                disableRemotePlayback
                 aria-label="Animated 3D mascot of Aymane"
-                className="relative h-full w-full object-cover object-center brightness-[1.4] mix-blend-multiply"
+                className="video-mask--contact absolute inset-0 h-full w-full object-contain object-center"
               />
             </div>
-
-            {/* CTA — mailto with prefilled intent, works on desktop and mobile */}
-            <a
-              href={`mailto:${CONTACT_EMAIL}?subject=${encodeURIComponent("I want to build an app")}`}
-              className="group absolute bottom-4 left-1/2 -translate-x-1/2 z-20 inline-flex items-center gap-2.5 whitespace-nowrap px-5 sm:px-6 py-2.5 sm:py-3 rounded-full bg-stone-900 hover:bg-black text-white font-semibold text-xs sm:text-sm shadow-lg hover:shadow-xl transition-all duration-200 active:scale-95"
-            >
-              <span>I want to build an app</span>
-              <span className="flex h-5 w-5 items-center justify-center rounded-full bg-white/20 group-hover:bg-white group-hover:text-stone-900 transition-colors">
-                <ArrowRight className="h-3 w-3" />
-              </span>
-            </a>
           </motion.div>
         </div>
       </div>

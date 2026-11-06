@@ -8,7 +8,11 @@ import {
   type RefObject,
 } from "react";
 import ProjectShowcase from "./project-showcase";
+import AboutSection from "./about-section";
 import ContactSection from "./contact-section";
+import { soundFx } from "./about/sound";
+import { ParticleText } from "./particle-text";
+import { useTranslation } from "@/i18n/LanguageContext";
 import {
   PortfolioBootOverlay,
   usePortfolioBoot,
@@ -17,7 +21,7 @@ import {
 
 type HoveredSection = "default" | "mobile" | "web";
 type InteractiveSection = Exclude<HoveredSection, "default">;
-type ProjectShortcut = "estate-elite" | "a-store";
+type ProjectShortcut = "a-task" | "a-store";
 type LogoMedia =
   | { kind: "video"; src: string; label: string }
   | { kind: "image"; src: string; label: string };
@@ -30,7 +34,7 @@ const LOGO_MEDIA_SEQUENCE = [
   },
   {
     kind: "image",
-    src: "/images/logo.png",
+    src: "/images/logosultion.png",
     label: "Ayman Developer logo",
   },
   {
@@ -47,9 +51,12 @@ const LOGO_MEDIA_SEQUENCE = [
 
 const STATIC_LOGO_DURATION = 4010;
 
+// The mobile clip's studio backdrop is keyed out of the file and shipped as a
+// mask (see .product-overlay--mobile in globals.css), so a single matte source
+// is all it needs; the web clip keeps its own framed screenshot.
 const overlayConfig = {
   mobile: {
-    video: "/videos/phones.mp4",
+    video: "/videos/mobilecontexxt.mp4",
     type: "video/mp4",
     label: "Animated mobile application product showcase",
   },
@@ -122,25 +129,58 @@ function NavLogoMedia({
   );
 }
 
-function HeroTypewriter({ text }: { text: string }) {
-  const [count, setCount] = useState(0);
+// Letters for the stepped frosted-glass headings. "ink" = the dark base
+// colour; the others are the Patrick Heng accent palette.
+type HeadingLetter = readonly [char: string, color: string];
+const INK = "ink";
+const HEADING_LETTERS = {
+  mobile: [
+    [["M", INK], ["O", "#a855f7"], ["B", "#ec4899"], ["I", "#f97316"], ["L", INK], ["E", "#f59e0b"]],
+    [["S", INK], ["E", "#f59e0b"], ["R", INK], ["V", "#a855f7"], ["I", INK], ["C", "#ec4899"], ["E", INK]],
+  ],
+  web: [
+    [["W", INK], ["E", "#f59e0b"], ["B", "#0ea5e9"]],
+    [["S", INK], ["E", "#0ea5e9"], ["R", INK], ["V", "#a855f7"], ["I", INK], ["C", "#f59e0b"], ["E", INK]],
+  ],
+} satisfies Record<InteractiveSection, HeadingLetter[][]>;
 
-  useEffect(() => {
-    if (count >= text.length) return;
-    const timer = window.setTimeout(() => setCount((c) => c + 1), 10);
-    return () => window.clearTimeout(timer);
-  }, [count, text]);
+function GlassHeading({
+  rows,
+  align,
+}: {
+  rows: HeadingLetter[][];
+  align: "start" | "end";
+}) {
+  const [top, bottom] = rows;
+  const box =
+    "flex items-center gap-0.5 sm:gap-1 border border-white/70 bg-white/40 backdrop-blur-md shadow-[0_8px_30px_rgba(0,0,0,0.10)]";
+  const letter = ([char, color]: HeadingLetter, i: number) => (
+    <span
+      key={i}
+      className="font-syne font-black text-2xl sm:text-4xl lg:text-[44px] xl:text-[48px] leading-none"
+      style={
+        color === INK
+          ? { color: "#111111" }
+          : { color, textShadow: "1.5px 1.5px 0 #111111" }
+      }
+    >
+      {char}
+    </span>
+  );
 
   return (
-    <>
-      {text.slice(0, count)}
-      <span
-        aria-hidden="true"
-        className={`text-purple-600 ${count < text.length ? "animate-pulse" : "hidden"}`}
-      >
-        |
-      </span>
-    </>
+    <div
+      className={`flex flex-col items-center ${
+        align === "start" ? "lg:items-start" : "lg:items-end"
+      } group-hover/heading:scale-[1.02] transition-transform duration-200`}
+    >
+      <div className={`${box} border-b-0 px-4 sm:px-6 py-1 sm:py-2 rounded-t-xl sm:rounded-t-2xl`}>
+        {top.map(letter)}
+      </div>
+      <div className={`${box} px-5 sm:px-8 py-1 sm:py-2 rounded-b-xl sm:rounded-b-2xl`}>
+        {bottom.map(letter)}
+      </div>
+    </div>
   );
 }
 
@@ -180,9 +220,64 @@ function ProductOverlayVideo({
   );
 }
 
+interface HeroTechItem {
+  name: string;
+  image?: string;
+  iconClass?: string;
+  textBadge?: string;
+  aboutId?: string;
+}
+
+const HERO_MOBILE_TECH: HeroTechItem[] = [
+  { name: "Flutter", image: "/images/tech/flutter.webp", aboutId: "flutter" },
+  { name: "Android", iconClass: "fa-brands fa-android text-emerald-500" },
+  { name: "iOS", iconClass: "fa-brands fa-apple text-neutral-900" },
+  { name: "Firebase", iconClass: "fa-solid fa-fire text-amber-500" },
+  { name: "Supabase", image: "/images/tech/supabase.webp", aboutId: "supabase" },
+];
+
+const HERO_WEB_TECH: HeroTechItem[] = [
+  { name: "Next.js", image: "/images/tech/nextjs.webp", aboutId: "nextjs" },
+  { name: "React", image: "/images/tech/react.webp", aboutId: "react" },
+  { name: "JavaScript", image: "/images/tech/javascript.webp", aboutId: "javascript" },
+  { name: "Tailwind", image: "/images/tech/tailwind.webp", aboutId: "tailwind" },
+  { name: "Laravel", image: "/images/tech/laravel.webp", aboutId: "laravel" },
+];
+
 export default function Home() {
+  const { lang, setLang, t } = useTranslation();
   const [hoveredSection, setHoveredSection] = useState<HoveredSection>("default");
+  const [autoSection, setAutoSection] = useState<HoveredSection>("default");
   const boot = usePortfolioBoot();
+
+  const isUserInteracting = hoveredSection !== "default";
+
+  // Auto-switch between mobile and web contexts when user is idle
+  useEffect(() => {
+    if (boot.reducedMotion || boot.phase === "loading") return;
+    if (isUserInteracting) return;
+
+    // Start with a 3.5s delay on initial default load, or 5s for alternating
+    const delay = autoSection === "default" ? 3500 : 5000;
+
+    const timer = window.setTimeout(() => {
+      setAutoSection((prev) => (prev === "mobile" ? "web" : "mobile"));
+    }, delay);
+
+    return () => window.clearTimeout(timer);
+  }, [autoSection, isUserInteracting, boot.reducedMotion, boot.phase]);
+
+  // Effective active section:
+  // 1. Manual user hover has highest priority
+  // 2. Auto-cycling runs if user is idle
+  const effectiveSection: HoveredSection =
+    hoveredSection !== "default" ? hoveredSection : autoSection;
+
+  const handleDismiss = () => {
+    soundFx.playPop(480);
+    setHoveredSection("default");
+    setAutoSection("default");
+  };
   const mobileVideo = useRef<HTMLVideoElement>(null);
   const webVideo = useRef<HTMLVideoElement>(null);
   const heroSectionRef = useRef<HTMLElement>(null);
@@ -196,16 +291,29 @@ export default function Home() {
     );
   };
 
-  // Both clips autoplay and loop natively for as long as the hero is on
-  // screen — the browser restarts a looping clip with no gap at all, so the
-  // float never visibly stops. Hovering only chooses which overlay is on
-  // screen; it never pauses, rewinds or restarts anything.
-  useEffect(() => {
-    const videos = [mobileVideo.current, webVideo.current];
+  const handleSelectTech = (aboutId?: string) => {
+    if (!aboutId) return;
+    window.dispatchEvent(
+      new CustomEvent("select-about-tech", { detail: { techId: aboutId } }),
+    );
+  };
 
-    videos.forEach((video) => {
+  // Only the overlay that is actually on screen plays; the hidden one is
+  // paused (not rewound) so it resumes exactly where it left off. Decoding
+  // two looping clips at once was a main source of hero jank.
+  useEffect(() => {
+    const entries = [
+      ["mobile", mobileVideo.current],
+      ["web", webVideo.current],
+    ] as const;
+
+    entries.forEach(([section, video]) => {
       if (!video) return;
-      if (boot.reducedMotion || !heroMotion.isVisible) {
+      const shouldPlay =
+        !boot.reducedMotion &&
+        heroMotion.isVisible &&
+        effectiveSection === section;
+      if (!shouldPlay) {
         video.pause();
         return;
       }
@@ -213,10 +321,60 @@ export default function Home() {
         video.pause();
       });
     });
-  }, [boot.reducedMotion, heroMotion.isVisible]);
+  }, [boot.reducedMotion, heroMotion.isVisible, effectiveSection]);
+
+  // Touch devices have no hover, so the mobile/web overlay showcase would
+  // never trigger there — the scroll becomes the driver instead: whichever
+  // hero column (mobile / web) holds the middle of the viewport picks the
+  // active overlay. Desktop hover behavior is untouched.
+  useEffect(() => {
+    if (boot.reducedMotion) return;
+    if (!window.matchMedia("(hover: none)").matches) return;
+
+    const mobileCol = document.querySelector(".hero-concept--mobile");
+    const webCol = document.querySelector(".hero-concept--web");
+    if (!mobileCol || !webCol) return;
+
+    const pick = () => {
+      if (window.scrollY > window.innerHeight * 1.2) {
+        setHoveredSection("default");
+        return;
+      }
+      const mid = window.innerHeight * 0.5;
+      const m = mobileCol.getBoundingClientRect();
+      const w = webCol.getBoundingClientRect();
+      const mDist = Math.abs((m.top + m.bottom) / 2 - mid);
+      const wDist = Math.abs((w.top + w.bottom) / 2 - mid);
+      // Only the column actually near the middle drives the overlay; when
+      // both are far (tech lists / buttons dominate), clear the stage.
+      const near = Math.min(mDist, wDist);
+      if (near > window.innerHeight * 0.45) {
+        setHoveredSection("default");
+      } else {
+        setHoveredSection(mDist <= wDist ? "mobile" : "web");
+      }
+    };
+
+    let ticking = false;
+    const onScroll = () => {
+      if (ticking) return;
+      ticking = true;
+      requestAnimationFrame(() => {
+        pick();
+        ticking = false;
+      });
+    };
+    pick();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    window.addEventListener("resize", onScroll, { passive: true });
+    return () => {
+      window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("resize", onScroll);
+    };
+  }, [boot.reducedMotion]);
 
   return (
-    <div className="bg-white text-gray-900 min-h-screen relative overflow-x-hidden glow-effect">
+    <div className="bg-transparent text-gray-900 min-h-screen relative overflow-x-hidden glow-effect">
       <PortfolioBootOverlay
         phase={boot.phase}
         reducedMotion={boot.reducedMotion}
@@ -239,123 +397,202 @@ export default function Home() {
             style={{ "--motion-delay": "45ms" } as CSSProperties}
             href="#projects"
           >
-            PROJECTS
+            {t.nav.projects}
+          </a>
+          <a
+            className="text-gray-600 hover:text-black transition-colors nav-motion-link"
+            style={{ "--motion-delay": "120ms" } as CSSProperties}
+            href="#about"
+          >
+            {t.nav.about}
           </a>
           <a
             className="text-gray-600 hover:text-black transition-colors nav-motion-link"
             style={{ "--motion-delay": "180ms" } as CSSProperties}
             href="#contact"
           >
-            CONTACT
+            {t.nav.contact}
           </a>
         </div>
-        <a
-          href="#contact"
-          className="nav-motion-cta bg-black text-white px-6 py-3 rounded-xl font-bold text-sm flex items-center gap-2 hover:bg-gray-800 transition-colors"
-        >
-          LET&apos;S WORK TOGETHER
-          <svg
-            className="h-4 w-4"
-            fill="none"
-            stroke="currentColor"
-            viewBox="0 0 24 24"
-            xmlns="http://www.w3.org/2000/svg"
+        <div className="flex items-center gap-2.5 sm:gap-3.5">
+          <a
+            href="#contact"
+            className="uiverse-cta nav-motion-cta relative inline-flex items-center rounded-full px-4 py-2.5 transition-all duration-200 cursor-pointer"
           >
-            <path
-              d="M17 8l4 4m0 0l-4 4m4-4H3"
-              strokeLinecap="round"
-              strokeLinejoin="round"
-              strokeWidth="2"
-            ></path>
-          </svg>
-        </a>
+            <span className="uiverse-cta-pill" aria-hidden="true"></span>
+            <span className="uiverse-cta-text">{t.nav.workTogether}</span>
+            <svg
+              className="uiverse-cta-arrow"
+              width="15px"
+              height="10px"
+              viewBox="0 0 13 10"
+              aria-hidden="true"
+            >
+              <path d="M1,5 L11,5"></path>
+              <polyline points="8 1 12 5 8 9"></polyline>
+            </svg>
+          </a>
+
+          {/* Language Switcher Button (FR | EN) */}
+          <div
+            className="inline-flex items-center rounded-full bg-neutral-200/80 p-0.5 sm:p-1 border border-neutral-300/80 text-[11px] sm:text-xs font-bold shadow-2xs backdrop-blur-xs select-none"
+            role="group"
+            aria-label="Language selector"
+          >
+            <button
+              type="button"
+              onClick={() => setLang("en")}
+              className={`px-2 sm:px-2.5 py-1 rounded-full transition-all duration-200 cursor-pointer ${
+                lang === "en"
+                  ? "bg-black text-white shadow-xs font-black"
+                  : "text-neutral-600 hover:text-black"
+              }`}
+              aria-pressed={lang === "en"}
+              title="English"
+            >
+              EN
+            </button>
+            <button
+              type="button"
+              onClick={() => setLang("fr")}
+              className={`px-2 sm:px-2.5 py-1 rounded-full transition-all duration-200 cursor-pointer ${
+                lang === "fr"
+                  ? "bg-black text-white shadow-xs font-black"
+                  : "text-neutral-600 hover:text-black"
+              }`}
+              aria-pressed={lang === "fr"}
+              title="Français"
+            >
+              FR
+            </button>
+          </div>
+        </div>
       </nav>
 
       <main
         ref={heroSectionRef}
-        className="hero-section container mx-auto px-6 relative z-10 pt-10 pb-20"
+        onMouseLeave={handleDismiss}
+        className="hero-section container mx-auto px-6 relative z-10 pt-4 sm:pt-6 lg:pt-8 pb-16 lg:pb-24"
         data-motion-state={heroMotion.motionState}
         data-motion-reentry={heroMotion.isReentry ? "true" : "false"}
       >
-        <div className="flex flex-col lg:flex-row justify-between items-center relative h-full min-h-[70vh]">
+        <div className="flex flex-col lg:flex-row justify-between items-center lg:items-start relative h-full min-h-[580px] lg:min-h-[720px] pt-4 sm:pt-6 lg:pt-8">
           <h1 className="sr-only">Aymane Eddahak — Mobile and Web Developer</h1>
           <div
             onMouseEnter={() => setHoveredSection("mobile")}
-            onMouseLeave={() => setHoveredSection("default")}
+            onMouseLeave={handleDismiss}
             onFocus={() => setHoveredSection("mobile")}
-            onBlur={() => setHoveredSection("default")}
-            tabIndex={hoveredSection === "web" ? -1 : 0}
-            aria-hidden={hoveredSection === "web"}
+            onBlur={handleDismiss}
             aria-label="Explore mobile developer work"
-            className={`hero-concept hero-concept--mobile w-full lg:w-1/3 z-20 text-center lg:text-left mt-10 lg:mt-0 flex flex-col items-center lg:items-start transition-[opacity,transform] duration-[420ms] ease-out focus-visible:outline-2 focus-visible:outline-offset-8 focus-visible:outline-purple-600 ${hoveredSection === "web" ? "pointer-events-none -translate-x-3 opacity-0" : "translate-x-0 opacity-100"}`}
+            className={`hero-concept hero-concept--mobile w-full lg:w-1/3 z-20 text-center lg:text-left mt-8 lg:mt-0 flex flex-col items-center lg:items-start transition-[opacity,transform,filter] duration-[420ms] ease-out focus-visible:outline-2 focus-visible:outline-offset-8 focus-visible:outline-purple-600 ${
+              effectiveSection === "web"
+                ? "opacity-0 blur-sm scale-95 -translate-x-6"
+                : "opacity-100 blur-0 scale-100 translate-x-0"
+            }`}
           >
-            <h2 className="hero-heading hero-heading--mobile text-5xl lg:text-[64px] font-black leading-[0.9] tracking-tighter mb-6 relative w-full">
-              MOBILE
-              <br />
-              DEVELOPER
-              <span className="hero-accent absolute -bottom-4 left-0 lg:left-0 w-16 h-1 bg-purple-600 mx-auto lg:mx-0 inline-block hidden lg:block"></span>
-              <span className="hero-accent absolute -bottom-4 left-0 w-16 h-1 bg-purple-600 mx-auto inline-block lg:hidden"></span>
-            </h2>
-            <div className="hero-description relative mt-8 mb-10 max-w-sm mx-auto lg:mx-0 w-full h-52">
-              <p className="absolute inset-x-0 top-0 text-gray-600 text-sm md:text-base leading-relaxed font-medium">
-                I create high-performance mobile apps for Android and iOS —
-                built to solve real problems, not just ship screens.{" "}
-                {hoveredSection === "mobile" && (
-                    <HeroTypewriter text="We resolve the problem first, then design the solution: Flutter and React Native apps with Firebase auth, push notifications, offline support, new ways of AI integration and creative design that feels native — plus store deployment." />
-                )}
-              </p>
-            </div>
-            <div className="hero-tech-list flex flex-wrap justify-center lg:justify-start gap-6 max-w-sm">
-              <div className="flex flex-col items-center gap-2">
-                <i className="fa-brands fa-flutter text-4xl text-blue-400 tech-icon"></i>
-                <span className="text-[10px] font-bold text-gray-500">
-                  Flutter
-                </span>
-              </div>
-              <div className="flex flex-col items-center gap-2">
-                <i className="fa-brands fa-react text-4xl text-cyan-400 tech-icon"></i>
-                <span className="text-[10px] font-bold text-gray-500">
-                  React Native
-                </span>
-              </div>
-              <div className="flex flex-col items-center gap-2">
-                <i className="fa-brands fa-android text-4xl text-green-500 tech-icon"></i>
-                <span className="text-[10px] font-bold text-gray-500">
-                  Android
-                </span>
-              </div>
-              <div className="flex flex-col items-center gap-2">
-                <i className="fa-solid fa-fire text-4xl text-orange-400 tech-icon"></i>
-                <span className="text-[10px] font-bold text-gray-500">
-                  Firebase
-                </span>
-              </div>
-              <div className="flex flex-col items-center gap-2">
-                <i className="fa-brands fa-apple text-4xl text-black tech-icon"></i>
-                <span className="text-[10px] font-bold text-gray-500">
-                  iOS
-                </span>
+            {/* Patrick Heng stepped block heading */}
+            <div className="relative mb-3 sm:mb-4 flex flex-col items-center lg:items-start text-center lg:text-left">
+              {/* Big X Button on top of the headline when active */}
+              {effectiveSection === "mobile" && (
+                <div className="flex items-center gap-2 mb-2 animate-fade-in">
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDismiss();
+                    }}
+                    className="group/close flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-neutral-900/90 hover:bg-black text-white hover:scale-110 active:scale-95 shadow-md transition-all cursor-pointer"
+                    title={lang === "fr" ? "Fermer" : "Close"}
+                    aria-label="Close"
+                  >
+                    <span className="text-base sm:text-lg font-black leading-none group-hover:rotate-90 transition-transform">✕</span>
+                  </button>
+                </div>
+              )}
+
+              <div className="group/heading hero-heading hero-heading--mobile relative flex flex-col items-center lg:items-start select-none outline-none">
+                <GlassHeading rows={HEADING_LETTERS.mobile} align="start" />
               </div>
             </div>
+
+            <div className="hero-description relative mb-1 max-w-sm mx-auto lg:mx-0 w-full text-center lg:text-left transition-all duration-300">
+              {effectiveSection === "mobile" && (
+                <div className="animate-fade-in">
+                  <ParticleText
+                    key={`mobile-full-${lang}`}
+                    text={`${t.hero.mobileDesc} ${t.hero.mobileTypewriter}`}
+                    color="#374151"
+                    className="text-gray-700 text-sm md:text-base leading-relaxed font-medium"
+                    duration={950}
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* 5 Tech Icons + View all link */}
+            <div className="hero-tech-list flex items-center justify-center lg:justify-start gap-2.5 sm:gap-3 mt-4 mb-4 sm:mb-5 flex-wrap">
+              {HERO_MOBILE_TECH.map((tech) => {
+                const isClickable = Boolean(tech.aboutId);
+                return (
+                  <div
+                    key={tech.name}
+                    onClick={() => handleSelectTech(tech.aboutId)}
+                    title={isClickable ? `Explore ${tech.name} in About Me` : tech.name}
+                    className={`flex flex-col items-center gap-1 transition-transform duration-200 ${
+                      isClickable ? "hover:scale-110 cursor-pointer group/tech" : "opacity-90"
+                    }`}
+                  >
+                    <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-xl bg-white/80 border border-neutral-200/90 shadow-2xs flex items-center justify-center p-1.5 backdrop-blur-xs group-hover/tech:border-purple-400 group-hover/tech:shadow-xs transition-all">
+                      {tech.image ? (
+                        /* eslint-disable-next-line @next/next/no-img-element */
+                        <img
+                          src={tech.image}
+                          alt={tech.name}
+                          className="h-full w-full object-contain pointer-events-none drop-shadow-2xs"
+                        />
+                      ) : tech.iconClass ? (
+                        <i className={`${tech.iconClass} text-xl pointer-events-none`} />
+                      ) : null}
+                    </div>
+                    <span className="text-[10px] font-bold text-gray-500 tracking-tight whitespace-nowrap group-hover/tech:text-purple-600 transition-colors">
+                      {tech.name}
+                    </span>
+                  </div>
+                );
+              })}
+
+              <a
+                href="#about"
+                className="inline-flex items-center gap-1 ml-1 px-2.5 py-1.5 rounded-lg text-xs font-bold text-neutral-700 hover:text-black bg-neutral-100/90 hover:bg-neutral-200/90 border border-neutral-200/90 transition-all cursor-pointer whitespace-nowrap shadow-2xs self-center"
+                title="View all skills in About Me"
+              >
+                <span>{t.hero.viewAll}</span>
+                <span aria-hidden="true">→</span>
+              </a>
+            </div>
+
             <a
               href="#projects"
-              className="hero-work-link hero-work-link--mobile hero-action"
-              onClick={() => handleViewWork("estate-elite")}
+              className="hero-work-link hero-work-link--mobile hero-action transition-transform duration-300"
+              onClick={() => handleViewWork("a-task")}
+              aria-label="View our mobile app work"
             >
-              VIEW OUR WORK
-              <span aria-hidden="true">↗</span>
+              <div className="hero-work-link__content">
+                <p className="hero-work-link__text">{t.hero.viewOurWork}</p>
+              </div>
             </a>
           </div>
 
-          <div className="absolute bottom-0 inset-x-0 z-10 hidden lg:block pointer-events-none">
+          {/* Portrait stage — aligned on the same horizontal line as Mobile & Web Service headings */}
+          <div className="absolute top-4 sm:top-6 lg:top-8 inset-x-0 z-10 hidden lg:block pointer-events-none">
             <div
-              className={`product-stage product-stage--${hoveredSection} hero-stage-motion`}
+              className={`product-stage product-stage--${effectiveSection} hero-stage-motion`}
               aria-live="polite"
             >
               {(Object.keys(overlayConfig) as InteractiveSection[]).map(
                 (section) => {
                   const overlay = overlayConfig[section];
-                  const isActive = hoveredSection === section;
+                  const isActive = effectiveSection === section;
 
                   return (
                     <ProductOverlayVideo
@@ -384,92 +621,106 @@ export default function Home() {
 
           <div
             onMouseEnter={() => setHoveredSection("web")}
-            onMouseLeave={() => setHoveredSection("default")}
+            onMouseLeave={handleDismiss}
             onFocus={() => setHoveredSection("web")}
-            onBlur={() => setHoveredSection("default")}
-            tabIndex={hoveredSection === "mobile" ? -1 : 0}
-            aria-hidden={hoveredSection === "mobile"}
-            aria-label="Explore web developer work"
-            className={`hero-concept hero-concept--web w-full lg:w-1/3 z-20 text-center lg:text-right mt-16 lg:mt-0 flex flex-col items-center lg:items-end transition-[opacity,transform] duration-[420ms] ease-out focus-visible:outline-2 focus-visible:outline-offset-8 focus-visible:outline-blue-600 ${hoveredSection === "mobile" ? "pointer-events-none translate-x-3 opacity-0" : "translate-x-0 opacity-100"}`}
+            onBlur={handleDismiss}
+            tabIndex={0}
+            className={`hero-concept hero-concept--web w-full lg:w-1/3 z-20 text-center lg:text-right mt-14 lg:mt-0 flex flex-col items-center lg:items-end transition-[opacity,transform,filter] duration-[420ms] ease-out focus-visible:outline-2 focus-visible:outline-offset-8 focus-visible:outline-blue-600 ${
+              effectiveSection === "mobile"
+                ? "opacity-0 blur-sm scale-95 translate-x-6"
+                : "opacity-100 blur-0 scale-100 translate-x-0"
+            }`}
           >
-            <h2 className="hero-heading hero-heading--web text-5xl lg:text-[64px] font-black leading-[0.9] tracking-tighter mb-6 relative w-full">
-              WEB
-              <br />
-              DEVELOPER
-              <span className="hero-accent absolute -bottom-4 right-0 lg:right-0 w-24 h-4 bg-blue-600 mx-auto lg:mx-0 inline-block hidden lg:block"></span>
-              <span className="hero-accent absolute -bottom-4 left-0 w-24 h-4 bg-blue-600 mx-auto inline-block lg:hidden"></span>
-            </h2>
-            <div className="hero-description relative mt-8 mb-10 max-w-sm mx-auto lg:mx-0 lg:ml-auto w-full h-52">
-              <p className="absolute inset-x-0 top-0 text-gray-600 text-sm md:text-base leading-relaxed font-medium lg:text-left">
-                I build fast, responsive and scalable web apps with clean
-                architecture — creative design and AI integration that
-                actually pays off.{" "}
-                {hoveredSection === "web" && (
-                    <HeroTypewriter text="Full products with Next.js, React and TypeScript on Laravel or Node.js APIs — we solve the real problem first, then ship the cleanest solution: SEO-ready rendering, responsive UI, auth, payments and production deployment." />
-                )}
-              </p>
-            </div>
-            <div className="hero-tech-list grid grid-cols-4 sm:grid-cols-5 gap-y-8 gap-x-4 max-w-md mx-auto lg:mx-0 lg:ml-auto">
-              <div className="flex flex-col items-center gap-2">
-                <i className="fa-brands fa-html5 text-4xl text-orange-600 tech-icon"></i>
-                <span className="text-[10px] font-bold text-gray-500">
-                  HTML5
-                </span>
-              </div>
-              <div className="flex flex-col items-center gap-2">
-                <i className="fa-brands fa-css3-alt text-4xl text-blue-600 tech-icon"></i>
-                <span className="text-[10px] font-bold text-gray-500">
-                  CSS3
-                </span>
-              </div>
-              <div className="flex flex-col items-center gap-2">
-                <i className="fa-brands fa-js text-4xl text-yellow-400 tech-icon"></i>
-                <span className="text-[10px] font-bold text-gray-500">
-                  JavaScript
-                </span>
-              </div>
-              <div className="flex flex-col items-center gap-2">
-                <div className="w-8 h-8 bg-blue-600 text-white rounded text-xs flex items-center justify-center font-bold tech-icon">
-                  TS
+            {/* Patrick Heng stacked heading */}
+            <div className="relative mb-3 sm:mb-4 flex flex-col items-center lg:items-end text-center lg:text-right">
+              {/* Big X Button on top of the headline when active */}
+              {effectiveSection === "web" && (
+                <div className="flex items-center gap-2 mb-2 animate-fade-in justify-end">
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDismiss();
+                    }}
+                    className="group/close flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 rounded-full bg-neutral-900/90 hover:bg-black text-white hover:scale-110 active:scale-95 shadow-md transition-all cursor-pointer"
+                    title={lang === "fr" ? "Fermer" : "Close"}
+                    aria-label="Close"
+                  >
+                    <span className="text-base sm:text-lg font-black leading-none group-hover:rotate-90 transition-transform">✕</span>
+                  </button>
                 </div>
-                <span className="text-[10px] font-bold text-gray-500">
-                  TypeScript
-                </span>
-              </div>
-              <div className="flex flex-col items-center gap-2">
-                <i className="fa-brands fa-react text-4xl text-cyan-400 tech-icon"></i>
-                <span className="text-[10px] font-bold text-gray-500">
-                  React
-                </span>
-              </div>
-              <div className="flex flex-col items-center gap-2">
-                <div className="w-8 h-8 bg-black text-white rounded-full text-xs flex items-center justify-center font-bold tech-icon">
-                  N
-                </div>
-                <span className="text-[10px] font-bold text-gray-500">
-                  Next.js
-                </span>
-              </div>
-              <div className="flex flex-col items-center gap-2">
-                <i className="fa-brands fa-laravel text-4xl text-red-500 tech-icon"></i>
-                <span className="text-[10px] font-bold text-gray-500">
-                  Laravel
-                </span>
-              </div>
-              <div className="flex flex-col items-center gap-2">
-                <i className="fa-brands fa-node-js text-4xl text-green-500 tech-icon"></i>
-                <span className="text-[10px] font-bold text-gray-500">
-                  Node.js
-                </span>
+              )}
+
+              <div className="group/heading hero-heading hero-heading--web relative flex flex-col items-center lg:items-end select-none outline-none">
+                <GlassHeading rows={HEADING_LETTERS.web} align="end" />
               </div>
             </div>
+
+            <div className="hero-description relative mb-1 max-w-sm mx-auto lg:mx-0 lg:ml-auto w-full text-center lg:text-right transition-all duration-300">
+              {effectiveSection === "web" && (
+                <div className="animate-fade-in">
+                  <ParticleText
+                    key={`web-full-${lang}`}
+                    text={`${t.hero.webDesc} ${t.hero.webTypewriter}`}
+                    color="#374151"
+                    className="text-gray-700 text-sm md:text-base leading-relaxed font-medium lg:text-right"
+                    duration={950}
+                  />
+                </div>
+              )}
+            </div>
+
+            {/* 5 Tech Icons + View all link */}
+            <div className="hero-tech-list flex items-center justify-center lg:justify-end gap-2.5 sm:gap-3 mt-4 mb-4 sm:mb-5 flex-wrap">
+              {HERO_WEB_TECH.map((tech) => {
+                const isClickable = Boolean(tech.aboutId);
+                return (
+                  <div
+                    key={tech.name}
+                    onClick={() => handleSelectTech(tech.aboutId)}
+                    title={isClickable ? `Explore ${tech.name} in About Me` : tech.name}
+                    className={`flex flex-col items-center gap-1 transition-transform duration-200 ${
+                      isClickable ? "hover:scale-110 cursor-pointer group/tech" : "opacity-90"
+                    }`}
+                  >
+                    <div className="h-9 w-9 sm:h-10 sm:w-10 rounded-xl bg-white/80 border border-neutral-200/90 shadow-2xs flex items-center justify-center p-1.5 backdrop-blur-xs group-hover/tech:border-blue-400 group-hover/tech:shadow-xs transition-all">
+                      {tech.image ? (
+                        /* eslint-disable-next-line @next/next/no-img-element */
+                        <img
+                          src={tech.image}
+                          alt={tech.name}
+                          className="h-full w-full object-contain pointer-events-none drop-shadow-2xs"
+                        />
+                      ) : tech.iconClass ? (
+                        <i className={`${tech.iconClass} text-xl pointer-events-none`} />
+                      ) : null}
+                    </div>
+                    <span className="text-[10px] font-bold text-gray-500 tracking-tight whitespace-nowrap group-hover/tech:text-blue-600 transition-colors">
+                      {tech.name}
+                    </span>
+                  </div>
+                );
+              })}
+
+              <a
+                href="#about"
+                className="inline-flex items-center gap-1 ml-1 px-2.5 py-1.5 rounded-lg text-xs font-bold text-neutral-700 hover:text-black bg-neutral-100/90 hover:bg-neutral-200/90 border border-neutral-200/90 transition-all cursor-pointer whitespace-nowrap shadow-2xs self-center"
+                title="View all skills in About Me"
+              >
+                <span>{t.hero.viewAll}</span>
+                <span aria-hidden="true">→</span>
+              </a>
+            </div>
+
             <a
               href="#projects"
-              className="hero-work-link hero-work-link--web hero-action"
+              className="hero-work-link hero-work-link--web hero-action transition-transform duration-300"
               onClick={() => handleViewWork("a-store")}
+              aria-label="View our web app work"
             >
-              VIEW OUR WORK
-              <span aria-hidden="true">↗</span>
+              <div className="hero-work-link__content">
+                <p className="hero-work-link__text">{t.hero.viewOurWork}</p>
+              </div>
             </a>
           </div>
         </div>
@@ -477,7 +728,34 @@ export default function Home() {
 
       <ProjectShowcase />
 
+      <AboutSection />
+
       <ContactSection />
+
+      {/* Site footer — small "created by" credit with the mascot and the
+          Logosolution brand mark. It sits straight on the site's ambient
+          backdrop now (the old white strip read as a separate band under the
+          new lighting); the marks are already cut out, so nothing needs a
+          plate behind it. */}
+      <footer className="relative z-10 px-6 py-6 sm:py-8">
+        <div className="container mx-auto flex flex-col items-center justify-center gap-2 sm:flex-row sm:gap-4">
+          <span className="text-[13px] sm:text-[15px] font-semibold tracking-wide text-neutral-400">
+            {t.footer.createdBy}
+          </span>
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/images/mascot.png"
+            alt="Ayman mascot"
+            className="h-12 sm:h-14 w-auto object-contain"
+          />
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img
+            src="/images/logosultion.png"
+            alt="Logosolution"
+            className="h-10 sm:h-11 w-auto object-contain"
+          />
+        </div>
+      </footer>
     </div>
   );
 }
