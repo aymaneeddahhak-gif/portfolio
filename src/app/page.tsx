@@ -495,7 +495,7 @@ export default function Home() {
                     text={`${t.hero.mobileDesc} ${t.hero.mobileTypewriter}`}
                     color="#374151"
                     className="text-gray-700 text-sm md:text-base leading-relaxed font-medium"
-                    duration={950}
+                    duration={800}
                   />
                 </div>
               )}
