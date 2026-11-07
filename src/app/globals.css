@@ -1379,385 +1379,314 @@ html {
 .about3d-parent {
   position: relative;
   width: 100%;
-  height: 468px;
-  perspective: 1200px;
-  /* The active technology's own hue, set inline from the item's icon. */
+  height: 452px;
+  perspective: 1000px;
+  /* The active technology's own hue, set inline from the item's icon. Every
+     colour below reads from this one number. */
   --about3d-hue: 220;
 }
 
-/* --------------------------------- Ambient Floating 3D Spheres (Reference) */
-.about3d-orbs-container {
-  position: absolute;
-  inset: -40px -55px;
-  pointer-events: none;
-  z-index: 1;
-}
-
-.about3d-orb {
-  position: absolute;
-  border-radius: 50%;
-  pointer-events: none;
-  z-index: 5;
-}
-
-/* 1. Translucent Pearlescent Bubble (Top Left) */
-.about3d-orb--bubble-tl {
-  width: 68px;
-  height: 68px;
-  top: -24px;
-  left: -38px;
-  background: radial-gradient(circle at 32% 28%, rgba(255, 255, 255, 0.95) 0%, rgba(255, 255, 255, 0.45) 25%, rgba(200, 220, 255, 0.25) 55%, rgba(180, 200, 240, 0.6) 88%, rgba(140, 170, 230, 0.8) 100%);
-  box-shadow: inset -4px -6px 12px rgba(120, 160, 240, 0.4), inset 3px 4px 6px rgba(255, 255, 255, 0.9), 0 12px 24px rgba(100, 130, 180, 0.22);
-  backdrop-filter: blur(2px);
-  animation: about3dOrbFloat 6s ease-in-out infinite alternate;
-}
-
-/* 2. Micro Gold Pearl (Top Left) */
-.about3d-orb--pearl-tl {
-  width: 16px;
-  height: 16px;
-  top: 56px;
-  left: -44px;
-  background: radial-gradient(circle at 30% 30%, #FFFFFF 0%, #F59E0B 45%, #92400E 100%);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.18);
-  animation: about3dOrbFloat 5s ease-in-out infinite alternate-reverse;
-}
-
-/* 3. Chrome Mirror Sphere (Top Right) */
-.about3d-orb--chrome-tr {
-  width: 48px;
-  height: 48px;
-  top: -24px;
-  right: -28px;
-  background: radial-gradient(circle at 34% 30%, #FFFFFF 0%, #E6EDF5 20%, #7E8B9E 55%, #232832 82%, #8595AB 100%);
-  box-shadow: 0 14px 28px rgba(30, 40, 60, 0.32), inset -2px -4px 6px rgba(0, 0, 0, 0.4);
-  animation: about3dOrbFloat 7s ease-in-out infinite alternate;
-}
-
-/* 4. Glossy Yellow Sphere (Top Right) */
-.about3d-orb--yellow-tr {
-  width: 78px;
-  height: 78px;
-  top: 36px;
-  right: -72px;
-  background: radial-gradient(circle at 35% 30%, #FFF8D4 0%, #FCD34D 40%, #F59E0B 75%, #B45309 100%);
-  box-shadow: 0 18px 36px rgba(180, 83, 9, 0.28), inset -3px -5px 10px rgba(146, 64, 14, 0.4);
-  animation: about3dOrbFloat 6.5s ease-in-out infinite alternate-reverse;
-}
-
-/* 5. Translucent Blue Marble (Bottom Left) */
-.about3d-orb--blue-bl {
-  width: 72px;
-  height: 72px;
-  bottom: 24px;
-  left: -52px;
-  background: radial-gradient(circle at 35% 28%, #93C5FD 0%, #3B82F6 40%, #1D4ED8 75%, #1E3A8A 100%);
-  box-shadow: 0 18px 38px rgba(30, 58, 138, 0.32), inset -4px -6px 12px rgba(15, 23, 42, 0.5), inset 3px 4px 6px rgba(255, 255, 255, 0.8);
-  animation: about3dOrbFloat 7.5s ease-in-out infinite alternate;
-}
-
-/* 6. Gold Micro Bead (Bottom Left) */
-.about3d-orb--gold-bl {
-  width: 22px;
-  height: 22px;
-  bottom: -4px;
-  left: -26px;
-  background: radial-gradient(circle at 32% 28%, #FEF08A 0%, #EAB308 55%, #713F12 100%);
-  box-shadow: 0 6px 12px rgba(113, 63, 18, 0.28);
-  animation: about3dOrbFloat 5.2s ease-in-out infinite alternate-reverse;
-}
-
-/* 7. Cyan Glass Marble (Bottom Right) */
-.about3d-orb--glass-br {
-  width: 64px;
-  height: 64px;
-  bottom: -28px;
-  right: -30px;
-  background: radial-gradient(circle at 32% 28%, #BAE6FD 0%, #0284C7 50%, #0369A1 80%, #075985 100%);
-  box-shadow: 0 16px 32px rgba(3, 105, 161, 0.3), inset -3px -5px 8px rgba(12, 74, 110, 0.4);
-  animation: about3dOrbFloat 6.8s ease-in-out infinite alternate;
-}
-
-@keyframes about3dOrbFloat {
-  0% { transform: translateY(0px) rotate(0deg); }
-  100% { transform: translateY(-10px) rotate(5deg); }
-}
-
-/* ------------------------------------------------ Main 3D Card Block Slab */
-.about3d-block {
+.about3d-card {
   position: relative;
-  width: 100%;
   height: 100%;
+  border-radius: 44px;
   transform-style: preserve-3d;
-  transform: rotate3d(0.5, 1, 0, 15deg);
-  transition: transform 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
-  z-index: 10;
-}
-
-.about3d-parent:hover .about3d-block,
-.about3d-parent:focus-within .about3d-block {
-  transform: rotate3d(0.5, 1, 0, 9deg) translateY(-6px) scale(1.02);
-}
-
-/* Layer 1: Physical Extruded Base Tray for genuine 3D slab thickness */
-.about3d-tray {
-  position: absolute;
-  inset: 0;
-  border-radius: 36px;
-  background: hsl(var(--about3d-hue) 75% 42%);
-  transform: translate3d(-8px, 12px, 0);
+  transform: rotate3d(1, 1, 0, 18deg);
+  background: linear-gradient(
+    135deg,
+    hsl(var(--about3d-hue) 82% 64%) 0%,
+    hsl(calc(var(--about3d-hue) - 16) 74% 44%) 100%
+  );
   box-shadow:
-    -18px 28px 45px -8px rgba(0, 0, 0, 0.26),
-    -6px 12px 20px -4px rgba(0, 0, 0, 0.16),
-    0 0 0 1px rgba(0, 0, 0, 0.08);
+    hsl(var(--about3d-hue) 60% 25% / 0) 40px 50px 25px -40px,
+    hsl(var(--about3d-hue) 60% 25% / 0.3) 32px 50px 30px -30px;
   transition: all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
-/* Layer 2: Tactile Front Face Plate */
-.about3d-card {
+.about3d-glass {
   position: absolute;
-  inset: 0;
-  border-radius: 32px;
-  background: linear-gradient(
-    155deg,
-    hsl(var(--about3d-hue) 86% 68%) 0%,
-    hsl(var(--about3d-hue) 82% 60%) 45%,
-    hsl(var(--about3d-hue) 78% 52%) 100%
-  );
-  transform: translate3d(0, 0, 16px);
+  inset: 8px;
+  border-radius: 38px;
+  border-top-right-radius: 104px;
+  background: linear-gradient(0deg, rgba(255, 255, 255, 0.42) 0%, rgba(255, 255, 255, 0.9) 100%);
+  border-left: 1.5px solid rgba(255, 255, 255, 0.9);
+  border-top: 1.5px solid rgba(255, 255, 255, 0.9);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.5);
+  transform: translate3d(0, 0, 26px);
   transform-style: preserve-3d;
-  box-shadow:
-    inset 1.5px 2px 1.5px rgba(255, 255, 255, 0.75),
-    inset -1.5px -2px 2px rgba(0, 0, 0, 0.14),
-    0 4px 12px rgba(0, 0, 0, 0.12);
-  padding: 34px 28px 26px;
+  transition: all 0.5s ease-in-out;
+}
+
+/* ---------------------------------------------------------- card content */
+.about3d-content {
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  transition: all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+  gap: 4px;
+  /* Clears the logo block at the top-right, then the write-up fills the
+     rest of the plate down to the official-site pill. */
+  padding: 150px 26px 0;
+  transform: translate3d(0, 0, 28px);
 }
 
-/* ------------------------------------------------------------- Logo Mark */
+.about3d-category {
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: hsl(var(--about3d-hue) 62% 30% / 0.75);
+}
+
+.about3d-title {
+  display: block;
+  font-size: 27px;
+  font-weight: 900;
+  line-height: 1.2;
+  letter-spacing: -0.015em;
+  color: hsl(var(--about3d-hue) 78% 25%);
+}
+
+.about3d-text {
+  /* The stack cycles on its own: a fixed frame keeps the card from
+     resizing as descriptions change length. min-height tracks line-height
+     (~4.7 lines either way) so loosening the leading costs no card height. */
+  min-height: 136px;
+  margin-top: 14px;
+  font-size: 13.5px;
+  font-weight: 500;
+  line-height: 2.15;
+  letter-spacing: 0.012em;
+  color: hsl(var(--about3d-hue) 45% 27% / 0.9);
+}
+
+/* ------------------------------------------------------------- logo mark */
+/* No disc, no ring: the icon sits straight on the plate the way the rail's
+   icons sit on the backdrop — only its own artwork and depth shadow. */
 .about3d-logo {
   position: absolute;
-  top: 22px;
-  right: 22px;
-  width: 82px;
-  height: 82px;
-  transform: translate3d(0, 0, 38px);
+  top: 26px;
+  right: 28px;
   transform-style: preserve-3d;
-  transition: transform 0.4s ease;
-}
-
-.about3d-parent:hover .about3d-logo,
-.about3d-parent:focus-within .about3d-logo {
-  transform: translate3d(0, 0, 52px) scale(1.05);
 }
 
 .about3d-logo-slot {
   display: grid;
   place-content: center;
-  width: 100%;
-  height: 100%;
+  width: 104px;
+  height: 104px;
+  transform: translate3d(0, 0, 95px);
+  transition: transform 0.5s ease-in-out;
 }
 
 .about3d-logo-img {
-  width: 100%;
-  height: 100%;
+  width: 96px;
+  height: 96px;
   object-fit: contain;
-  filter:
-    drop-shadow(-3px 7px 12px rgba(0, 0, 0, 0.26))
-    drop-shadow(0 2px 4px rgba(0, 0, 0, 0.14));
-  user-select: none;
+  filter: drop-shadow(0 14px 18px hsl(var(--about3d-hue) 60% 22% / 0.32));
   pointer-events: none;
+  user-select: none;
 }
 
-/* ------------------------------------------------ Card Header Typography */
-.about3d-header {
-  transform: translate3d(0, 0, 22px);
-  transform-style: preserve-3d;
-  max-width: 66%;
-}
-
-.about3d-title {
-  font-family: var(--font-syne), var(--font-jakarta), sans-serif;
-  font-size: 29px;
-  font-weight: 900;
-  line-height: 1.1;
-  letter-spacing: -0.025em;
-  color: hsl(var(--about3d-hue) 75% 15%);
-  cursor: pointer;
-  text-decoration: none;
-  display: inline-block;
-  text-align: left;
-  transition: color 0.2s;
-}
-
-.about3d-title:hover {
-  color: #000000;
-}
-
-.about3d-category {
-  display: block;
-  margin-top: 5px;
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.14em;
-  text-transform: uppercase;
-  color: hsl(var(--about3d-hue) 50% 28%);
-}
-
-/* ---------------------------------------------------- Body Description */
-.about3d-body {
-  transform: translate3d(0, 0, 20px);
-  margin-top: 18px;
-  margin-bottom: auto;
-}
-
-.about3d-text {
-  font-size: 14px;
-  font-weight: 500;
-  line-height: 1.68;
-  color: hsl(var(--about3d-hue) 50% 20%);
-  letter-spacing: 0.01em;
-}
-
-/* ---------------------------------------- Tactile 3D Pill Button (Bottom) */
+/* ---------------------------------------------------- official-site pill */
 .about3d-bottom {
+  position: absolute;
+  bottom: 24px;
+  left: 22px;
+  right: 22px;
   display: flex;
+  align-items: center;
+  /* The official link hugs the card's right-hand side — the edge that faces
+     the portrait's open hand. */
   justify-content: flex-end;
-  transform: translate3d(0, 0, 28px);
+  transform: translate3d(0, 0, 32px);
   transform-style: preserve-3d;
 }
 
 .about3d-link {
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 20px;
+  justify-content: center;
+  gap: 9px;
+  padding: 13px 22px;
   border-radius: 9999px;
-  background: linear-gradient(180deg, #FFFFFF 0%, #F8F5EE 100%);
-  color: hsl(var(--about3d-hue) 75% 16%);
-  font-size: 11.5px;
+  background: #ffffff;
+  color: hsl(var(--about3d-hue) 78% 26%);
+  font-size: 12.5px;
   font-weight: 800;
   letter-spacing: 0.05em;
-  text-transform: uppercase;
   text-decoration: none;
-  box-shadow:
-    0 4px 10px rgba(0, 0, 0, 0.12),
-    0 1px 3px rgba(0, 0, 0, 0.08),
-    inset 0 1.5px 0.5px #FFFFFF,
-    inset 0 -1.5px 1px rgba(0, 0, 0, 0.08);
-  transform: translate3d(0, 0, 32px);
-  transition: all 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+  text-transform: uppercase;
+  box-shadow: rgba(0, 0, 0, 0.16) -2px 10px 18px 0px;
+  transform: translate3d(0, 0, 42px);
+  transform-style: preserve-3d;
+  transition: all 0.3s ease-in-out;
 }
 
 .about3d-link:hover,
 .about3d-link:focus-visible {
-  transform: translate3d(0, 0, 44px) translateY(-2px) scale(1.03);
-  box-shadow:
-    0 8px 18px rgba(0, 0, 0, 0.16),
-    0 2px 4px rgba(0, 0, 0, 0.08),
-    inset 0 1.5px 0.5px #FFFFFF;
-  color: #000000;
+  background: #151722;
+  color: #ffffff;
+  transform: translate3d(0, 0, 55px) scale(1.04);
 }
 
 .about3d-link__icon {
-  width: 14px;
-  height: 14px;
-  stroke-width: 2.4;
+  width: 15px;
+  height: 15px;
 }
 
-/* ------------------------------------------------ Dark Tone Plates Override */
-.about3d-parent[data-tone="dark"] .about3d-tray {
-  background: #111216;
+/* --------------------------------------------------- the folder's motion */
+.about3d-parent:hover .about3d-card,
+.about3d-parent:focus-within .about3d-card {
+  transform: rotate3d(1, 1, 0, 12deg) translateY(-8px) scale(1.02);
   box-shadow:
-    -18px 28px 45px -8px rgba(0, 0, 0, 0.5),
-    -6px 12px 20px -4px rgba(0, 0, 0, 0.35);
+    hsl(var(--about3d-hue) 60% 25% / 0.4) 36px 58px 32px -30px,
+    hsl(var(--about3d-hue) 60% 25% / 0.24) 0px 30px 35px 0px;
 }
 
+.about3d-parent:hover .about3d-logo-slot,
+.about3d-parent:focus-within .about3d-logo-slot {
+  transform: translate3d(0, 0, 120px);
+}
+
+/* ------------------------------------------------------ monochrome plates */
+/* GitHub and Next.js have no brand colour to sample — their marks are black
+   on black. Those two cards take the logo's own dark tone instead (the hue
+   only tints the grey), the glass sheet turns opaque enough to hold dark ink,
+   and the write-up switches from the hue-tinted palette to neutral. The logo
+   keeps a light halo so the dark mark still separates from the dark plate. */
 .about3d-parent[data-tone="dark"] .about3d-card {
-  background: linear-gradient(155deg, #2D3039 0%, #21232B 50%, #16171E 100%);
+  background: linear-gradient(
+    135deg,
+    hsl(var(--about3d-hue) 6% 30%) 0%,
+    hsl(var(--about3d-hue) 8% 9%) 100%
+  );
   box-shadow:
-    inset 1.5px 2px 1.5px rgba(255, 255, 255, 0.2),
-    inset -1.5px -2px 2px rgba(0, 0, 0, 0.5),
-    0 4px 12px rgba(0, 0, 0, 0.4);
+    hsl(var(--about3d-hue) 20% 6% / 0.5) 40px 50px 25px -40px,
+    hsl(var(--about3d-hue) 20% 6% / 0.55) 32px 50px 30px -30px;
 }
 
-.about3d-parent[data-tone="dark"] .about3d-title {
-  color: #FFFFFF;
-}
-
-.about3d-parent[data-tone="dark"] .about3d-category {
-  color: #9CA3AF;
-}
-
-.about3d-parent[data-tone="dark"] .about3d-text {
-  color: #D1D5DB;
-}
-
-.about3d-parent[data-tone="dark"] .about3d-link {
-  background: linear-gradient(180deg, #FFFFFF 0%, #E5E7EB 100%);
-  color: #111827;
+.about3d-parent[data-tone="dark"] .about3d-glass {
+  background: linear-gradient(
+    0deg,
+    rgba(255, 255, 255, 0.72) 0%,
+    rgba(255, 255, 255, 0.94) 100%
+  );
 }
 
 .about3d-parent[data-tone="dark"] .about3d-logo-img {
   filter:
-    drop-shadow(-3px 7px 14px rgba(0, 0, 0, 0.6))
-    drop-shadow(0 0 16px rgba(255, 255, 255, 0.2));
+    drop-shadow(0 14px 18px rgba(0, 0, 0, 0.5))
+    drop-shadow(0 0 22px rgba(255, 255, 255, 0.35));
 }
 
-/* ------------------------------------------------ Responsive Sizing */
+.about3d-parent[data-tone="dark"] .about3d-category {
+  color: rgba(21, 23, 34, 0.6);
+}
+
+.about3d-parent[data-tone="dark"] .about3d-title {
+  color: #151722;
+}
+
+.about3d-parent[data-tone="dark"] .about3d-text {
+  color: rgba(43, 48, 60, 0.92);
+}
+
+/* Only the resting pill needs the neutral ink — hovering it flips to the dark
+   fill with white text, which the base rules already handle. */
+.about3d-parent[data-tone="dark"] .about3d-link {
+  color: #151722;
+}
+
+.about3d-parent[data-tone="dark"]:hover .about3d-card,
+.about3d-parent[data-tone="dark"]:focus-within .about3d-card {
+  box-shadow:
+    hsl(var(--about3d-hue) 20% 6% / 0.55) 36px 58px 32px -30px,
+    hsl(var(--about3d-hue) 20% 6% / 0.4) 0px 30px 35px 0px;
+}
+
+.about3d-parent:hover .about3d-link,
+.about3d-parent:focus-within .about3d-link {
+  transform: translate3d(0, 0, 52px);
+  box-shadow: rgba(0, 0, 0, 0.24) -4px 14px 20px 0px;
+}
+
+/* The slot the card lives in. Up to 1280px the portrait still claims its full
+   750px, so the plate takes exactly the room left of his arm — it steps in
+   from 330px as the viewport narrows, never sliding under the silhouette. */
 @media (min-width: 1024px) {
   .about3d-slot {
-    width: min(340px, calc(50vw - 260px));
+    width: min(330px, calc(50vw - 280px));
   }
 }
 
+/* The narrow end of that range is a smaller card, so its type and its logo
+   step down together to keep the write-up clear of the official-site pill. */
 @media (min-width: 1024px) and (max-width: 1279px) {
-  .about3d-card {
-    padding: 28px 22px 22px;
+  .about3d-content {
+    padding: 130px 20px 0;
   }
+
+  .about3d-category {
+    font-size: 9.5px;
+  }
+
   .about3d-title {
-    font-size: 25px;
+    font-size: 23px;
   }
+
   .about3d-text {
-    font-size: 13px;
-    line-height: 1.6;
+    min-height: 127px;
+    margin-top: 12px;
+    font-size: 12.5px;
+    line-height: 2;
   }
+
   .about3d-logo {
-    width: 68px;
-    height: 68px;
     top: 18px;
+    right: 16px;
+  }
+
+  .about3d-logo-slot {
+    width: 88px;
+    height: 88px;
+  }
+
+  .about3d-logo-img {
+    width: 80px;
+    height: 80px;
+  }
+
+  .about3d-bottom {
+    bottom: 20px;
+    left: 18px;
     right: 18px;
   }
+
   .about3d-link {
-    padding: 8px 16px;
-    font-size: 11px;
+    padding: 11px 18px;
+    font-size: 11.5px;
   }
 }
 
 @media (max-width: 1023px) {
-  .about3d-parent {
-    height: 440px;
-    max-width: 340px;
-    margin: 0 auto;
-  }
-  .about3d-orbs-container {
-    display: none; /* Keep clean on small mobile viewports */
+
+.about3d-parent {
+    height: 424px;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .about3d-block,
   .about3d-card,
-  .about3d-tray,
-  .about3d-logo,
+  .about3d-logo-slot,
+  .about3d-glass,
   .about3d-link,
-  .about3d-orb {
+  .about3d-logo-img {
     animation: none !important;
     transition: none !important;
-    transform: none !important;
+  }
+
+  .about3d-parent:hover .about3d-card,
+  .about3d-parent:focus-within .about3d-card {
+    transform: rotate3d(1, 1, 0, 18deg);
   }
 }
 

@@ -171,7 +171,7 @@ export const TECH_ITEMS: TechItem[] = [
   },
   {
     id: "python",
-    accentHue: 46,
+    accentHue: 60,
     track: "language",
     name: "Python",
     category: "PROGRAMMING LANGUAGE",
