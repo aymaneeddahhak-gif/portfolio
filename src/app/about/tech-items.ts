@@ -11,12 +11,40 @@ export const TECH_FILTERS: { id: TechTrack | "all"; label: string }[] = [
   { id: "design", label: "Design & Architecture" },
 ];
 
-// The languages and tools the portfolio actually ships with. Every icon here
-// comes from the 3D squircle set in /images/icons (optimised copies live in
-// /images/tech). Add an entry — plus its image — and the floating badge, the
-// description card, the icon rail and the detail modal all pick it up
-// automatically; the stage cycles through the list on its own.
+// The languages and tools the portfolio actually ships with.
+// Main technologies are placed first: React, Laravel, Next.js, Docker, REST API, Flutter, Supabase, GitHub, followed by all others.
 export const TECH_ITEMS: TechItem[] = [
+  // --- MAIN TECHNOLOGIES FIRST ---
+  {
+    id: "react",
+    accentHue: 206,
+    track: "web",
+    name: "React",
+    category: "UI LIBRARY",
+    shortDescription:
+      "Component-driven interfaces with declarative state, hooks and reusable design primitives shared across web and mobile.",
+    fullDescription:
+      "React is my default for interactive UI. I split products into small components with clear props and hook ownership, memoize the expensive paths, and keep state close to where it is used — which is what makes features ship fast and stay maintainable.",
+    officialUrl: "https://react.dev/",
+    linkDisplay: "react.dev",
+    image: "/images/tech/react.webp",
+    tags: ["Hooks", "Components", "Context", "Performance"],
+  },
+  {
+    id: "laravel",
+    accentHue: 1,
+    track: "backend",
+    name: "Laravel",
+    category: "PHP FRAMEWORK",
+    shortDescription:
+      "An opinionated PHP framework delivering Eloquent models, queues, policies and an artisan pipeline that scales with the product.",
+    fullDescription:
+      "Laravel turns backend work into a well-lit path: Eloquent for the data layer, form requests and policies for validation and authorisation, queues and scheduled jobs for background work, and migrations that keep environments in sync across the team.",
+    officialUrl: "https://laravel.com/",
+    linkDisplay: "laravel.com",
+    image: "/images/tech/laravel.webp",
+    tags: ["Eloquent", "Artisan", "Queues", "Policies"],
+  },
   {
     id: "nextjs",
     accentHue: 0,
@@ -34,37 +62,6 @@ export const TECH_ITEMS: TechItem[] = [
     tags: ["App Router", "Server components", "SSR & SSG", "Route handlers"],
   },
   {
-    id: "react",
-    accentHue: 206,
-    track: "web",
-    name: "React",
-    category: "UI LIBRARY",
-    shortDescription:
-      "Component-driven interfaces with declarative state, hooks and reusable design primitives shared across web and mobile.",
-    fullDescription:
-      "React is my default for interactive UI. I split products into small components with clear props and hook ownership, memoize the expensive paths, and keep state close to where it is used — which is what makes features ship fast and stay maintainable.",
-    officialUrl: "https://react.dev/",
-    linkDisplay: "react.dev",
-    image: "/images/tech/react.webp",
-    tags: ["Hooks", "Components", "Context", "Performance"],
-  },
-  {
-    id: "github",
-    accentHue: 227,
-    plateTone: "dark",
-    track: "devops",
-    name: "GitHub",
-    category: "VERSION CONTROL & CI/CD",
-    shortDescription:
-      "Version control, code review and automated pipelines — the collaboration backbone of every project I ship.",
-    fullDescription:
-      "GitHub carries the whole delivery process: feature branches and pull requests for reviewable changes, GitHub Actions for lint, type-check, test and deploy on every push, plus issue templates and project boards that keep work visible to everyone.",
-    officialUrl: "https://github.com/",
-    linkDisplay: "github.com",
-    image: "/images/tech/github.webp",
-    tags: ["Git", "Pull requests", "GitHub Actions", "Code review"],
-  },
-  {
     id: "docker",
     accentHue: 200,
     track: "devops",
@@ -78,6 +75,36 @@ export const TECH_ITEMS: TechItem[] = [
     linkDisplay: "docker.com",
     image: "/images/tech/docker.webp",
     tags: ["Docker", "Containers", "CI/CD", "Microservices"],
+  },
+  {
+    id: "api",
+    accentHue: 225,
+    track: "backend",
+    name: "REST API",
+    category: "BACKEND INTEGRATION",
+    shortDescription:
+      "REST and JSON integrations treated as contracts: stable resources, versioning, token auth and predictable errors.",
+    fullDescription:
+      "An API is the contract between everything else I build. I design REST resources with honest verbs and status codes, version them before a client breaks, protect them with token auth and rate limits, and consume third-party services through typed clients with retries, timeouts and real error surfaces.",
+    officialUrl: "https://developer.mozilla.org/en-US/docs/Web/HTTP",
+    linkDisplay: "developer.mozilla.org",
+    image: "/images/tech/api.webp",
+    tags: ["REST", "JSON", "Auth tokens", "Error handling"],
+  },
+  {
+    id: "flutter",
+    accentHue: 194,
+    track: "mobile",
+    name: "Flutter",
+    category: "MOBILE TOOLKIT",
+    shortDescription:
+      "One Dart codebase compiled to native Android and iOS apps, with the same pixels on both — hot reload included.",
+    fullDescription:
+      "Flutter is my first choice when a mobile product has to reach both stores at once. A single Dart codebase compiles to native ARM code for Android and iOS, the widget system gives me control over every pixel and gesture, and hot reload makes tuning motion fast enough to iterate frame by frame.",
+    officialUrl: "https://flutter.dev/",
+    linkDisplay: "flutter.dev",
+    image: "/images/tech/flutter.webp",
+    tags: ["Dart", "Android & iOS", "Widgets", "Hot reload"],
   },
   {
     id: "supabase",
@@ -95,19 +122,67 @@ export const TECH_ITEMS: TechItem[] = [
     tags: ["Postgres", "Auth", "Realtime", "Storage"],
   },
   {
-    id: "flutter",
-    accentHue: 194,
-    track: "mobile",
-    name: "Flutter",
-    category: "MOBILE TOOLKIT",
+    id: "github",
+    accentHue: 227,
+    plateTone: "dark",
+    track: "devops",
+    name: "GitHub",
+    category: "VERSION CONTROL & CI/CD",
     shortDescription:
-      "One Dart codebase compiled to native Android and iOS apps, with the same pixels on both — hot reload included.",
+      "Version control, code review and automated pipelines — the collaboration backbone of every project I ship.",
     fullDescription:
-      "Flutter is my first choice when a mobile product has to reach both stores at once. A single Dart codebase compiles to native ARM code for Android and iOS, the widget system gives me control over every pixel and gesture, and hot reload makes tuning motion fast enough to iterate frame by frame.",
-    officialUrl: "https://flutter.dev/",
-    linkDisplay: "flutter.dev",
-    image: "/images/tech/flutter.webp",
-    tags: ["Dart", "Android & iOS", "Widgets", "Hot reload"],
+      "GitHub carries the whole delivery process: feature branches and pull requests for reviewable changes, GitHub Actions for lint, type-check, test and deploy on every push, plus issue templates and project boards that keep work visible to everyone.",
+    officialUrl: "https://github.com/",
+    linkDisplay: "github.com",
+    image: "/images/tech/github.webp",
+    tags: ["Git", "Pull requests", "GitHub Actions", "Code review"],
+  },
+
+  // --- REMAINING TECHNOLOGIES ---
+  {
+    id: "javascript",
+    accentHue: 60,
+    track: "language",
+    name: "JavaScript",
+    category: "PROGRAMMING LANGUAGE",
+    shortDescription:
+      "The language the whole stack speaks — modern ES syntax, async flows and DOM work that run natively in browsers and on Node.js.",
+    fullDescription:
+      "JavaScript is the connective tissue of everything I build. I work with modern ES modules, async/await, immutability and the fetch/Web API surface, keeping logic typed, side-effect free where it matters, and light enough to stay off the main thread.",
+    officialUrl: "https://developer.mozilla.org/en-US/docs/Web/JavaScript",
+    linkDisplay: "developer.mozilla.org",
+    image: "/images/tech/javascript.webp",
+    tags: ["ES2024", "Async / await", "Web APIs", "ES modules"],
+  },
+  {
+    id: "php",
+    accentHue: 235,
+    track: "language",
+    name: "PHP",
+    category: "BACKEND LANGUAGE",
+    shortDescription:
+      "The server-side language behind classic and modern web backends — request handling, sessions, auth and SQL-driven business logic.",
+    fullDescription:
+      "PHP powers a huge share of the web I maintain and extend. I write typed PHP 8 with clear separation between controllers, services and data access — handling authentication, file uploads, payments and the server-rendered pages that keep SEO simple.",
+    officialUrl: "https://www.php.net/",
+    linkDisplay: "php.net",
+    image: "/images/tech/php.webp",
+    tags: ["PHP 8", "REST APIs", "Sessions & auth", "SQL"],
+  },
+  {
+    id: "python",
+    accentHue: 60,
+    track: "language",
+    name: "Python",
+    category: "PROGRAMMING LANGUAGE",
+    shortDescription:
+      "Readable, batteries-included scripting for automation, data pipelines and the AI and machine-learning side of my stack.",
+    fullDescription:
+      "Python is where I automate the boring parts and wire up intelligence: scraping and ETL jobs, data analysis with pandas, and machine-learning models served through FastAPI so a trained model becomes a normal, testable HTTP service.",
+    officialUrl: "https://www.python.org/",
+    linkDisplay: "python.org",
+    image: "/images/tech/python.webp",
+    tags: ["Automation", "AI & ML", "FastAPI", "Data pipelines"],
   },
   {
     id: "html5",
@@ -140,21 +215,6 @@ export const TECH_ITEMS: TechItem[] = [
     tags: ["Grid & Flexbox", "Animations", "Responsive", "Design tokens"],
   },
   {
-    id: "javascript",
-    accentHue: 60,
-    track: "language",
-    name: "JavaScript",
-    category: "PROGRAMMING LANGUAGE",
-    shortDescription:
-      "The language the whole stack speaks — modern ES syntax, async flows and DOM work that run natively in browsers and on Node.js.",
-    fullDescription:
-      "JavaScript is the connective tissue of everything I build. I work with modern ES modules, async/await, immutability and the fetch/Web API surface, keeping logic typed, side-effect free where it matters, and light enough to stay off the main thread.",
-    officialUrl: "https://developer.mozilla.org/en-US/docs/Web/JavaScript",
-    linkDisplay: "developer.mozilla.org",
-    image: "/images/tech/javascript.webp",
-    tags: ["ES2024", "Async / await", "Web APIs", "ES modules"],
-  },
-  {
     id: "tailwind",
     accentHue: 177,
     track: "web",
@@ -185,51 +245,6 @@ export const TECH_ITEMS: TechItem[] = [
     tags: ["Grid system", "Components", "Rapid UI", "Cross-browser"],
   },
   {
-    id: "php",
-    accentHue: 235,
-    track: "language",
-    name: "PHP",
-    category: "BACKEND LANGUAGE",
-    shortDescription:
-      "The server-side language behind classic and modern web backends — request handling, sessions, auth and SQL-driven business logic.",
-    fullDescription:
-      "PHP powers a huge share of the web I maintain and extend. I write typed PHP 8 with clear separation between controllers, services and data access — handling authentication, file uploads, payments and the server-rendered pages that keep SEO simple.",
-    officialUrl: "https://www.php.net/",
-    linkDisplay: "php.net",
-    image: "/images/tech/php.webp",
-    tags: ["PHP 8", "REST APIs", "Sessions & auth", "SQL"],
-  },
-  {
-    id: "laravel",
-    accentHue: 1,
-    track: "backend",
-    name: "Laravel",
-    category: "PHP FRAMEWORK",
-    shortDescription:
-      "An opinionated PHP framework delivering Eloquent models, queues, policies and an artisan pipeline that scales with the product.",
-    fullDescription:
-      "Laravel turns backend work into a well-lit path: Eloquent for the data layer, form requests and policies for validation and authorisation, queues and scheduled jobs for background work, and migrations that keep environments in sync across the team.",
-    officialUrl: "https://laravel.com/",
-    linkDisplay: "laravel.com",
-    image: "/images/tech/laravel.webp",
-    tags: ["Eloquent", "Artisan", "Queues", "Policies"],
-  },
-  {
-    id: "python",
-    accentHue: 60,
-    track: "language",
-    name: "Python",
-    category: "PROGRAMMING LANGUAGE",
-    shortDescription:
-      "Readable, batteries-included scripting for automation, data pipelines and the AI and machine-learning side of my stack.",
-    fullDescription:
-      "Python is where I automate the boring parts and wire up intelligence: scraping and ETL jobs, data analysis with pandas, and machine-learning models served through FastAPI so a trained model becomes a normal, testable HTTP service.",
-    officialUrl: "https://www.python.org/",
-    linkDisplay: "python.org",
-    image: "/images/tech/python.webp",
-    tags: ["Automation", "AI & ML", "FastAPI", "Data pipelines"],
-  },
-  {
     id: "mysql",
     accentHue: 197,
     track: "backend",
@@ -258,67 +273,6 @@ export const TECH_ITEMS: TechItem[] = [
     linkDisplay: "mongodb.com",
     image: "/images/tech/mongodb.webp",
     tags: ["Documents", "Aggregation", "Flexible schema", "Indexes"],
-  },
-  {
-    id: "api",
-    accentHue: 225,
-    track: "backend",
-    name: "APIs",
-    category: "BACKEND INTEGRATION",
-    shortDescription:
-      "REST and JSON integrations treated as contracts: stable resources, versioning, token auth and predictable errors.",
-    fullDescription:
-      "An API is the contract between everything else I build. I design REST resources with honest verbs and status codes, version them before a client breaks, protect them with token auth and rate limits, and consume third-party services through typed clients with retries, timeouts and real error surfaces.",
-    officialUrl: "https://developer.mozilla.org/en-US/docs/Web/HTTP",
-    linkDisplay: "developer.mozilla.org",
-    image: "/images/tech/api.webp",
-    tags: ["REST", "JSON", "Auth tokens", "Error handling"],
-  },
-  {
-    id: "wordpress",
-    accentHue: 202,
-    track: "web",
-    name: "WordPress",
-    category: "CONTENT MANAGEMENT",
-    shortDescription:
-      "The CMS most clients already know — custom themes, plugin-free blocks, and delivery of a fully editable marketing site.",
-    fullDescription:
-      "For content-heavy sites, WordPress lets the client own their copy after launch. I build custom themes and blocks, harden the install, keep it fast with caching and image pipelines, and expose only the parts an editor actually needs.",
-    officialUrl: "https://wordpress.org/",
-    linkDisplay: "wordpress.org",
-    image: "/images/tech/wordpress.webp",
-    tags: ["Custom themes", "Blocks", "SEO", "Client editing"],
-  },
-  {
-    id: "oop",
-    accentHue: 35,
-    track: "design",
-    name: "OOP",
-    category: "PROGRAMMING PARADIGM",
-    shortDescription:
-      "Object-oriented design — encapsulation, inheritance and polymorphism — for codebases that stay readable as they grow.",
-    fullDescription:
-      "Object-oriented programming is how I keep large systems honest: cohesive classes with single responsibilities, interfaces for anything that will change, and dependency injection instead of hard-wired coupling — so features are added by extension rather than by editing the core.",
-    officialUrl:
-      "https://developer.mozilla.org/en-US/docs/Learn/JavaScript/Objects/Object-oriented_programming",
-    linkDisplay: "developer.mozilla.org",
-    image: "/images/tech/oop.webp",
-    tags: ["Encapsulation", "Polymorphism", "SOLID", "Dependency injection"],
-  },
-  {
-    id: "uml",
-    accentHue: 227,
-    track: "design",
-    name: "UML",
-    category: "SYSTEM DESIGN",
-    shortDescription:
-      "Diagrams that settle arguments before they reach the code: class, sequence and use-case models of the whole system.",
-    fullDescription:
-      "Every project starts on a whiteboard. UML class, sequence and use-case diagrams let me agree on the entities, their relationships and the flow of a feature with the client and the team before writing the first file — which removes the most expensive kind of rework.",
-    officialUrl: "https://www.uml.org/",
-    linkDisplay: "uml.org",
-    image: "/images/tech/uml.webp",
-    tags: ["Class diagrams", "Sequence diagrams", "Architecture", "Modelling"],
   },
   {
     id: "git",
@@ -366,6 +320,67 @@ export const TECH_ITEMS: TechItem[] = [
     tags: ["Kubernetes", "Microservices", "Containers", "DevOps"],
   },
   {
+    id: "wordpress",
+    accentHue: 202,
+    track: "web",
+    name: "WordPress",
+    category: "CONTENT MANAGEMENT",
+    shortDescription:
+      "The CMS most clients already know — custom themes, plugin-free blocks, and delivery of a fully editable marketing site.",
+    fullDescription:
+      "For content-heavy sites, WordPress lets the client own their copy after launch. I build custom themes and blocks, harden the install, keep it fast with caching and image pipelines, and expose only the parts an editor actually needs.",
+    officialUrl: "https://wordpress.org/",
+    linkDisplay: "wordpress.org",
+    image: "/images/tech/wordpress.webp",
+    tags: ["Custom themes", "Blocks", "SEO", "Client editing"],
+  },
+  {
+    id: "figma",
+    accentHue: 22,
+    track: "design",
+    name: "Figma",
+    category: "UI / UX DESIGN",
+    shortDescription:
+      "Interface design, clickable prototypes and shared design tokens handed straight over for implementation.",
+    fullDescription:
+      "Figma is where the interface is designed and agreed on: responsive breakpoints, component variants, auto-layout and interactive prototypes for stakeholder sign-off — then exported as tokens and specs so the build matches the design pixel for pixel.",
+    officialUrl: "https://www.figma.com/",
+    linkDisplay: "figma.com",
+    image: "/images/tech/figma.webp",
+    tags: ["Prototyping", "Design system", "Auto-layout", "Handoff"],
+  },
+  {
+    id: "oop",
+    accentHue: 35,
+    track: "design",
+    name: "OOP",
+    category: "PROGRAMMING PARADIGM",
+    shortDescription:
+      "Object-oriented design — encapsulation, inheritance and polymorphism — for codebases that stay readable as they grow.",
+    fullDescription:
+      "Object-oriented programming is how I keep large systems honest: cohesive classes with single responsibilities, interfaces for anything that will change, and dependency injection instead of hard-wired coupling — so features are added by extension rather than by editing the core.",
+    officialUrl:
+      "https://developer.mozilla.org/en-US/docs/Learn/JavaScript/Objects/Object-oriented_programming",
+    linkDisplay: "developer.mozilla.org",
+    image: "/images/tech/oop.webp",
+    tags: ["Encapsulation", "Polymorphism", "SOLID", "Dependency injection"],
+  },
+  {
+    id: "uml",
+    accentHue: 227,
+    track: "design",
+    name: "UML",
+    category: "SYSTEM DESIGN",
+    shortDescription:
+      "Diagrams that settle arguments before they reach the code: class, sequence and use-case models of the whole system.",
+    fullDescription:
+      "Every project starts on a whiteboard. UML class, sequence and use-case diagrams let me agree on the entities, their relationships and the flow of a feature with the client and the team before writing the first file — which removes the most expensive kind of rework.",
+    officialUrl: "https://www.uml.org/",
+    linkDisplay: "uml.org",
+    image: "/images/tech/uml.webp",
+    tags: ["Class diagrams", "Sequence diagrams", "Architecture", "Modelling"],
+  },
+  {
     id: "jira",
     accentHue: 216,
     track: "devops",
@@ -394,20 +409,5 @@ export const TECH_ITEMS: TechItem[] = [
     linkDisplay: "atlassian.com/agile",
     image: "/images/tech/agile.webp",
     tags: ["Scrum", "Sprints", "Retrospectives", "Demo driven"],
-  },
-  {
-    id: "figma",
-    accentHue: 22,
-    track: "design",
-    name: "Figma",
-    category: "UI / UX DESIGN",
-    shortDescription:
-      "Interface design, clickable prototypes and shared design tokens handed straight over for implementation.",
-    fullDescription:
-      "Figma is where the interface is designed and agreed on: responsive breakpoints, component variants, auto-layout and interactive prototypes for stakeholder sign-off — then exported as tokens and specs so the build matches the design pixel for pixel.",
-    officialUrl: "https://www.figma.com/",
-    linkDisplay: "figma.com",
-    image: "/images/tech/figma.webp",
-    tags: ["Prototyping", "Design system", "Auto-layout", "Handoff"],
   },
 ];

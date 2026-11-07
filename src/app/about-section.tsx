@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "motion/react";
 import { BadgeModal } from "./about/BadgeModal";
 import { FloatingCards } from "./about/FloatingCards";
@@ -61,22 +61,22 @@ export default function AboutSection() {
   const parallaxActive = isVisible && !reducedMotion;
 
   // Advance to next tech in line
-  const advanceSpotlight = () => {
+  const advanceSpotlight = useCallback(() => {
     setActiveItemId((prevId) => {
       const idx = visibleItems.findIndex((item) => item.id === prevId);
       const nextIdx = (idx + 1) % visibleItems.length;
       return visibleItems[nextIdx].id;
     });
-  };
+  }, [visibleItems]);
 
   // Go back to previous tech in line
-  const prevSpotlight = () => {
+  const prevSpotlight = useCallback(() => {
     setActiveItemId((prevId) => {
       const idx = visibleItems.findIndex((item) => item.id === prevId);
       const prevIdx = (idx - 1 + visibleItems.length) % visibleItems.length;
       return visibleItems[prevIdx].id;
     });
-  };
+  }, [visibleItems]);
 
   // Automatic switching: advances while visible, pauses on card hover so user can read/click official link
   useEffect(() => {
@@ -85,7 +85,7 @@ export default function AboutSection() {
     const timer = window.setInterval(advanceSpotlight, CYCLE_SECONDS * 1000);
 
     return () => window.clearInterval(timer);
-  }, [isVisible, reducedMotion, visibleItems, isHovered]);
+  }, [isVisible, reducedMotion, isHovered, advanceSpotlight]);
 
   // Listen for tech selection from App Showcase cards
   useEffect(() => {
@@ -149,7 +149,9 @@ export default function AboutSection() {
     soundFx.playPop(520);
     const items =
       track === "all" ? TECH_ITEMS : TECH_ITEMS.filter((item) => item.track === track);
-    if (items.length && !items.some((item) => item.id === activeItemId)) {
+    if (track === "all") {
+      setActiveItemId(items[0].id);
+    } else if (items.length && !items.some((item) => item.id === activeItemId)) {
       setActiveItemId(items[0].id);
     }
     setActiveTrack(track);
