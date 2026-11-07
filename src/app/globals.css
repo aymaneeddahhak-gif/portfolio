@@ -1376,14 +1376,21 @@ html {
   transform: translateY(-1px);
 }
 
+/* ==========================================================
+   VERSION 3: Studio Luminous Satin Ceramic (High-Key Light)
+   Drop-in CSS for existing .about3d-* HTML structure
+   ========================================================== */
+:root {
+  --about3d-hue: 48; /* 48: Python, 194: Flutter, 206: React, 355: Laravel */
+}
+
 .about3d-parent {
   position: relative;
   width: 100%;
+  max-width: 320px;
   height: 452px;
-  perspective: 1000px;
-  /* The active technology's own hue, set inline from the item's icon. Every
-     colour below reads from this one number. */
-  --about3d-hue: 220;
+  perspective: 1150px;
+  user-select: none;
 }
 
 .about3d-card {
@@ -1391,80 +1398,116 @@ html {
   height: 100%;
   border-radius: 44px;
   transform-style: preserve-3d;
-  transform: rotate3d(1, 1, 0, 18deg);
+  transform: rotateX(7deg) rotateY(16deg) rotateZ(-0.8deg);
   background: linear-gradient(
-    135deg,
-    hsl(var(--about3d-hue) 82% 64%) 0%,
-    hsl(calc(var(--about3d-hue) - 16) 74% 44%) 100%
+    145deg,
+    hsl(var(--about3d-hue) 86% 72%) 0%,
+    hsl(var(--about3d-hue) 78% 58%) 55%,
+    hsl(calc(var(--about3d-hue) - 6) 72% 48%) 100%
   );
+  border-top: 2px solid #ffffff;
+  border-right: 1.5px solid rgba(255, 255, 255, 0.85);
   box-shadow:
-    hsl(var(--about3d-hue) 60% 25% / 0) 40px 50px 25px -40px,
-    hsl(var(--about3d-hue) 60% 25% / 0.3) 32px 50px 30px -30px;
-  transition: all 0.5s cubic-bezier(0.2, 0.8, 0.2, 1);
+    inset 3px 3px 6px rgba(255, 255, 255, 0.75),
+    inset -3px -3px 6px hsl(var(--about3d-hue) 70% 35% / 0.35),
+    /* 10-Layer Smooth Ceramic Extruded Wall */
+    -1px 1px 0px hsl(calc(var(--about3d-hue) - 3) 70% 52%),
+    -2px 2px 0px hsl(calc(var(--about3d-hue) - 3) 70% 50%),
+    -3px 3px 0px hsl(calc(var(--about3d-hue) - 4) 70% 48%),
+    -4px 4px 0px hsl(calc(var(--about3d-hue) - 4) 70% 46%),
+    -5px 5px 0px hsl(calc(var(--about3d-hue) - 5) 72% 44%),
+    -6px 6px 0px hsl(calc(var(--about3d-hue) - 5) 72% 42%),
+    -7px 7px 0px hsl(calc(var(--about3d-hue) - 6) 72% 40%),
+    -8px 8px 0px hsl(calc(var(--about3d-hue) - 6) 74% 38%),
+    -9px 9px 0px hsl(calc(var(--about3d-hue) - 7) 74% 36%),
+    -10px 10px 0px hsl(calc(var(--about3d-hue) - 8) 75% 34%),
+    /* Soft Diffused Studio Floor Shadow */
+    -28px 40px 60px -10px hsl(var(--about3d-hue) 65% 30% / 0.25),
+    -8px 18px 28px -10px rgba(15, 23, 42, 0.1);
+  transition: all 0.45s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 .about3d-glass {
   position: absolute;
-  inset: 8px;
-  border-radius: 38px;
-  border-top-right-radius: 104px;
-  background: linear-gradient(0deg, rgba(255, 255, 255, 0.42) 0%, rgba(255, 255, 255, 0.9) 100%);
-  border-left: 1.5px solid rgba(255, 255, 255, 0.9);
-  border-top: 1.5px solid rgba(255, 255, 255, 0.9);
-  border-bottom: 1px solid rgba(255, 255, 255, 0.5);
-  transform: translate3d(0, 0, 26px);
+  top: 9px;
+  right: 8px;
+  bottom: 11px;
+  left: 13px;
+  border-radius: 36px;
+  border-top-right-radius: 96px;
+  /* High-Key Satin Ceramic with Top-Right Studio Key-Light Sheen */
+  background:
+    radial-gradient(circle at 88% 14%, rgba(255, 255, 255, 0.55) 0%, transparent 48%),
+    linear-gradient(
+      160deg,
+      hsl(var(--about3d-hue) 90% 85%) 0%,
+      hsl(var(--about3d-hue) 84% 76%) 50%,
+      hsl(var(--about3d-hue) 78% 69%) 100%
+    );
+  border-top: 2px solid #ffffff;
+  border-right: 1.5px solid rgba(255, 255, 255, 0.92);
+  border-left: 1px solid rgba(255, 255, 255, 0.65);
+  box-shadow:
+    -1px 1px 0px hsl(var(--about3d-hue) 64% 62%),
+    -2px 2px 0px hsl(var(--about3d-hue) 64% 58%),
+    -3px 3px 0px hsl(var(--about3d-hue) 66% 54%),
+    -4px 4px 0px hsl(var(--about3d-hue) 68% 50%),
+    -8px 10px 16px hsl(var(--about3d-hue) 70% 24% / 0.25),
+    inset 0 2px 8px rgba(255, 255, 255, 0.75);
+  transform: translate3d(0, 0, 24px);
   transform-style: preserve-3d;
-  transition: all 0.5s ease-in-out;
+  transition: all 0.45s ease-in-out;
 }
 
-/* ---------------------------------------------------------- card content */
 .about3d-content {
   display: flex;
   flex-direction: column;
   gap: 4px;
-  /* Clears the logo block at the top-right, then the write-up fills the
-     rest of the plate down to the official-site pill. */
-  padding: 150px 26px 0;
-  transform: translate3d(0, 0, 28px);
-}
-
-.about3d-category {
-  font-size: 10px;
-  font-weight: 800;
-  letter-spacing: 0.18em;
-  text-transform: uppercase;
-  color: hsl(var(--about3d-hue) 62% 30% / 0.75);
+  padding: 142px 26px 0 28px;
+  transform: translate3d(0, 0, 32px);
+  transform-style: preserve-3d;
 }
 
 .about3d-title {
+  order: 1;
   display: block;
-  font-size: 27px;
-  font-weight: 900;
-  line-height: 1.2;
-  letter-spacing: -0.015em;
-  color: hsl(var(--about3d-hue) 78% 25%);
+  font-size: 29px;
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: -0.02em;
+  color: hsl(var(--about3d-hue) 80% 18%);
+  background: none;
+  border: none;
+  padding: 0;
+  text-align: left;
+  cursor: pointer;
+}
+
+.about3d-category {
+  order: 2;
+  margin-top: 2px;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: hsl(var(--about3d-hue) 68% 24% / 0.82);
 }
 
 .about3d-text {
-  /* The stack cycles on its own: a fixed frame keeps the card from
-     resizing as descriptions change length. min-height tracks line-height
-     (~4.7 lines either way) so loosening the leading costs no card height. */
-  min-height: 136px;
-  margin-top: 14px;
-  font-size: 13.5px;
+  order: 3;
+  min-height: 132px;
+  margin-top: 16px;
+  font-size: 13.8px;
   font-weight: 500;
-  line-height: 2.15;
-  letter-spacing: 0.012em;
-  color: hsl(var(--about3d-hue) 45% 27% / 0.9);
+  line-height: 1.92;
+  letter-spacing: 0.01em;
+  color: hsl(var(--about3d-hue) 64% 20% / 0.88);
 }
 
-/* ------------------------------------------------------------- logo mark */
-/* No disc, no ring: the icon sits straight on the plate the way the rail's
-   icons sit on the backdrop — only its own artwork and depth shadow. */
 .about3d-logo {
   position: absolute;
-  top: 26px;
-  right: 28px;
+  top: 20px;
+  right: 22px;
   transform-style: preserve-3d;
 }
 
@@ -1473,31 +1516,32 @@ html {
   place-content: center;
   width: 104px;
   height: 104px;
-  transform: translate3d(0, 0, 95px);
-  transition: transform 0.5s ease-in-out;
+  transform: translate3d(0, 0, 88px);
+  transition: transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 .about3d-logo-img {
-  width: 96px;
-  height: 96px;
+  width: 92px;
+  height: 92px;
   object-fit: contain;
-  filter: drop-shadow(0 14px 18px hsl(var(--about3d-hue) 60% 22% / 0.32));
-  pointer-events: none;
-  user-select: none;
+  filter:
+    drop-shadow(1px -1px 0px rgba(255, 255, 255, 0.7))
+    drop-shadow(-1px 1px 0px hsl(var(--about3d-hue) 64% 38%))
+    drop-shadow(-2px 2px 0px hsl(var(--about3d-hue) 66% 34%))
+    drop-shadow(-3px 3px 0px hsl(var(--about3d-hue) 68% 30%))
+    drop-shadow(-4px 4px 0px hsl(var(--about3d-hue) 70% 26%))
+    drop-shadow(-12px 16px 14px hsl(var(--about3d-hue) 72% 18% / 0.36));
 }
 
-/* ---------------------------------------------------- official-site pill */
 .about3d-bottom {
   position: absolute;
   bottom: 24px;
-  left: 22px;
-  right: 22px;
+  left: 24px;
+  right: 20px;
   display: flex;
   align-items: center;
-  /* The official link hugs the card's right-hand side — the edge that faces
-     the portrait's open hand. */
   justify-content: flex-end;
-  transform: translate3d(0, 0, 32px);
+  transform: translate3d(0, 0, 36px);
   transform-style: preserve-3d;
 }
 
@@ -1506,107 +1550,140 @@ html {
   align-items: center;
   justify-content: center;
   gap: 9px;
-  padding: 13px 22px;
+  padding: 13px 23px;
   border-radius: 9999px;
-  background: #ffffff;
-  color: hsl(var(--about3d-hue) 78% 26%);
+  background: linear-gradient(
+    145deg,
+    #ffffff 0%,
+    hsl(var(--about3d-hue) 80% 89%) 100%
+  );
+  color: hsl(var(--about3d-hue) 78% 20%);
   font-size: 12.5px;
   font-weight: 800;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.055em;
   text-decoration: none;
   text-transform: uppercase;
-  box-shadow: rgba(0, 0, 0, 0.16) -2px 10px 18px 0px;
-  transform: translate3d(0, 0, 42px);
+  border-top: 2px solid #ffffff;
+  border-right: 1.5px solid #ffffff;
+  box-shadow:
+    -1px 1px 0px hsl(var(--about3d-hue) 48% 72%),
+    -2px 2px 0px hsl(var(--about3d-hue) 50% 68%),
+    -3px 3px 0px hsl(var(--about3d-hue) 52% 64%),
+    -4px 4px 0px hsl(var(--about3d-hue) 54% 60%),
+    -5px 5px 0px hsl(var(--about3d-hue) 56% 56%),
+    -11px 14px 18px -2px hsl(var(--about3d-hue) 70% 18% / 0.34),
+    inset 0 1px 3px #ffffff;
+  transform: translate3d(0, 0, 44px);
   transform-style: preserve-3d;
-  transition: all 0.3s ease-in-out;
-}
-
-.about3d-link:hover,
-.about3d-link:focus-visible {
-  background: #151722;
-  color: #ffffff;
-  transform: translate3d(0, 0, 55px) scale(1.04);
+  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
 }
 
 .about3d-link__icon {
-  width: 15px;
-  height: 15px;
+  width: 14px;
+  height: 14px;
+  flex-shrink: 0;
+  transition: transform 0.25s ease;
 }
 
-/* --------------------------------------------------- the folder's motion */
+.about3d-link:hover {
+  background: hsl(var(--about3d-hue) 80% 18%);
+  color: #ffffff;
+  transform: translate3d(0, 0, 58px) scale(1.04);
+}
+
+.about3d-link:hover .about3d-link__icon {
+  transform: translate(2px, -2px);
+}
+
 .about3d-parent:hover .about3d-card,
 .about3d-parent:focus-within .about3d-card {
-  transform: rotate3d(1, 1, 0, 12deg) translateY(-8px) scale(1.02);
-  box-shadow:
-    hsl(var(--about3d-hue) 60% 25% / 0.4) 36px 58px 32px -30px,
-    hsl(var(--about3d-hue) 60% 25% / 0.24) 0px 30px 35px 0px;
+  transform: rotateX(4deg) rotateY(12deg) translateY(-6px) scale(1.02);
 }
 
 .about3d-parent:hover .about3d-logo-slot,
 .about3d-parent:focus-within .about3d-logo-slot {
-  transform: translate3d(0, 0, 120px);
+  transform: translate3d(0, 0, 114px);
 }
 
-/* ------------------------------------------------------ monochrome plates */
-/* GitHub and Next.js have no brand colour to sample — their marks are black
-   on black. Those two cards take the logo's own dark tone instead (the hue
-   only tints the grey), the glass sheet turns opaque enough to hold dark ink,
-   and the write-up switches from the hue-tinted palette to neutral. The logo
-   keeps a light halo so the dark mark still separates from the dark plate. */
+/* ------------------------------------------------ Dark Tone Plates Override */
 .about3d-parent[data-tone="dark"] .about3d-card {
   background: linear-gradient(
-    135deg,
-    hsl(var(--about3d-hue) 6% 30%) 0%,
-    hsl(var(--about3d-hue) 8% 9%) 100%
+    145deg,
+    hsl(var(--about3d-hue) 6% 32%) 0%,
+    hsl(var(--about3d-hue) 8% 18%) 55%,
+    hsl(var(--about3d-hue) 10% 10%) 100%
   );
+  border-top: 2px solid rgba(255, 255, 255, 0.25);
+  border-right: 1.5px solid rgba(255, 255, 255, 0.15);
   box-shadow:
-    hsl(var(--about3d-hue) 20% 6% / 0.5) 40px 50px 25px -40px,
-    hsl(var(--about3d-hue) 20% 6% / 0.55) 32px 50px 30px -30px;
+    inset 3px 3px 6px rgba(255, 255, 255, 0.15),
+    inset -3px -3px 6px rgba(0, 0, 0, 0.6),
+    -1px 1px 0px #181920,
+    -2px 2px 0px #16171d,
+    -3px 3px 0px #14151a,
+    -4px 4px 0px #121317,
+    -5px 5px 0px #101114,
+    -6px 6px 0px #0e0f12,
+    -7px 7px 0px #0c0d0f,
+    -8px 8px 0px #0a0b0d,
+    -9px 9px 0px #08090a,
+    -10px 10px 0px #060708,
+    -28px 40px 60px -10px rgba(0, 0, 0, 0.5),
+    -8px 18px 28px -10px rgba(0, 0, 0, 0.35);
 }
 
 .about3d-parent[data-tone="dark"] .about3d-glass {
-  background: linear-gradient(
-    0deg,
-    rgba(255, 255, 255, 0.72) 0%,
-    rgba(255, 255, 255, 0.94) 100%
-  );
-}
-
-.about3d-parent[data-tone="dark"] .about3d-logo-img {
-  filter:
-    drop-shadow(0 14px 18px rgba(0, 0, 0, 0.5))
-    drop-shadow(0 0 22px rgba(255, 255, 255, 0.35));
-}
-
-.about3d-parent[data-tone="dark"] .about3d-category {
-  color: rgba(21, 23, 34, 0.6);
+  background:
+    radial-gradient(circle at 88% 14%, rgba(255, 255, 255, 0.18) 0%, transparent 48%),
+    linear-gradient(
+      160deg,
+      rgba(255, 255, 255, 0.88) 0%,
+      rgba(255, 255, 255, 0.94) 50%,
+      rgba(240, 240, 245, 0.98) 100%
+    );
+  box-shadow:
+    -1px 1px 0px rgba(0, 0, 0, 0.12),
+    -2px 2px 0px rgba(0, 0, 0, 0.1),
+    -3px 3px 0px rgba(0, 0, 0, 0.08),
+    -4px 4px 0px rgba(0, 0, 0, 0.06),
+    -8px 10px 16px rgba(0, 0, 0, 0.25),
+    inset 0 2px 8px rgba(255, 255, 255, 0.85);
 }
 
 .about3d-parent[data-tone="dark"] .about3d-title {
   color: #151722;
 }
 
+.about3d-parent[data-tone="dark"] .about3d-category {
+  color: rgba(21, 23, 34, 0.65);
+}
+
 .about3d-parent[data-tone="dark"] .about3d-text {
   color: rgba(43, 48, 60, 0.92);
 }
 
-/* Only the resting pill needs the neutral ink — hovering it flips to the dark
-   fill with white text, which the base rules already handle. */
 .about3d-parent[data-tone="dark"] .about3d-link {
+  background: linear-gradient(145deg, #ffffff 0%, #e5e7eb 100%);
   color: #151722;
-}
-
-.about3d-parent[data-tone="dark"]:hover .about3d-card,
-.about3d-parent[data-tone="dark"]:focus-within .about3d-card {
   box-shadow:
-    hsl(var(--about3d-hue) 20% 6% / 0.55) 36px 58px 32px -30px,
-    hsl(var(--about3d-hue) 20% 6% / 0.4) 0px 30px 35px 0px;
+    -1px 1px 0px rgba(0, 0, 0, 0.15),
+    -2px 2px 0px rgba(0, 0, 0, 0.12),
+    -3px 3px 0px rgba(0, 0, 0, 0.1),
+    -4px 4px 0px rgba(0, 0, 0, 0.08),
+    -5px 5px 0px rgba(0, 0, 0, 0.06),
+    -11px 14px 18px -2px rgba(0, 0, 0, 0.3),
+    inset 0 1px 3px #ffffff;
 }
 
-.about3d-parent:hover .about3d-link,
-.about3d-parent:focus-within .about3d-link {
-  transform: translate3d(0, 0, 52px);
-  box-shadow: rgba(0, 0, 0, 0.24) -4px 14px 20px 0px;
+.about3d-parent[data-tone="dark"] .about3d-link:hover {
+  background: #151722;
+  color: #ffffff;
+}
+
+.about3d-parent[data-tone="dark"] .about3d-logo-img {
+  filter:
+    drop-shadow(0 14px 18px rgba(0, 0, 0, 0.5))
+    drop-shadow(0 0 22px rgba(255, 255, 255, 0.35));
 }
 
 /* The slot the card lives in. Up to 1280px the portrait still claims its full
@@ -1686,7 +1763,7 @@ html {
 
   .about3d-parent:hover .about3d-card,
   .about3d-parent:focus-within .about3d-card {
-    transform: rotate3d(1, 1, 0, 18deg);
+    transform: rotateX(7deg) rotateY(16deg) rotateZ(-0.8deg);
   }
 }
 
