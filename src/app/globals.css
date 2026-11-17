@@ -26,7 +26,7 @@
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: "Montserrat", sans-serif;
+  font-family: inherit;
 }
 
 html {
@@ -100,7 +100,6 @@ html {
     scale(0.98)
     rotate(var(--overlay-rotation));
   transform-origin: 50% 82%;
-  filter: drop-shadow(0 18px 22px rgba(15, 23, 42, 0.18));
   transition:
     opacity 500ms ease,
     transform 550ms cubic-bezier(0.22, 1, 0.36, 1);
@@ -109,8 +108,8 @@ html {
 
 .product-overlay--mobile {
   --overlay-rotation: -0.8deg;
-  /* ponytail: phones sit beside the head; at 18vh the store icons hide behind the body */
   bottom: 300px;
+  filter: none;
   /* ponytail: the clip has no alpha channel, so its studio backdrop is keyed
      out into a mask instead (see .video-mask) — the video paints only where
      the mask is opaque, so the phones float on the ambient background and the
@@ -221,7 +220,7 @@ html {
   font-size: 11px;
   font-weight: 700;
   line-height: 1.15;
-  background-color: #888888;
+  background-color: #4b5563;
   color: transparent;
   text-shadow: 1px 1px 2px rgba(255, 255, 255, 0.5);
   -webkit-background-clip: text;
@@ -261,6 +260,11 @@ html {
   opacity: 0;
   visibility: hidden;
   pointer-events: none;
+}
+
+html[data-booted="1"] .portfolio-boot,
+html.is-booted .portfolio-boot {
+  display: none !important;
 }
 
 .portfolio-boot__video {
@@ -317,19 +321,46 @@ html {
     max-height: none;
   }
 
-  /* ponytail: portrait stage joins the mobile flow — scale the fixed 600px
-     desktop stage down, drop the desktop side-shift and the vh-based
-     overlay offset (meaningless when the stage is only 300px tall) */
+  /* ponytail: keep laptop horizontal stage shift on mobile while scaling down the 600px stage */
   .product-stage {
-    height: 300px;
-    transform: translate3d(0, 0, 0);
+    height: 250px;
+    transform: translate3d(var(--stage-shift), 0, 0);
+  }
+
+  .product-stage--mobile {
+    --stage-shift: 18vw;
+  }
+
+  .product-stage--web {
+    --stage-shift: -20vw;
   }
 
   .product-overlay {
-    bottom: 130px;
-    width: min(860px, 88vw);
-    /* the side nudge shrinks with the artwork on phones */
-    --overlay-shift-x: 14px;
+    bottom: 105px;
+    width: min(560px, 76vw);
+    --overlay-shift-x: 12px;
+  }
+
+  .product-overlay--web {
+    bottom: 128px;
+    width: min(640px, 78vw);
+  }
+
+  .hero-work-link--compact {
+    width: 68px;
+    height: 68px;
+    border-radius: 14px;
+    margin-top: 6px;
+  }
+
+  .hero-work-link--compact .hero-work-link__content {
+    padding: 6px;
+    border-radius: 14px;
+  }
+
+  .hero-work-link--compact .hero-work-link__text {
+    font-size: 9px;
+    line-height: 1.1;
   }
 }
 
@@ -1069,8 +1100,7 @@ html {
   opacity: 1;
   animation: uiverse-send-wave 0.5s ease forwards calc(var(--i) * 0.02s);
 }
-.uiverse-send-btn:focus p span,
-.uiverse-send-btn:focus-visible p span {
+.uiverse-send-btn[data-sent="true"] p span {
   opacity: 1;
   animation: uiverse-send-disapear 0.6s ease forwards calc(var(--i) * 0.03s);
 }
@@ -1097,12 +1127,10 @@ html {
 .uiverse-send-btn:hover .uiverse-send-state--default .uiverse-send-icon {
   transform: rotate(45deg) scale(1.25);
 }
-.uiverse-send-btn:focus .uiverse-send-state--default svg,
-.uiverse-send-btn:focus-visible .uiverse-send-state--default svg {
+.uiverse-send-btn[data-sent="true"] .uiverse-send-state--default svg {
   animation: uiverse-send-takeoff 0.8s linear forwards;
 }
-.uiverse-send-btn:focus .uiverse-send-state--default .uiverse-send-icon,
-.uiverse-send-btn:focus-visible .uiverse-send-state--default .uiverse-send-icon {
+.uiverse-send-btn[data-sent="true"] .uiverse-send-state--default .uiverse-send-icon {
   transform: rotate(0) scale(1.25);
 }
 @keyframes uiverse-send-takeoff {
@@ -1125,8 +1153,7 @@ html {
   left: -5px;
   background: linear-gradient(to right, transparent, rgba(0, 0, 0, 0.5));
 }
-.uiverse-send-btn:focus .uiverse-send-state--default .uiverse-send-icon:before,
-.uiverse-send-btn:focus-visible .uiverse-send-state--default .uiverse-send-icon:before {
+.uiverse-send-btn[data-sent="true"] .uiverse-send-state--default .uiverse-send-icon:before {
   animation: uiverse-send-contrail 0.8s linear forwards;
 }
 @keyframes uiverse-send-contrail {
@@ -1143,9 +1170,6 @@ html {
   display: flex;
   position: relative;
 }
-.uiverse-send-state--default span:nth-child(4) {
-  margin-right: 5px;
-}
 .uiverse-send-state--sent {
   display: none;
 }
@@ -1153,21 +1177,17 @@ html {
   transform: scale(1.25);
   margin-right: 8px;
 }
-.uiverse-send-btn:focus .uiverse-send-state--default,
-.uiverse-send-btn:focus-visible .uiverse-send-state--default {
+.uiverse-send-btn[data-sent="true"] .uiverse-send-state--default {
   position: absolute;
 }
-.uiverse-send-btn:focus .uiverse-send-state--sent,
-.uiverse-send-btn:focus-visible .uiverse-send-state--sent {
+.uiverse-send-btn[data-sent="true"] .uiverse-send-state--sent {
   display: flex;
 }
-.uiverse-send-btn:focus .uiverse-send-state--sent span,
-.uiverse-send-btn:focus-visible .uiverse-send-state--sent span {
+.uiverse-send-btn[data-sent="true"] .uiverse-send-state--sent span {
   opacity: 0;
   animation: uiverse-send-slide-down 0.8s ease forwards calc(var(--i) * 0.2s);
 }
-.uiverse-send-btn:focus .uiverse-send-state--sent .uiverse-send-icon svg,
-.uiverse-send-btn:focus-visible .uiverse-send-state--sent .uiverse-send-icon svg {
+.uiverse-send-btn[data-sent="true"] .uiverse-send-state--sent .uiverse-send-icon svg {
   opacity: 0;
   animation: uiverse-send-appear 1.2s ease forwards 0.8s;
 }
@@ -1266,12 +1286,24 @@ html {
   to { opacity: 1; }
 }
 
-.about-float-slow { animation: about-float-slow 6s ease-in-out infinite; }
-.about-float-badge { animation: about-float-badge 4.5s ease-in-out infinite; }
-.about-float-reverse { animation: about-float-reverse 7s ease-in-out infinite; }
-.about-float-orb { animation: about-float-orb 8s ease-in-out infinite; }
+.about-float-badge {
+  animation: about-float-badge 4.5s ease-in-out infinite;
+}
+
+.about-float-slow,
+.about-float-reverse,
+.about-float-orb {
+  animation: none;
+}
 
 .about-fade-in { animation: about-fade-in 200ms ease both; }
+
+/* Offscreen About: freeze the infinite floats instead of compositing them forever */
+.about-section[data-visible="false"] .about-float-slow,
+.about-section[data-visible="false"] .about-float-badge,
+.about-section[data-visible="false"] .about-float-reverse {
+  animation-play-state: paused;
+}
 
 /* --------------------------------------------------- illustrative depth */
 .about-card-shadow {
@@ -1377,393 +1409,611 @@ html {
 }
 
 /* ==========================================================
-   VERSION 3: Studio Luminous Satin Ceramic (High-Key Light)
-   Drop-in CSS for existing .about3d-* HTML structure
+   About Me Collector 3D Card (Option 1) + V3 Frosted Glass Pedestal
    ========================================================== */
 :root {
-  --about3d-hue: 48; /* 48: Python, 194: Flutter, 206: React, 355: Laravel */
+  --about3d-hue: 206;
+  --about3d-hue2: 240;
 }
 
 .about3d-parent {
   position: relative;
-  width: 100%;
-  max-width: 320px;
-  height: 452px;
-  perspective: 1150px;
+  width: 275px;
+  height: 472px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  padding-top: 6px;
+  perspective: 1180px;
   user-select: none;
+}
+
+@keyframes about3d-coin-flip {
+  0% {
+    opacity: 0.45;
+    transform: translateY(-8px) rotateX(6deg) rotateY(165deg) scale(0.92);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(-2px) rotateX(3deg) rotateY(-14deg) scale(1.01);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0px) rotateX(4deg) rotateY(-11deg) scale(1);
+  }
+}
+
+@keyframes about3d-card-sway {
+  0%, 100% {
+    transform: translateY(0px) rotateX(4deg) rotateY(-11deg);
+  }
+  50% {
+    transform: translateY(-4px) rotateX(2.5deg) rotateY(11deg);
+  }
 }
 
 .about3d-card {
   position: relative;
-  height: 100%;
-  border-radius: 44px;
+  z-index: 10;
+  width: 268px;
+  height: 382px;
   transform-style: preserve-3d;
-  transform: rotateX(7deg) rotateY(16deg) rotateZ(-0.8deg);
+  animation:
+    about3d-coin-flip 420ms cubic-bezier(0.22, 1, 0.36, 1) both,
+    about3d-card-sway 5.8s ease-in-out 420ms infinite;
+  transition: transform 260ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.about-section[data-visible="false"] .about3d-card {
+  animation-play-state: paused;
+}
+
+.about3d-parent:hover .about3d-card {
+  animation: none;
+  transform: translateY(-2px) rotateX(1deg) rotateY(0deg);
+}
+
+.about3d-parent:hover .about3d-edge {
+  transform: translate3d(0px, 2px, -6px);
+}
+
+.about3d-parent:hover .about3d-foil-glare {
+  transform: translate3d(4%, -4%, 0) rotate(10deg);
+}
+
+.about3d-parent:hover .about3d-logo-slot {
+  transform: translate3d(0px, -6px, 46px) scale(1.08);
+}
+
+.about3d-parent:hover .about3d-logo-reflection {
+  transform: translate3d(0px, 0, 2px) scaleY(-0.56) skewX(0deg);
+}
+
+.about3d-edge {
+  position: absolute;
+  inset: 0;
+  border-radius: 17px;
   background: linear-gradient(
-    145deg,
-    hsl(var(--about3d-hue) 86% 72%) 0%,
-    hsl(var(--about3d-hue) 78% 58%) 55%,
-    hsl(calc(var(--about3d-hue) - 6) 72% 48%) 100%
+    135deg,
+    #ffffff 0%,
+    hsl(var(--about3d-hue) 70% 80%) 40%,
+    hsl(var(--about3d-hue) 76% 52%) 65%,
+    hsl(var(--about3d-hue) 82% 36%) 100%
   );
-  border-top: 2px solid #ffffff;
-  border-right: 1.5px solid rgba(255, 255, 255, 0.85);
+  transform: translate3d(3.5px, 2px, -6px);
+  transition: transform 240ms cubic-bezier(0.22, 1, 0.36, 1);
+  box-shadow: 0 22px 38px -12px rgba(15, 23, 42, 0.32);
+  pointer-events: none;
+}
+
+.about3d-collector-face {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 17px;
+  padding: 8px;
+  background: linear-gradient(
+    135deg,
+    #ffffff 0%,
+    hsl(var(--about3d-hue) 68% 86%) 38%,
+    hsl(var(--about3d-hue) 76% 54%) 62%,
+    hsl(var(--about3d-hue) 80% 38%) 100%
+  );
+  border: 1.5px solid rgba(255, 255, 255, 0.85);
   box-shadow:
-    inset 3px 3px 6px rgba(255, 255, 255, 0.75),
-    inset -3px -3px 6px hsl(var(--about3d-hue) 70% 35% / 0.35),
-    /* 10-Layer Smooth Ceramic Extruded Wall */
-    -1px 1px 0px hsl(calc(var(--about3d-hue) - 3) 70% 52%),
-    -2px 2px 0px hsl(calc(var(--about3d-hue) - 3) 70% 50%),
-    -3px 3px 0px hsl(calc(var(--about3d-hue) - 4) 70% 48%),
-    -4px 4px 0px hsl(calc(var(--about3d-hue) - 4) 70% 46%),
-    -5px 5px 0px hsl(calc(var(--about3d-hue) - 5) 72% 44%),
-    -6px 6px 0px hsl(calc(var(--about3d-hue) - 5) 72% 42%),
-    -7px 7px 0px hsl(calc(var(--about3d-hue) - 6) 72% 40%),
-    -8px 8px 0px hsl(calc(var(--about3d-hue) - 6) 74% 38%),
-    -9px 9px 0px hsl(calc(var(--about3d-hue) - 7) 74% 36%),
-    -10px 10px 0px hsl(calc(var(--about3d-hue) - 8) 75% 34%),
-    /* Soft Diffused Studio Floor Shadow */
-    -28px 40px 60px -10px hsl(var(--about3d-hue) 65% 30% / 0.25),
-    -8px 18px 28px -10px rgba(15, 23, 42, 0.1);
-  transition: all 0.45s cubic-bezier(0.2, 0.8, 0.2, 1);
+    inset 0 1px 2px rgba(255, 255, 255, 0.94),
+    inset 0 -2px 6px hsl(var(--about3d-hue) 80% 24% / 0.35);
+  transform-style: preserve-3d;
+}
+
+.about3d-foil-clip {
+  position: absolute;
+  inset: 0;
+  border-radius: inherit;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: 30;
+  transform: translateZ(2px);
+}
+
+.about3d-foil-glare {
+  position: absolute;
+  inset: -45%;
+  background: linear-gradient(
+    114deg,
+    transparent 30%,
+    hsl(var(--about3d-hue) 88% 66% / 0.18) 41%,
+    rgba(255, 255, 255, 0.42) 48%,
+    hsl(var(--about3d-hue2) 86% 68% / 0.16) 54%,
+    rgba(255, 255, 255, 0.06) 60%,
+    transparent 68%
+  );
+  transform: translate3d(-12%, -4%, 0) rotate(10deg);
+  transition: transform 240ms cubic-bezier(0.22, 1, 0.36, 1);
+  pointer-events: none;
 }
 
 .about3d-glass {
-  position: absolute;
-  top: 9px;
-  right: 8px;
-  bottom: 11px;
-  left: 13px;
-  border-radius: 36px;
-  border-top-right-radius: 96px;
-  /* High-Key Satin Ceramic with Top-Right Studio Key-Light Sheen */
-  background:
-    radial-gradient(circle at 88% 14%, rgba(255, 255, 255, 0.55) 0%, transparent 48%),
-    linear-gradient(
-      160deg,
-      hsl(var(--about3d-hue) 90% 85%) 0%,
-      hsl(var(--about3d-hue) 84% 76%) 50%,
-      hsl(var(--about3d-hue) 78% 69%) 100%
-    );
-  border-top: 2px solid #ffffff;
-  border-right: 1.5px solid rgba(255, 255, 255, 0.92);
-  border-left: 1px solid rgba(255, 255, 255, 0.65);
-  box-shadow:
-    -1px 1px 0px hsl(var(--about3d-hue) 64% 62%),
-    -2px 2px 0px hsl(var(--about3d-hue) 64% 58%),
-    -3px 3px 0px hsl(var(--about3d-hue) 66% 54%),
-    -4px 4px 0px hsl(var(--about3d-hue) 68% 50%),
-    -8px 10px 16px hsl(var(--about3d-hue) 70% 24% / 0.25),
-    inset 0 2px 8px rgba(255, 255, 255, 0.75);
-  transform: translate3d(0, 0, 24px);
-  transform-style: preserve-3d;
-  transition: all 0.45s ease-in-out;
-}
-
-.about3d-content {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  border-radius: 10px;
+  background: linear-gradient(
+    142deg,
+    #ffffff 0%,
+    #f8fafc 36%,
+    hsl(var(--about3d-hue) 74% 52%) 58%,
+    hsl(var(--about3d-hue) 78% 42%) 80%,
+    hsl(var(--about3d-hue) 82% 34%) 100%
+  );
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  padding: 8px 10px 10px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
-  padding: 142px 26px 0 28px;
-  transform: translate3d(0, 0, 32px);
   transform-style: preserve-3d;
+  color: #ffffff;
 }
 
-.about3d-title {
-  order: 1;
-  display: block;
-  font-size: 29px;
-  font-weight: 800;
-  line-height: 1.15;
-  letter-spacing: -0.02em;
-  color: hsl(var(--about3d-hue) 80% 18%);
-  background: none;
-  border: none;
-  padding: 0;
-  text-align: left;
-  cursor: pointer;
+.about3d-header {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+  gap: 8px;
+  min-height: 24px;
+  margin-bottom: 5px;
 }
 
 .about3d-category {
-  order: 2;
-  margin-top: 2px;
-  font-size: 10.5px;
-  font-weight: 700;
-  letter-spacing: 0.15em;
+  font-size: 8.5px;
+  font-weight: 800;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
-  color: hsl(var(--about3d-hue) 68% 24% / 0.82);
+  color: #ffffff;
+  background: linear-gradient(
+    180deg,
+    hsl(var(--about3d-hue) 78% 46%) 0%,
+    hsl(var(--about3d-hue) 82% 34%) 100%
+  );
+  border: 1px solid rgba(255, 255, 255, 0.45);
+  padding: 3px 7px;
+  border-radius: 5px;
+  box-shadow: 0 2px 4px hsl(var(--about3d-hue) 70% 24% / 0.28);
+  white-space: nowrap;
+  flex-shrink: 0;
 }
 
-.about3d-text {
-  order: 3;
-  min-height: 132px;
-  margin-top: 16px;
-  font-size: 13.8px;
-  font-weight: 500;
-  line-height: 1.92;
-  letter-spacing: 0.01em;
-  color: hsl(var(--about3d-hue) 64% 20% / 0.88);
+.about3d-title {
+  flex: 1;
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  font-size: 17px;
+  font-weight: 800;
+  line-height: 1.08;
+  letter-spacing: -0.025em;
+  color: #0f172a;
+  text-shadow: 0 1px 0 rgba(255, 255, 255, 0.7);
+  margin: 0;
+  padding-right: 4px;
+  text-align: center;
+  pointer-events: none;
 }
 
-.about3d-logo {
-  position: absolute;
-  top: 20px;
-  right: 22px;
+/* Recessed 3D White Mirror Stage Window */
+.about3d-diorama-frame {
+  position: relative;
+  display: block;
+  width: 100%;
+  height: 172px;
+  border-radius: 7px;
+  padding: 3px;
+  background: linear-gradient(145deg, #94a3b8 0%, #f8fafc 45%, #64748b 100%);
+  box-shadow: 0 3px 6px rgba(15, 23, 42, 0.16), inset 0 1px 1px rgba(255, 255, 255, 0.92);
   transform-style: preserve-3d;
+}
+
+.about3d-diorama-window {
+  position: relative;
+  display: flex;
+  width: 100%;
+  height: 100%;
+  border-radius: 4px;
+  overflow: hidden;
+  transform: translateZ(-4px);
+  background: linear-gradient(
+    180deg,
+    #ffffff 0%,
+    #f8fafc 36%,
+    #eef2f7 63%,
+    #dfe7f1 65%,
+    #f1f5f9 82%,
+    #ffffff 100%
+  );
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transform-style: preserve-3d;
+  box-shadow:
+    inset 0 10px 16px rgba(15, 23, 42, 0.16),
+    inset 4px 0 10px rgba(15, 23, 42, 0.08),
+    inset 0 -2px 6px rgba(15, 23, 42, 0.08);
+}
+
+.about3d-diorama-sky {
+  position: absolute;
+  inset: -16px;
+  background:
+    radial-gradient(ellipse 68% 30% at 28% 22%, rgba(255, 255, 255, 0.96), transparent 72%),
+    radial-gradient(ellipse 56% 26% at 76% 32%, rgba(255, 255, 255, 0.85), transparent 70%);
+  transform: translate3d(4px, 2px, -18px);
+  pointer-events: none;
+}
+
+.about3d-mirror-floor {
+  position: absolute;
+  left: -8%;
+  right: -8%;
+  bottom: -2px;
+  height: 36%;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.96) 0%,
+    rgba(241, 245, 249, 0.9) 24%,
+    rgba(226, 232, 240, 0.92) 60%,
+    #ffffff 100%
+  );
+  border-top: 1px solid #ffffff;
+  box-shadow: inset 0 6px 14px rgba(148, 163, 184, 0.16);
+  transform: translate3d(0, 0, -6px);
+  pointer-events: none;
+}
+
+.about3d-mirror-sheen {
+  position: absolute;
+  inset: 0;
+  background: linear-gradient(108deg, transparent 22%, rgba(255, 255, 255, 0.68) 45%, transparent 66%);
+  transform: translateX(-6%);
+  opacity: 0.72;
+}
+
+.about3d-floor-shadow {
+  position: absolute;
+  bottom: 26px;
+  width: 88px;
+  height: 14px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(15, 23, 42, 0.42), transparent 72%);
+  filter: blur(3px);
+  transform: translate3d(5px, 0, -2px);
+  pointer-events: none;
+}
+
+.about3d-logo-reflection {
+  position: absolute;
+  bottom: -8px;
+  width: 92px;
+  height: 56px;
+  display: grid;
+  place-items: center;
+  transform: translate3d(-4px, 0, 2px) scaleY(-0.56) skewX(5deg);
+  transition: transform 240ms cubic-bezier(0.22, 1, 0.36, 1);
+  opacity: 0.34;
+  filter: blur(1.2px);
+  mask-image: linear-gradient(to top, rgba(0, 0, 0, 0.9) 15%, transparent 92%);
+  -webkit-mask-image: linear-gradient(to top, rgba(0, 0, 0, 0.9) 15%, transparent 92%);
+  pointer-events: none;
 }
 
 .about3d-logo-slot {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  z-index: 40;
+  width: 118px;
+  height: 118px;
+  margin-left: -59px;
+  margin-top: -66px;
   display: grid;
-  place-content: center;
-  width: 104px;
-  height: 104px;
-  transform: translate3d(0, 0, 88px);
-  transition: transform 0.45s cubic-bezier(0.2, 0.8, 0.2, 1);
+  place-items: center;
+  transform: translate3d(0, -4px, 42px) scale(1.06);
+  transition: transform 240ms cubic-bezier(0.22, 1, 0.36, 1);
+  pointer-events: none;
 }
 
-.about3d-logo-img {
-  width: 92px;
-  height: 92px;
+.about3d-logo-img,
+.about3d-logo-refl-img {
+  width: 100%;
+  height: 100%;
   object-fit: contain;
-  filter:
-    drop-shadow(1px -1px 0px rgba(255, 255, 255, 0.7))
-    drop-shadow(-1px 1px 0px hsl(var(--about3d-hue) 64% 38%))
-    drop-shadow(-2px 2px 0px hsl(var(--about3d-hue) 66% 34%))
-    drop-shadow(-3px 3px 0px hsl(var(--about3d-hue) 68% 30%))
-    drop-shadow(-4px 4px 0px hsl(var(--about3d-hue) 70% 26%))
-    drop-shadow(-12px 16px 14px hsl(var(--about3d-hue) 72% 18% / 0.36));
+  display: block;
+}
+
+.about3d-content {
+  flex: 1;
+  margin: 7px 0;
+  padding: 7px 9px;
+  border-radius: 8px;
+  background: rgba(15, 23, 42, 0.28);
+  border: 1px solid rgba(255, 255, 255, 0.34);
+  backdrop-filter: blur(4px);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  gap: 3px;
+  min-height: 0;
+}
+
+.about3d-ability {
+  font-size: 12.5px;
+  font-weight: 800;
+  line-height: 1.15;
+  letter-spacing: 0.03em;
+  text-transform: uppercase;
+  color: #ffffff;
+  margin: 0;
+}
+
+.about3d-text {
+  font-size: 11px;
+  line-height: 1.42;
+  font-weight: 500;
+  color: #e2e8f0;
+  margin: 0;
+  display: -webkit-box;
+  -webkit-line-clamp: 4;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
 }
 
 .about3d-bottom {
-  position: absolute;
-  bottom: 24px;
-  left: 24px;
-  right: 20px;
   display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  transform: translate3d(0, 0, 36px);
-  transform-style: preserve-3d;
+  justify-content: center;
+  position: relative;
+  z-index: 8;
 }
 
+/* Official Link Footer Button (Uiverse.io by cssbuttons-io) */
 .about3d-link {
+  position: relative;
+  z-index: 1;
+  min-width: 74%;
+  max-width: 92%;
+  font-size: 10.5px;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  text-decoration: none;
+  padding: 0.78em 1.5em;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  gap: 9px;
-  padding: 13px 23px;
-  border-radius: 9999px;
-  background: linear-gradient(
-    145deg,
-    #ffffff 0%,
-    hsl(var(--about3d-hue) 80% 89%) 100%
-  );
-  color: hsl(var(--about3d-hue) 78% 20%);
-  font-size: 12.5px;
-  font-weight: 800;
-  letter-spacing: 0.055em;
-  text-decoration: none;
-  text-transform: uppercase;
-  border-top: 2px solid #ffffff;
-  border-right: 1.5px solid #ffffff;
-  box-shadow:
-    -1px 1px 0px hsl(var(--about3d-hue) 48% 72%),
-    -2px 2px 0px hsl(var(--about3d-hue) 50% 68%),
-    -3px 3px 0px hsl(var(--about3d-hue) 52% 64%),
-    -4px 4px 0px hsl(var(--about3d-hue) 54% 60%),
-    -5px 5px 0px hsl(var(--about3d-hue) 56% 56%),
-    -11px 14px 18px -2px hsl(var(--about3d-hue) 70% 18% / 0.34),
-    inset 0 1px 3px #ffffff;
-  transform: translate3d(0, 0, 44px);
-  transform-style: preserve-3d;
-  transition: all 0.3s cubic-bezier(0.2, 0.8, 0.2, 1);
-}
-
-.about3d-link__icon {
-  width: 14px;
-  height: 14px;
-  flex-shrink: 0;
-  transition: transform 0.25s ease;
+  cursor: pointer;
+  border-radius: 6em;
+  transition: all 0.2s;
+  border: 1px solid rgba(15, 23, 42, 0.08);
+  font-weight: 700;
+  color: #000000;
+  background-color: #ffffff;
+  box-shadow: 0 4px 10px rgba(15, 23, 42, 0.14);
+  text-shadow: none;
 }
 
 .about3d-link:hover {
-  background: hsl(var(--about3d-hue) 80% 18%);
-  color: #ffffff;
-  transform: translate3d(0, 0, 58px) scale(1.04);
+  transform: translateY(-3px);
+  box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
 }
 
-.about3d-link:hover .about3d-link__icon {
-  transform: translate(2px, -2px);
+.about3d-link:active {
+  transform: translateY(-1px);
+  box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
 }
 
-.about3d-parent:hover .about3d-card,
-.about3d-parent:focus-within .about3d-card {
-  transform: rotateX(4deg) rotateY(12deg) translateY(-6px) scale(1.02);
+.about3d-link::after {
+  content: "";
+  display: inline-block;
+  height: 100%;
+  width: 100%;
+  border-radius: 100px;
+  position: absolute;
+  top: 0;
+  left: 0;
+  z-index: -1;
+  transition: all 0.4s;
+  background-color: #ffffff;
 }
 
-.about3d-parent:hover .about3d-logo-slot,
-.about3d-parent:focus-within .about3d-logo-slot {
-  transform: translate3d(0, 0, 114px);
+.about3d-link:hover::after {
+  transform: scaleX(1.4) scaleY(1.6);
+  opacity: 0;
 }
 
-/* ------------------------------------------------ Dark Tone Plates Override */
-.about3d-parent[data-tone="dark"] .about3d-card {
+/* ------------------------------------------------ Two-Color Logos + Obsidian Frame (Combo 2) */
+.about3d-parent[data-color-mode="two"] .about3d-edge {
   background: linear-gradient(
-    145deg,
-    hsl(var(--about3d-hue) 6% 32%) 0%,
-    hsl(var(--about3d-hue) 8% 18%) 55%,
-    hsl(var(--about3d-hue) 10% 10%) 100%
+    135deg,
+    hsl(var(--about3d-hue) 70% 70%) 0%,
+    hsl(var(--about3d-hue2) 60% 44%) 46%,
+    #1e293b 62%,
+    #020617 100%
   );
-  border-top: 2px solid rgba(255, 255, 255, 0.25);
-  border-right: 1.5px solid rgba(255, 255, 255, 0.15);
-  box-shadow:
-    inset 3px 3px 6px rgba(255, 255, 255, 0.15),
-    inset -3px -3px 6px rgba(0, 0, 0, 0.6),
-    -1px 1px 0px #181920,
-    -2px 2px 0px #16171d,
-    -3px 3px 0px #14151a,
-    -4px 4px 0px #121317,
-    -5px 5px 0px #101114,
-    -6px 6px 0px #0e0f12,
-    -7px 7px 0px #0c0d0f,
-    -8px 8px 0px #0a0b0d,
-    -9px 9px 0px #08090a,
-    -10px 10px 0px #060708,
-    -28px 40px 60px -10px rgba(0, 0, 0, 0.5),
-    -8px 18px 28px -10px rgba(0, 0, 0, 0.35);
+}
+
+.about3d-parent[data-color-mode="two"] .about3d-collector-face {
+  background: linear-gradient(
+    135deg,
+    hsl(var(--about3d-hue) 74% 84%) 0%,
+    hsl(var(--about3d-hue2) 64% 52%) 38%,
+    #1e293b 60%,
+    #090d16 100%
+  );
+  border-color: rgba(255, 255, 255, 0.65);
+}
+
+.about3d-parent[data-color-mode="two"] .about3d-glass {
+  background: linear-gradient(
+    142deg,
+    hsl(var(--about3d-hue) 78% 90%) 0%,
+    hsl(var(--about3d-hue2) 62% 80%) 35%,
+    #1e293b 56%,
+    #0f172a 76%,
+    #05070c 100%
+  );
+}
+
+.about3d-parent[data-color-mode="two"] .about3d-category,
+.about3d-parent[data-tone="dark"] .about3d-category {
+  background: linear-gradient(180deg, #0f172a 0%, #020617 100%);
+  border-color: rgba(255, 255, 255, 0.22);
+  box-shadow: 0 2px 4px rgba(15, 23, 42, 0.25);
+}
+
+.about3d-parent[data-color-mode="two"] .about3d-content,
+.about3d-parent[data-tone="dark"] .about3d-content {
+  background: rgba(9, 13, 22, 0.72);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+/* ------------------------------------------------ Monochrome White + Obsidian Plates (Next.js / GitHub) */
+.about3d-parent[data-tone="dark"] .about3d-edge {
+  background: linear-gradient(135deg, #ffffff 0%, #cbd5e1 45%, #1e293b 58%, #020617 100%);
+}
+
+.about3d-parent[data-tone="dark"] .about3d-collector-face {
+  background: linear-gradient(135deg, #ffffff 0%, #e2e8f0 38%, #475569 55%, #0f172a 100%);
+  border-color: rgba(255, 255, 255, 0.65);
 }
 
 .about3d-parent[data-tone="dark"] .about3d-glass {
-  background:
-    radial-gradient(circle at 88% 14%, rgba(255, 255, 255, 0.18) 0%, transparent 48%),
-    linear-gradient(
-      160deg,
-      rgba(255, 255, 255, 0.88) 0%,
-      rgba(255, 255, 255, 0.94) 50%,
-      rgba(240, 240, 245, 0.98) 100%
-    );
+  background: linear-gradient(142deg, #ffffff 0%, #f1f5f9 36%, #334155 56%, #0f172a 76%, #05070c 100%);
+}
+
+/* ------------------------------------------------ V3 Wide Aluminum & Dual Bright-Blue Side-Light Pedestal */
+.about3d-plinth-v3 {
+  position: relative;
+  width: 274px;
+  height: 104px;
+  margin-top: -14px;
+  z-index: 2;
+  pointer-events: none;
+}
+
+.about3d-plinth-floor-shadow {
+  position: absolute;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  height: 24px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(15, 23, 42, 0.34), transparent 74%);
+}
+
+.about3d-plinth-alu-foot {
+  position: absolute;
+  left: 4px;
+  right: 4px;
+  bottom: 12px;
+  height: 42px;
+  border-radius: 132px / 21px;
+  background: linear-gradient(90deg, #64748b 0%, #cbd5e1 26%, #f8fafc 48%, #94a3b8 76%, #475569 100%);
+  box-shadow: 0 16px 24px -4px rgba(15, 23, 42, 0.32), inset 0 -5px 10px rgba(30, 41, 59, 0.28);
+}
+
+.about3d-plinth-alu-top {
+  position: absolute;
+  left: 4px;
+  right: 4px;
+  bottom: 36px;
+  height: 28px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at 45% 40%, #ffffff, #cbd5e1 65%, #94a3b8);
+  box-shadow: inset 0 1px 2px #ffffff;
+}
+
+.about3d-emitter-left,
+.about3d-emitter-right {
+  position: absolute;
+  bottom: 43px;
+  width: 44px;
+  height: 12px;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at 50% 50%, #ffffff 22%, rgba(56, 189, 248, 0.98) 65%, rgba(14, 165, 233, 0) 100%);
   box-shadow:
-    -1px 1px 0px rgba(0, 0, 0, 0.12),
-    -2px 2px 0px rgba(0, 0, 0, 0.1),
-    -3px 3px 0px rgba(0, 0, 0, 0.08),
-    -4px 4px 0px rgba(0, 0, 0, 0.06),
-    -8px 10px 16px rgba(0, 0, 0, 0.25),
-    inset 0 2px 8px rgba(255, 255, 255, 0.85);
+    0 0 16px rgba(56, 189, 248, 0.95),
+    0 0 32px rgba(14, 165, 233, 0.72),
+    0 0 46px rgba(59, 130, 246, 0.45);
 }
 
-.about3d-parent[data-tone="dark"] .about3d-title {
-  color: #151722;
+.about3d-emitter-left {
+  left: 14px;
+  transform: rotate(-5deg);
 }
 
-.about3d-parent[data-tone="dark"] .about3d-category {
-  color: rgba(21, 23, 34, 0.65);
+.about3d-emitter-right {
+  right: 14px;
+  transform: rotate(5deg);
 }
 
-.about3d-parent[data-tone="dark"] .about3d-text {
-  color: rgba(43, 48, 60, 0.92);
+.about3d-beam-left,
+.about3d-beam-right {
+  position: absolute;
+  bottom: 48px;
+  width: 96px;
+  height: 86px;
+  background: linear-gradient(
+    to top,
+    rgba(255, 255, 255, 0.85) 0%,
+    rgba(56, 189, 248, 0.62) 28%,
+    rgba(14, 165, 233, 0.24) 68%,
+    rgba(14, 165, 233, 0) 100%
+  );
+  filter: blur(2.5px);
 }
 
-.about3d-parent[data-tone="dark"] .about3d-link {
-  background: linear-gradient(145deg, #ffffff 0%, #e5e7eb 100%);
-  color: #151722;
-  box-shadow:
-    -1px 1px 0px rgba(0, 0, 0, 0.15),
-    -2px 2px 0px rgba(0, 0, 0, 0.12),
-    -3px 3px 0px rgba(0, 0, 0, 0.1),
-    -4px 4px 0px rgba(0, 0, 0, 0.08),
-    -5px 5px 0px rgba(0, 0, 0, 0.06),
-    -11px 14px 18px -2px rgba(0, 0, 0, 0.3),
-    inset 0 1px 3px #ffffff;
+.about3d-beam-left {
+  left: -4px;
+  clip-path: polygon(28% 100%, 68% 100%, 92% 0%, 0% 0%);
 }
 
-.about3d-parent[data-tone="dark"] .about3d-link:hover {
-  background: #151722;
-  color: #ffffff;
+.about3d-beam-right {
+  right: -4px;
+  clip-path: polygon(32% 100%, 72% 100%, 100% 0%, 8% 0%);
 }
 
-.about3d-parent[data-tone="dark"] .about3d-logo-img {
-  filter:
-    drop-shadow(0 14px 18px rgba(0, 0, 0, 0.5))
-    drop-shadow(0 0 22px rgba(255, 255, 255, 0.35));
-}
-
-/* The slot the card lives in. Up to 1280px the portrait still claims its full
-   750px, so the plate takes exactly the room left of his arm — it steps in
-   from 330px as the viewport narrows, never sliding under the silhouette. */
 @media (min-width: 1024px) {
   .about3d-slot {
-    width: min(330px, calc(50vw - 280px));
-  }
-}
-
-/* The narrow end of that range is a smaller card, so its type and its logo
-   step down together to keep the write-up clear of the official-site pill. */
-@media (min-width: 1024px) and (max-width: 1279px) {
-  .about3d-content {
-    padding: 130px 20px 0;
-  }
-
-  .about3d-category {
-    font-size: 9.5px;
-  }
-
-  .about3d-title {
-    font-size: 23px;
-  }
-
-  .about3d-text {
-    min-height: 127px;
-    margin-top: 12px;
-    font-size: 12.5px;
-    line-height: 2;
-  }
-
-  .about3d-logo {
-    top: 18px;
-    right: 16px;
-  }
-
-  .about3d-logo-slot {
-    width: 88px;
-    height: 88px;
-  }
-
-  .about3d-logo-img {
-    width: 80px;
-    height: 80px;
-  }
-
-  .about3d-bottom {
-    bottom: 20px;
-    left: 18px;
-    right: 18px;
-  }
-
-  .about3d-link {
-    padding: 11px 18px;
-    font-size: 11.5px;
-  }
-}
-
-@media (max-width: 1023px) {
-
-.about3d-parent {
-    height: 424px;
+    width: min(275px, calc(50vw - 260px));
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .about3d-card,
   .about3d-logo-slot,
-  .about3d-glass,
   .about3d-link,
-  .about3d-logo-img {
+  .about3d-link::after {
     animation: none !important;
     transition: none !important;
-  }
-
-  .about3d-parent:hover .about3d-card,
-  .about3d-parent:focus-within .about3d-card {
-    transform: rotateX(7deg) rotateY(16deg) rotateZ(-0.8deg);
   }
 }
 
@@ -1771,10 +2021,10 @@ html {
    Neo-Brutalist Showcase Card (Uiverse by seoulchik)
    ========================================================================= */
 .neo-card {
-  --primary: #ff3e00;
-  --primary-hover: #ff6d43;
-  --secondary: #4d61ff;
-  --secondary-hover: #5e70ff;
+  --primary: #d93200;
+  --primary-hover: #eb4210;
+  --secondary: #4355eb;
+  --secondary-hover: #5264f7;
   --accent: #00e0b0;
   --text: #050505;
   --bg: #ffffff;
@@ -1783,12 +2033,12 @@ html {
 
   position: relative;
   width: 100%;
-  max-width: 500px;
+  max-width: 420px;
   background: var(--bg);
-  border: 4px solid var(--text);
-  border-radius: 16px;
+  border: 3px solid var(--text);
+  border-radius: 14px;
   box-shadow:
-    8px 8px 0 var(--shadow-color),
+    6px 6px 0 var(--shadow-color),
     inset 0 0 0 2px rgba(0, 0, 0, 0.05);
   transition: all 0.35s cubic-bezier(0.23, 1, 0.32, 1);
   overflow: hidden;
@@ -1798,8 +2048,8 @@ html {
 }
 
 .neo-card:hover {
-  transform: translate(-3px, -3px);
-  box-shadow: 12px 12px 0 var(--shadow-color);
+  transform: translate(-2px, -2px);
+  box-shadow: 9px 9px 0 var(--shadow-color);
 }
 
 .neo-card:hover .neo-card-pattern-grid,
@@ -1873,15 +2123,15 @@ html {
 
 .neo-card-title-area {
   position: relative;
-  padding: 1.1rem 1.4rem;
+  padding: 0.72rem 1rem;
   background: var(--primary);
   color: var(--bg);
   font-weight: 900;
-  font-size: 1.25rem;
+  font-size: 1rem;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 4px solid var(--text);
+  border-bottom: 3px solid var(--text);
   text-transform: uppercase;
   letter-spacing: 0.04em;
   z-index: 5;
@@ -1929,29 +2179,29 @@ html {
 
 .neo-card-body {
   position: relative;
-  padding: 1.35rem 1.4rem 1.4rem;
+  padding: 0.9rem 1rem 1rem;
   z-index: 5;
 }
 
 .neo-card-description {
-  margin-bottom: 1.2rem;
+  margin-bottom: 0.85rem;
   color: var(--text);
-  font-size: 0.88rem;
-  line-height: 1.55;
+  font-size: 0.8rem;
+  line-height: 1.45;
   font-weight: 600;
 }
 
 .neo-feature-grid {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 0.75rem 0.85rem;
-  margin-bottom: 1.25rem;
+  gap: 0.5rem 0.65rem;
+  margin-bottom: 0.85rem;
 }
 
 .neo-feature-item {
   display: flex;
   align-items: center;
-  gap: 0.65rem;
+  gap: 0.5rem;
   transition: transform 0.2s ease;
 }
 
@@ -1960,19 +2210,19 @@ html {
 }
 
 .neo-feature-icon {
-  width: 2.2rem;
-  height: 2.2rem;
+  width: 1.85rem;
+  height: 1.85rem;
   display: flex;
   align-items: center;
   justify-content: center;
   background: var(--bg);
-  border: 2.5px solid var(--text);
-  border-radius: 8px;
-  box-shadow: 2.5px 2.5px 0 var(--shadow-color);
+  border: 2px solid var(--text);
+  border-radius: 7px;
+  box-shadow: 2px 2px 0 var(--shadow-color);
   transition: all 0.2s ease;
   flex-shrink: 0;
   overflow: hidden;
-  padding: 3px;
+  padding: 2.5px;
 }
 
 .neo-feature-item:hover .neo-feature-icon {
@@ -1980,10 +2230,10 @@ html {
 }
 
 .neo-feature-text {
-  font-size: 0.82rem;
+  font-size: 0.76rem;
   font-weight: 800;
   color: var(--text);
-  line-height: 1.25;
+  line-height: 1.2;
 }
 
 .neo-card-actions {
@@ -2139,4 +2389,163 @@ html {
   border-top: 3px solid var(--text);
   border-radius: 0 8px 0 0;
   z-index: 1;
+}
+
+/* =========================================================================
+   Site-Wide Touch Scroll = Laptop Hover Choreography Engine
+   ========================================================================= */
+@media (hover: none), (pointer: coarse) {
+  .hero-section .product-stage {
+    translate: 0 var(--hero-scroll-y, 0px);
+  }
+
+  .showcase-section[data-scroll-hover="true"] .neo-card {
+    transform: translate(-3px, calc(-3px + var(--showcase-scroll-y, 0px)));
+    box-shadow: 12px 12px 0 var(--shadow-color);
+  }
+
+  .showcase-section[data-scroll-hover="true"] .neo-card .neo-card-pattern-grid,
+  .showcase-section[data-scroll-hover="true"] .neo-card .neo-card-overlay-dots {
+    opacity: 1;
+  }
+
+  .showcase-section[data-scroll-hover="true"] .neo-card .neo-accent-shape {
+    transform: rotate(55deg) scale(1.1);
+  }
+
+  .about-section[data-scroll-hover="true"] .about3d-collector-face {
+    box-shadow:
+      0 34px 70px rgba(4, 9, 20, 0.42),
+      0 12px 26px rgba(4, 9, 20, 0.2),
+      0 0 0 1px hsla(var(--card-hue, 198), 88%, 82%, 0.42),
+      inset 0 2px 3px rgba(255, 255, 255, 0.96),
+      inset 0 -3px 6px rgba(8, 18, 36, 0.18);
+  }
+}
+
+/* =========================================================================
+   Scroll Option 1: Bidirectional Lazy Reveal + Staggered Upward Rise
+   ========================================================================= */
+.scroll-reveal-section [data-reveal-step] {
+  opacity: 0;
+  transform: translate3d(0, 26px, 0);
+  transition:
+    opacity 540ms cubic-bezier(0.22, 1, 0.36, 1),
+    transform 600ms cubic-bezier(0.22, 1, 0.36, 1);
+  will-change: opacity, transform;
+}
+
+.scroll-reveal-section[data-motion-state="entered"] [data-reveal-step] {
+  opacity: 1;
+  transform: translate3d(0, 0, 0);
+}
+
+.scroll-reveal-section[data-motion-state="entered"] [data-reveal-step="1"] {
+  transition-delay: 40ms;
+}
+
+.scroll-reveal-section[data-motion-state="entered"] [data-reveal-step="2"] {
+  transition-delay: 130ms;
+}
+
+.scroll-reveal-section[data-motion-state="entered"] [data-reveal-step="3"] {
+  transition-delay: 220ms;
+}
+
+.scroll-reveal-section[data-motion-state="entered"] [data-reveal-step="4"] {
+  transition-delay: 310ms;
+}
+
+.scroll-reveal-section[data-motion-reentry="true"][data-motion-state="entered"] [data-reveal-step] {
+  transition-duration: 440ms;
+}
+
+.about-section [data-reveal-step] {
+  transform: translate3d(0, 14px, 0);
+  transition:
+    opacity 320ms ease-out,
+    transform 360ms cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.about-section[data-motion-state="entered"] [data-reveal-step] {
+  transition-delay: 0ms;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .scroll-reveal-section [data-reveal-step] {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+/* =========================================================================
+   Mobile/Tablet Horizontal Filter & Scaled About 3D Left Card
+   ========================================================================= */
+@media (max-width: 1023px) {
+  .about-filter {
+    flex-direction: row;
+    flex-wrap: nowrap;
+    width: fit-content;
+    max-width: 100%;
+    overflow-x: auto;
+    gap: 0.25rem;
+    padding: 0.25rem;
+  }
+
+  .about-filter__option {
+    width: auto;
+    flex: 0 0 auto;
+  }
+
+  .about-filter__label {
+    padding: 0.34rem 0.65rem;
+    font-size: 10px;
+    white-space: nowrap;
+  }
+}
+
+@media (max-width: 639px) {
+  .uiverse-cta .uiverse-cta-pill {
+    width: 44px;
+  }
+
+  .about3d-slot {
+    height: 214px;
+    overflow: visible;
+  }
+
+  .about3d-slot .about3d-parent {
+    width: 275px;
+    max-width: none;
+    transform: scale(0.45);
+    transform-origin: top left;
+  }
+}
+
+@media (min-width: 640px) and (max-width: 1023px) {
+  .about3d-slot {
+    height: 304px;
+  }
+
+  .about3d-slot .about3d-parent {
+    width: 275px;
+    max-width: none;
+    transform: scale(0.64);
+    transform-origin: top left;
+  }
+}
+
+@media (min-width: 1024px) and (max-width: 1279px) {
+  .about3d-slot {
+    width: 210px;
+    height: 360px;
+  }
+
+  .about3d-slot .about3d-parent {
+    width: 275px;
+    max-width: none;
+    transform: scale(0.76);
+    transform-origin: top left;
+  }
 }

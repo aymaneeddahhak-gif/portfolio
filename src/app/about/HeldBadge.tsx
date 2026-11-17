@@ -1,3 +1,4 @@
+import Image from "next/image";
 import type { TechItem } from "./types";
 
 interface HeldBadgeProps {
@@ -21,13 +22,13 @@ export function HeldBadge({ item }: HeldBadgeProps) {
         className="absolute -bottom-[8%] left-1/2 h-[12%] w-[56%] -translate-x-1/2 rounded-full bg-[#22305e]/25 blur-md"
       />
 
-      {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img
+      <Image
         key={item.id}
         src={item.image}
         alt={item.name}
+        width={160}
+        height={160}
         className="about-fade-in relative block aspect-square w-full object-contain drop-shadow-[0_18px_26px_rgba(27,39,87,0.32)] transition-transform duration-300"
-        referrerPolicy="no-referrer"
       />
     </div>
   );

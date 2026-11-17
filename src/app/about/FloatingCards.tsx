@@ -1,80 +1,141 @@
-import type { CSSProperties } from "react";
-import { ExternalLink } from "lucide-react";
+"use client";
+
+import { useMemo, type CSSProperties } from "react";
+import Image from "next/image";
 import type { TechItem } from "./types";
 
 interface FloatingCardsProps {
   activeItem: TechItem;
-  onCardClick?: () => void;
 }
 
-// The About Me description as a permanently tilted 3D card, ported from the
-// uiverse 3D-card build in newdesigndevis-3Dcard: the plate keeps its
-// rotate3d perspective at rest, sits behind a glass sheet, and stacks two
-// concentric halos over the technology's own logo — the same motion the
-// hero-work card uses, only full height and carrying the write-up.
-//
-// Every colour on the card is derived from `activeItem.accentHue`, the hue
-// sampled from that logo's own pixels (see tech-items.ts), so the plate takes
-// the brand colour of whatever is in focus: JS yellow, Flutter cyan, Laravel
-// red. The two near-monochrome marks (GitHub, Next.js) carry
-// `plateTone: "dark"` instead: their plates take the logo's own dark tone and
-// the write-up switches to neutral ink. The logo carries no plate or ring in
-// either tone — it floats on the card exactly the way the same icons float on
-// the rail beside the portrait.
-// Tapping the name opens the full detail modal; the pill at the bottom-right
-// goes straight out to the technology's official site.
-export function FloatingCards({ activeItem, onCardClick }: FloatingCardsProps) {
-  const theme = { "--about3d-hue": activeItem.accentHue } as CSSProperties;
-  const tone = activeItem.plateTone === "dark" ? "dark" : "light";
+const TWO_COLOR_SECONDARY_HUES: Record<string, number> = {
+  python: 48,
+  figma: 268,
+  supabase: 168,
+  javascript: 36,
+  mysql: 28,
+  gitlab: 42,
+  api: 192,
+  "cloud-native": 188,
+  oop: 215,
+  uml: 196,
+  agile: 174,
+};
+
+/**
+ * Collector-style 3D foil card hovering over the V3 machined aluminum and
+ * dual bright-blue side-light plinth. Uses the portfolio's existing 3D `.webp` logos.
+ */
+export function FloatingCards({ activeItem }: FloatingCardsProps) {
+  const meta = useMemo(() => {
+    const twoColorHue = TWO_COLOR_SECONDARY_HUES[activeItem.id];
+    const colorMode = twoColorHue !== undefined ? "two" : "one";
+    const secondaryHue = twoColorHue ?? (activeItem.accentHue + 24) % 360;
+    const isDark = activeItem.plateTone === "dark";
+    const trackLabel =
+      activeItem.track === "language"
+        ? "LANGUAGE"
+        : activeItem.track === "devops"
+          ? "DEVOPS"
+          : activeItem.track.toUpperCase();
+
+    return {
+      secondaryHue,
+      colorMode,
+      tone: isDark ? "dark" : "light",
+      trackLabel,
+    };
+  }, [activeItem]);
+
+  const theme = {
+    "--about3d-hue": activeItem.accentHue,
+    "--about3d-hue2": meta.secondaryHue,
+  } as CSSProperties;
 
   return (
-    <div className="about3d-parent select-none" data-tone={tone} style={theme}>
-      <div className="about3d-card">
-        {/* The logo itself, floating free of any plate — the same treatment as
-            the icons on the rail, no disc and no ring behind it */}
-        <div className="about3d-logo">
-          <span className="about3d-logo-slot">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={activeItem.image}
-              alt=""
-              aria-hidden="true"
-              className="about3d-logo-img"
-            />
-          </span>
-        </div>
+    <div
+      className="about3d-parent select-none"
+      data-tone={meta.tone}
+      data-color-mode={meta.colorMode}
+      style={theme}
+    >
+      {/* Floating Collector 3D Card — key triggers coin-flip animation on every switch */}
+      <div key={activeItem.id} className="about3d-card">
+        <div className="about3d-edge" aria-hidden="true" />
+        <div className="about3d-collector-face">
+          <div className="about3d-foil-clip" aria-hidden="true">
+            <div className="about3d-foil-glare" />
+          </div>
 
-        {/* Glass sheet in front of the coloured plate */}
-        <div className="about3d-glass" />
+          <div className="about3d-glass">
+            {/* Printed Foil Card Header */}
+            <div className="about3d-header">
+              <span className="about3d-category">{meta.trackLabel}</span>
+              <h3 className="about3d-title">{activeItem.name}</h3>
+            </div>
 
-        {/* The write-up itself. The name leads and the discipline sits under it
-            as the kicker — the other way round the little caps line read first
-            and the big word looked like a caption for it. */}
-        <div className="about3d-content">
-          <button
-            type="button"
-            onClick={onCardClick}
-            className="about3d-title cursor-pointer text-left"
-          >
-            {activeItem.name}
-          </button>
-          <span className="about3d-category">{activeItem.category}</span>
-          <p className="about3d-text">{activeItem.shortDescription}</p>
-        </div>
+            {/* Recessed 3D White Mirror Stage Window with Pop-Out .webp 3D Logo */}
+            <div className="about3d-diorama-frame">
+              <span className="about3d-diorama-window">
+                <span className="about3d-diorama-sky" aria-hidden="true" />
+                <span className="about3d-mirror-floor" aria-hidden="true">
+                  <span className="about3d-mirror-sheen" />
+                </span>
+                <span className="about3d-floor-shadow" aria-hidden="true" />
+                <span className="about3d-logo-reflection" aria-hidden="true">
+                  <Image
+                    src={activeItem.image}
+                    alt=""
+                    width={128}
+                    height={128}
+                    sizes="110px"
+                    className="about3d-logo-refl-img"
+                  />
+                </span>
+              </span>
+              <span className="about3d-logo-slot">
+                <Image
+                  src={activeItem.image}
+                  alt={activeItem.name}
+                  width={192}
+                  height={192}
+                  sizes="160px"
+                  quality={95}
+                  className="about3d-logo-img"
+                />
+              </span>
+            </div>
 
-        {/* Official site, tucked into the card's right-hand side (the side
-            nearest the portrait's open hand) and lifted furthest forward */}
-        <div className="about3d-bottom">
-          <a
-            href={activeItem.officialUrl}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="about3d-link"
-          >
-            <span>{activeItem.linkDisplay}</span>
-            <ExternalLink aria-hidden="true" className="about3d-link__icon" />
-          </a>
+            {/* Type-Switch Style Subheading + Crisp Card Description */}
+            <div className="about3d-content">
+              <h4 className="about3d-ability">{activeItem.category}</h4>
+              <p className="about3d-text">{activeItem.shortDescription}</p>
+            </div>
+
+            {/* Official Website Footer Button (Uiverse.io style) */}
+            <div className="about3d-bottom">
+              <a
+                href={activeItem.officialUrl}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="about3d-link"
+              >
+                <span className="truncate">{activeItem.linkDisplay}</span>
+              </a>
+            </div>
+          </div>
         </div>
+      </div>
+
+      {/* V3 Machined Aluminum & Dual Bright-Blue Side-Light Pedestal Base */}
+      <div className="about3d-plinth-v3" aria-hidden="true">
+        <div className="about3d-plinth-floor-shadow" />
+        <div className="about3d-plinth-alu-foot" />
+        <div className="about3d-plinth-alu-top" />
+        <div className="about3d-emitter-left" />
+        <div className="about3d-emitter-right" />
+        <div className="about3d-beam-left" />
+        <div className="about3d-beam-right" />
       </div>
     </div>
   );

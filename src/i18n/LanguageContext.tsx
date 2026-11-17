@@ -4,7 +4,7 @@ import {
   createContext,
   useContext,
   useEffect,
-  useState,
+  useSyncExternalStore,
   type ReactNode,
 } from "react";
 import { translations, type Language, type Translations } from "./translations";
@@ -20,33 +20,50 @@ const LanguageContext = createContext<LanguageContextType | undefined>(
 );
 
 const STORAGE_KEY = "portfolio-lang";
+const listeners = new Set<() => void>();
+
+function subscribeLanguage(callback: () => void): () => void {
+  listeners.add(callback);
+  const onStorage = (e: StorageEvent) => {
+    if (e.key === STORAGE_KEY) callback();
+  };
+  window.addEventListener("storage", onStorage);
+  return () => {
+    listeners.delete(callback);
+    window.removeEventListener("storage", onStorage);
+  };
+}
+
+function getClientLanguageSnapshot(): Language {
+  try {
+    const saved = localStorage.getItem(STORAGE_KEY);
+    if (saved === "en" || saved === "fr") return saved;
+  } catch {}
+  // Default to English on initial website load without detecting browser language
+  return "en";
+}
+
+function getServerLanguageSnapshot(): Language {
+  return "en";
+}
 
 export function LanguageProvider({ children }: { children: ReactNode }) {
-  const [lang, setLangState] = useState<Language>("en");
-  const [mounted, setMounted] = useState(false);
+  const lang = useSyncExternalStore(
+    subscribeLanguage,
+    getClientLanguageSnapshot,
+    getServerLanguageSnapshot,
+  );
 
   useEffect(() => {
-    // 1. Check user explicit preference saved in localStorage
-    const savedLang = localStorage.getItem(STORAGE_KEY) as Language | null;
-    if (savedLang === "en" || savedLang === "fr") {
-      setLangState(savedLang);
-      document.documentElement.lang = savedLang;
-    } else {
-      // 2. Automatically detect browser language
-      const browserLang = navigator.language?.toLowerCase() || "";
-      const detected: Language = browserLang.startsWith("fr") ? "fr" : "en";
-      setLangState(detected);
-      document.documentElement.lang = detected;
-    }
-    setMounted(true);
-  }, []);
+    document.documentElement.lang = lang;
+  }, [lang]);
 
   const setLang = (newLang: Language) => {
-    setLangState(newLang);
     try {
       localStorage.setItem(STORAGE_KEY, newLang);
-      document.documentElement.lang = newLang;
     } catch {}
+    document.documentElement.lang = newLang;
+    listeners.forEach((listener) => listener());
   };
 
   const t = translations[lang];
@@ -61,7 +78,6 @@ export function LanguageProvider({ children }: { children: ReactNode }) {
 export function useTranslation(): LanguageContextType {
   const context = useContext(LanguageContext);
   if (!context) {
-    // Fallback if rendered outside provider
     return {
       lang: "en",
       setLang: () => {},

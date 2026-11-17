@@ -25,7 +25,7 @@ const jakarta = Plus_Jakarta_Sans({
 
 export const metadata: Metadata = {
   title: "AED PORTFOLIO",
-  description: "Aymane Eddahak — Mobile & Web Developer Portfolio",
+  description: "AED Solutions — High-Performance Mobile & Web Product Engineering",
   icons: {
     icon: [
       { url: "/favicon.svg", type: "image/svg+xml" },
@@ -43,15 +43,13 @@ export default function RootLayout({
     <html
       lang="en"
       className={`${montserrat.className} ${syne.variable} ${jakarta.variable}`}
+      suppressHydrationWarning
     >
       <head>
-        <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
-        <link rel="icon" type="image/png" href="/images/logo-a.png?v=5" />
-        <link rel="shortcut icon" href="/favicon.ico?v=5" />
-        <link rel="apple-touch-icon" href="/images/logo-a.png?v=5" />
-        <link
-          rel="stylesheet"
-          href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `try{if(sessionStorage.getItem('aed-portfolio-booted')==='1'){document.documentElement.setAttribute('data-booted','1');}}catch(e){}`,
+          }}
         />
       </head>
       <body>

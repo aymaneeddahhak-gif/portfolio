@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import { TECH_FILTERS } from "./tech-items";
 import { soundFx } from "./sound";
 import type { TechItem, TechTrack } from "./types";
@@ -135,42 +136,42 @@ export function TechRail({
   };
 
   return (
-    <div className="flex w-full flex-col items-center lg:items-end gap-3 max-w-full">
-      {/* Top row: Filter list (ALL, Languages, Web, etc.) + TWO Vertical Switching Buttons beside it */}
-      <div className="flex items-center gap-2.5">
-        {/* Filter options (All, Languages, Web & UI, Mobile, etc.) in a vertical column */}
-        <div
-          role="radiogroup"
-          aria-label="Filter technologies by discipline"
-          className="about-filter shrink-0 w-[175px]"
-        >
-          {TECH_FILTERS.map((filter) => (
-            <label key={filter.id} className="about-filter__option">
-              <input
-                type="radio"
-                name="tech-track"
-                checked={filter.id === activeTrack}
-                onChange={() => onSelectTrack(filter.id)}
-              />
-              <span className="about-filter__label">
-                {t.about.filters[filter.id as keyof typeof t.about.filters] || filter.label}
-              </span>
-            </label>
-          ))}
-        </div>
+    <div className="flex w-full flex-col items-center lg:grid lg:grid-cols-[175px_48px] lg:items-center gap-2 lg:gap-x-2.5 lg:gap-y-3 max-w-full">
+      {/* Existing filter: horizontal single trough on mobile, vertical column on desktop */}
+      <div
+        role="radiogroup"
+        aria-label="Filter technologies by discipline"
+        className="about-filter no-scrollbar lg:col-start-1 lg:row-start-1"
+      >
+        {TECH_FILTERS.map((filter) => (
+          <label key={filter.id} className="about-filter__option">
+            <input
+              type="radio"
+              name="tech-track"
+              checked={filter.id === activeTrack}
+              onChange={() => onSelectTrack(filter.id)}
+            />
+            <span className="about-filter__label">
+              {t.about.filters[filter.id as keyof typeof t.about.filters] || filter.label}
+            </span>
+          </label>
+        ))}
+      </div>
 
-        {/* TWO vertical switching buttons placed directly beside the filter list */}
-        <div className="flex flex-col gap-2 shrink-0 justify-center">
-          {/* Previous Tech Button (Up / Prev) */}
+      {/* Little icons rail + prev/next centered under the filter on mobile; dissolved into desktop grid via lg:contents */}
+      <div className="flex w-full items-center justify-center gap-2 lg:contents">
+        {/* Switching buttons (flanking icon rail on mobile, vertical stack beside filter on desktop) */}
+        <div className="order-1 lg:order-none lg:col-start-2 lg:row-start-1 flex flex-row lg:flex-col gap-1.5 lg:gap-2 shrink-0 justify-center">
+          {/* Previous Tech Button */}
           <button
             type="button"
             onClick={handlePrev}
             title={t.about.prevTech}
             aria-label={t.about.prevTech}
-            className="group/prev-tech relative flex h-[48px] w-[48px] shrink-0 cursor-pointer items-center justify-center rounded-2xl bg-white/75 hover:bg-white border border-neutral-200/90 shadow-2xs hover:shadow-md transition-all duration-200 backdrop-blur-md active:scale-95 text-neutral-800 hover:text-black"
+            className="group/prev-tech relative flex h-9 w-9 lg:h-[48px] lg:w-[48px] shrink-0 cursor-pointer items-center justify-center rounded-xl lg:rounded-2xl bg-white/90 hover:bg-white border border-neutral-200/90 shadow-2xs hover:shadow-md transition-all duration-200 active:scale-95 text-neutral-800 hover:text-black"
           >
             <svg
-              className="w-5 h-5 transition-transform duration-200 group-hover/prev-tech:-translate-y-0.5 text-neutral-700 group-hover/prev-tech:text-black"
+              className="w-4 h-4 lg:w-5 lg:h-5 -rotate-90 lg:rotate-0 transition-transform duration-200 group-hover/prev-tech:-translate-y-0.5 text-neutral-700 group-hover/prev-tech:text-black"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
@@ -184,16 +185,16 @@ export function TechRail({
             <span className="sr-only">{t.about.prevTech}</span>
           </button>
 
-          {/* Next Tech Button (Down / Next) */}
+          {/* Next Tech Button */}
           <button
             type="button"
             onClick={handleNext}
             title={t.about.nextTech}
             aria-label={t.about.nextTech}
-            className="group/next-tech relative flex h-[48px] w-[48px] shrink-0 cursor-pointer items-center justify-center rounded-2xl bg-white/75 hover:bg-white border border-neutral-200/90 shadow-2xs hover:shadow-md transition-all duration-200 backdrop-blur-md active:scale-95 text-neutral-800 hover:text-black"
+            className="group/next-tech relative flex h-9 w-9 lg:h-[48px] lg:w-[48px] shrink-0 cursor-pointer items-center justify-center rounded-xl lg:rounded-2xl bg-white/90 hover:bg-white border border-neutral-200/90 shadow-2xs hover:shadow-md transition-all duration-200 active:scale-95 text-neutral-800 hover:text-black"
           >
             <svg
-              className="w-5 h-5 transition-transform duration-200 group-hover/next-tech:translate-y-0.5 text-neutral-700 group-hover/next-tech:text-black"
+              className="w-4 h-4 lg:w-5 lg:h-5 -rotate-90 lg:rotate-0 transition-transform duration-200 group-hover/next-tech:translate-y-0.5 text-neutral-700 group-hover/next-tech:text-black"
               viewBox="0 0 24 24"
               fill="none"
               stroke="currentColor"
@@ -207,10 +208,9 @@ export function TechRail({
             <span className="sr-only">{t.about.nextTech}</span>
           </button>
         </div>
-      </div>
 
-      {/* Row containing the little tech icons list aligned underneath the filter */}
-      <div className="relative w-[175px] max-w-[175px] shrink-0">
+        {/* Scrollable little tech icons list centered underneath filter */}
+        <div className="order-2 lg:order-none lg:col-start-1 lg:row-start-2 relative min-w-0 max-w-[235px] sm:max-w-[300px] lg:w-[175px] lg:max-w-[175px] shrink-0">
         {/* Left shadow overlay over icons scrolled out to the left */}
         <div
           aria-hidden="true"
@@ -235,7 +235,7 @@ export function TechRail({
           onMouseMove={handleMouseMove}
           onMouseUp={handleMouseUpOrLeave}
           onMouseLeave={handleMouseUpOrLeave}
-          className="no-scrollbar flex w-full items-center gap-2 overflow-x-auto py-2 px-2.5 rounded-2xl bg-white/50 border border-neutral-200/80 backdrop-blur-md shadow-xs justify-start cursor-grab active:cursor-grabbing select-none"
+          className="no-scrollbar flex w-full items-center gap-2 overflow-x-auto py-2 px-2.5 rounded-2xl bg-white/75 border border-neutral-200/80 shadow-xs justify-start cursor-grab active:cursor-grabbing select-none"
           role="list"
           aria-label="Languages and tools"
         >
@@ -254,34 +254,34 @@ export function TechRail({
                   title={item.name}
                   aria-label={`Show ${item.name}`}
                   aria-current={isActive ? "true" : undefined}
-                  className="group/rail relative flex cursor-pointer items-center justify-center transition-transform duration-300 hover:scale-110 active:scale-95"
+                  className="group/rail relative flex min-h-[38px] min-w-[38px] cursor-pointer items-center justify-center p-1 transition-transform duration-300 hover:scale-110 active:scale-95"
                 >
                   {/* Selection halo — active icon is ringed and highlighted */}
                   {isActive && (
                     <span
                       aria-hidden="true"
-                      className="absolute -inset-1 rounded-xl border-2 border-purple-600 bg-purple-500/10 shadow-sm shadow-purple-500/25 transition-all duration-300"
+                      className="absolute inset-0.5 rounded-xl border-2 border-purple-600 bg-purple-500/10 shadow-sm shadow-purple-500/25 transition-all duration-300"
                     />
                   )}
                   <span
                     className={`flex items-center justify-center transition-all duration-300 ${
                       isActive
                         ? "h-8 w-8 scale-105 drop-shadow-[0_6px_14px_rgba(147,51,234,0.35)]"
-                        : "h-6 w-6 opacity-65 hover:opacity-100"
+                        : "h-6 w-6 opacity-70 hover:opacity-100"
                     }`}
                   >
-                    {/* eslint-disable-next-line @next/next/no-img-element */}
-                    <img
+                    <Image
                       src={item.image}
                       alt=""
+                      width={36}
+                      height={36}
                       aria-hidden="true"
                       className="h-full w-full object-contain pointer-events-none"
-                      referrerPolicy="no-referrer"
                     />
                   </span>
 
                   {/* Name, on hover — tooltip pops up directly above the icon */}
-                  <span className="pointer-events-none absolute bottom-full mb-2 left-1/2 -translate-x-1/2 hidden rounded-full border border-white/80 bg-white/95 px-2.5 py-1 text-[10px] font-bold tracking-[0.16em] whitespace-nowrap text-[#151722] uppercase shadow-md backdrop-blur-md group-hover/rail:block z-30">
+                  <span className="pointer-events-none absolute bottom-full mb-2 left-1/2 -translate-x-1/2 hidden rounded-full border border-white/80 bg-white/95 px-2.5 py-1 text-[10px] font-bold tracking-[0.16em] whitespace-nowrap text-[#151722] uppercase shadow-md group-hover/rail:block z-30">
                     {item.name}
                   </span>
                 </button>
@@ -289,6 +289,7 @@ export function TechRail({
             );
           })}
         </div>
+      </div>
       </div>
     </div>
   );

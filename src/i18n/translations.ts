@@ -1,11 +1,27 @@
 export type Language = "en" | "fr";
 
 export interface Translations {
+  boot: {
+    skip: string;
+  };
   nav: {
     projects: string;
     about: string;
     contact: string;
+    resume: string;
+    previewResume: string;
+    downloadResume: string;
     workTogether: string;
+    openMenu: string;
+    closeMenu: string;
+  };
+  resumeModal: {
+    badge: string;
+    title: string;
+    subtitle: string;
+    downloadPdf: string;
+    openNewTab: string;
+    close: string;
   };
   hero: {
     mobileHeading: string;
@@ -43,6 +59,13 @@ export interface Translations {
     filterAll: string;
     filterMobile: string;
     filterWeb: string;
+    viewMore: string;
+    viewLess: string;
+    highlightsHeading: string;
+    exploreTech: string;
+    githubCode: string;
+    openLiveDemo: string;
+    loadingPreview: string;
   };
   contact: {
     title: string;
@@ -52,15 +75,33 @@ export interface Translations {
     emailLabel: string;
     emailPlaceholder: string;
     serviceLabel: string;
+    projectTypePlaceholder: string;
+    services: {
+      web: string;
+      mobile: string;
+      other: string;
+    };
+    timelineLabel: string;
+    timelinePlaceholder: string;
     messageLabel: string;
     messagePlaceholder: string;
     submitButton: string;
     sending: string;
+    sent: string;
     successTitle: string;
     successMessage: string;
     sendAnother: string;
+    sendFailedTitle: string;
+    sendFailedBody: string;
+    openInGmail: string;
+    useMailApp: string;
+    tryAgainForm: string;
     securityVerification: string;
     securityPassed: string;
+    captchaError: string;
+    directContact: string;
+    directCall: string;
+    locationBadge: string;
   };
   footer: {
     createdBy: string;
@@ -69,23 +110,39 @@ export interface Translations {
 
 export const translations: Record<Language, Translations> = {
   en: {
+    boot: {
+      skip: "Skip Intro",
+    },
     nav: {
       projects: "PROJECTS",
       about: "ABOUT",
       contact: "CONTACT",
+      resume: "RESUME",
+      previewResume: "Preview Resume",
+      downloadResume: "Download Resume PDF",
       workTogether: "LET'S WORK TOGETHER",
+      openMenu: "Open navigation menu",
+      closeMenu: "Close navigation menu",
+    },
+    resumeModal: {
+      badge: "AED SOLUTIONS · PROFILE & RESUME",
+      title: "Capabilities & Technical Resume",
+      subtitle: "Mobile & Web Product Engineering — Preview or download PDF",
+      downloadPdf: "Download PDF",
+      openNewTab: "Open PDF",
+      close: "Close",
     },
     hero: {
       mobileHeading: "Mobile Service",
       mobileDesc:
-        "We solve real user problems through high-performance mobile apps — turning daily friction into fluid native speed, smart AI features, and offline reliability.",
+        "We engineer high-performance iOS & Android apps that solve daily user friction — combining fluid 60 FPS native speed, offline-first sync, and smart AI workflows.",
       mobileTypewriter:
-        "We tackle what makes or breaks a mobile product: instant cloud sync, on-device AI intelligence, zero-crash stability, and smooth native gestures that keep users coming back.",
+        "Built for retention and scale: instant cloud synchronization, on-device intelligence, crash-free reliability, and tactile native gestures.",
       webHeading: "Web Service",
       webDesc:
-        "Solving real business bottlenecks with high-converting web platforms and SaaS tools — built to eliminate slow load times, automate workflows, and scale seamlessly.",
+        "We build high-converting web platforms and SaaS products engineered to eliminate slow load times, automate operations, and turn traffic into measurable revenue.",
       webTypewriter:
-        "We turn complex product ideas into high-impact digital solutions: sub-second performance, smart AI-assisted automation, rock-solid security, and frictionless flows that drive real revenue.",
+        "From architecture to production launch: sub-second Next.js rendering, secure API backends, AI-assisted automation, and frictionless checkout flows.",
       viewOurWork: "VIEW OUR WORK",
       viewAll: "View all",
     },
@@ -116,50 +173,92 @@ export const translations: Record<Language, Translations> = {
       filterAll: "All Projects",
       filterMobile: "Mobile Apps",
       filterWeb: "Web Applications",
+      viewMore: "View More ▼",
+      viewLess: "View Less ▲",
+      highlightsHeading: "Key Highlights & Architecture:",
+      exploreTech: "Explore ↗",
+      githubCode: "GitHub Code",
+      openLiveDemo: "Open Live Demo",
+      loadingPreview: "Loading interactive preview...",
     },
     contact: {
       title: "Start Your Project with",
       subtitle:
-        "Have a vision for a mobile app or web platform? Send a message and let's bring it to production.",
+        "Have a vision for a mobile app or web platform? Send us a message and let's bring it to production.",
       nameLabel: "Your Name",
-      namePlaceholder: "Aymane or Company name",
+      namePlaceholder: "Your name or company",
       emailLabel: "Email Address",
-      emailPlaceholder: "aymane@company.com",
+      emailPlaceholder: "you@company.com",
       serviceLabel: "Interested Service",
-      messageLabel: "Tell me about your project",
+      projectTypePlaceholder: "Select project type",
+      services: {
+        web: "Web Service",
+        mobile: "Mobile Service",
+        other: "Other Service",
+      },
+      timelineLabel: "Timeline / Scope",
+      timelinePlaceholder: "e.g. MVP in 3–4 weeks, flexible scope",
+      messageLabel: "Tell us about your project",
       messagePlaceholder:
         "Briefly describe your product goals, desired timeline, or key features...",
-      submitButton: "Send Inquiry",
+      submitButton: "Send Message",
       sending: "Sending...",
-      successTitle: "Message Delivered Successfully!",
+      sent: "Sent",
+      successTitle: "Message sent!",
       successMessage:
-        "Thank you for reaching out. I have received your message and will get back to you within 24 hours.",
-      sendAnother: "Send Another Message",
+        "Thanks for reaching out! Your inquiry landed in our inbox and we'll get back to you within 24 hours.",
+      sendAnother: "← Send another message",
+      sendFailedTitle: "One more tap",
+      sendFailedBody:
+        "Automatic delivery didn't go through. Your inquiry is pre-filled and ready — open Gmail and press send, or write directly to",
+      openInGmail: "Open in Gmail",
+      useMailApp: "Use mail app",
+      tryAgainForm: "← Try again with form",
       securityVerification: "Security Verification",
       securityPassed: "Security check passed (Local Development Mode)",
+      captchaError: "Please complete the Cloudflare security verification before sending.",
+      directContact: "Direct contact",
+      directCall: "Direct call",
+      locationBadge: "Marrakech, Morocco · Available worldwide · Response within 24h",
     },
     footer: {
       createdBy: "Created by",
     },
   },
   fr: {
+    boot: {
+      skip: "Passer l'intro",
+    },
     nav: {
       projects: "PROJETS",
       about: "À PROPOS",
       contact: "CONTACT",
+      resume: "CV",
+      previewResume: "Aperçu du CV",
+      downloadResume: "Télécharger le CV (PDF)",
       workTogether: "TRAVAILLONS ENSEMBLE",
+      openMenu: "Ouvrir le menu de navigation",
+      closeMenu: "Fermer le menu de navigation",
+    },
+    resumeModal: {
+      badge: "AED SOLUTIONS · PROFIL & CV",
+      title: "Compétences & CV Technique",
+      subtitle: "Ingénierie Produit Mobile & Web — Aperçu ou téléchargement PDF",
+      downloadPdf: "Télécharger le PDF",
+      openNewTab: "Ouvrir le PDF",
+      close: "Fermer",
     },
     hero: {
       mobileHeading: "Service Mobile",
       mobileDesc:
-        "Nous résolvons les vrais problèmes des utilisateurs grâce à des applications mobiles haute performance — transformant les frictions quotidiennes en vitesse native fluide, fonctionnalités IA intelligentes et fiabilité hors-ligne.",
+        "Nous concevons des applications iOS & Android haute performance qui éliminent les frictions quotidiennes — alliant fluidité native 60 FPS, mode hors-ligne et fonctions IA.",
       mobileTypewriter:
-        "Nous maîtrisons ce qui fait le succès d'un produit mobile : synchronisation cloud instantanée, IA sur l'appareil, stabilité zéro crash et gestes natifs fluides qui fidélisent les utilisateurs.",
+        "Conçues pour durer : synchronisation cloud instantanée, IA embarquée, stabilité zéro crash et gestes natifs fluides qui fidélisent vos utilisateurs.",
       webHeading: "Service Web",
       webDesc:
-        "Résoudre les goulets d'étranglement avec des plateformes web et outils SaaS à forte conversion — conçus pour éliminer les lenteurs, automatiser les flux et évoluer sans friction.",
+        "Nous développons des plateformes web et produits SaaS à forte conversion — pensés pour éliminer les lenteurs, automatiser vos flux et accélérer votre croissance.",
       webTypewriter:
-        "Nous transformons des idées complexes en solutions digitales à fort impact : performance sous la seconde, automatisation assistée par IA, sécurité robuste et parcours fluides générant de réels revenus.",
+        "De l'architecture à la mise en production : rendu Next.js ultra-rapide, API sécurisées, automatisation IA et parcours d'achat sans friction.",
       viewOurWork: "VOIR NOS PROJETS",
       viewAll: "Tout voir",
     },
@@ -190,27 +289,53 @@ export const translations: Record<Language, Translations> = {
       filterAll: "Tous les Projets",
       filterMobile: "Apps Mobiles",
       filterWeb: "Applications Web",
+      viewMore: "Voir plus ▼",
+      viewLess: "Réduire ▲",
+      highlightsHeading: "Points Clés & Architecture :",
+      exploreTech: "Explorer ↗",
+      githubCode: "Code GitHub",
+      openLiveDemo: "Démo Live",
+      loadingPreview: "Chargement de l'aperçu interactif...",
     },
     contact: {
       title: "Démarrez Votre Projet avec",
       subtitle:
-        "Vous avez une idée d'application mobile ou de plateforme web ? Envoyez un message et donnons-lui vie en production.",
+        "Vous avez une vision d'application mobile ou de plateforme web ? Envoyez-nous un message et passons en production.",
       nameLabel: "Votre Nom",
-      namePlaceholder: "Aymane ou nom d'entreprise",
+      namePlaceholder: "Votre nom ou entreprise",
       emailLabel: "Adresse E-mail",
-      emailPlaceholder: "aymane@entreprise.com",
+      emailPlaceholder: "vous@entreprise.com",
       serviceLabel: "Service Souhaité",
-      messageLabel: "Parlez-moi de votre projet",
+      projectTypePlaceholder: "Choisir le type de projet",
+      services: {
+        web: "Service Web",
+        mobile: "Service Mobile",
+        other: "Autre Service",
+      },
+      timelineLabel: "Délais / Périmètre",
+      timelinePlaceholder: "ex. MVP en 3–4 semaines, budget flexible",
+      messageLabel: "Parlez-nous de votre projet",
       messagePlaceholder:
         "Décrivez brièvement les objectifs du produit, les délais envisagés ou les fonctionnalités clés...",
-      submitButton: "Envoyer la Demande",
-      sending: "Envoi en cours...",
-      successTitle: "Message Envoyé avec Succès !",
+      submitButton: "Envoyer",
+      sending: "Envoi...",
+      sent: "Envoyé",
+      successTitle: "Message envoyé !",
       successMessage:
-        "Merci pour votre message. Je l'ai bien reçu et je vous répondrai dans un délai de 24 heures.",
-      sendAnother: "Envoyer un Autre Message",
+        "Merci pour votre message ! Votre demande est bien arrivée et nous vous répondrons sous 24 heures.",
+      sendAnother: "← Envoyer un autre message",
+      sendFailedTitle: "Une dernière étape",
+      sendFailedBody:
+        "L'envoi automatique n'a pas abouti. Votre message est prêt — ouvrez Gmail et appuyez sur envoyer, ou écrivez directement à",
+      openInGmail: "Ouvrir dans Gmail",
+      useMailApp: "Application mail",
+      tryAgainForm: "← Réessayer via le formulaire",
       securityVerification: "Vérification de Sécurité",
       securityPassed: "Contrôle de sécurité validé (Mode Développement)",
+      captchaError: "Veuillez compléter la vérification de sécurité Cloudflare avant d'envoyer.",
+      directContact: "Contact direct",
+      directCall: "Appel direct",
+      locationBadge: "Marrakech, Maroc · Disponible à l'international · Réponse sous 24h",
     },
     footer: {
       createdBy: "Créé par",

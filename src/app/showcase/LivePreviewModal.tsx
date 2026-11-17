@@ -1,9 +1,10 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
-import { X, ExternalLink, Play, Lock, RefreshCw, Smartphone, Laptop } from "lucide-react";
+import { X, ExternalLink, Smartphone, Laptop, Loader2 } from "lucide-react";
 import type { ShowcaseApp } from "../showcase-apps";
+import { useTranslation } from "@/i18n/LanguageContext";
 
 interface LivePreviewModalProps {
   app: ShowcaseApp | null;
@@ -12,16 +13,24 @@ interface LivePreviewModalProps {
 }
 
 export function LivePreviewModal({ app, isOpen, onClose }: LivePreviewModalProps) {
+  const { lang, t } = useTranslation();
   const videoRef = useRef<HTMLVideoElement>(null);
+  const [loadedAppId, setLoadedAppId] = useState<string | null>(null);
 
   useEffect(() => {
     if (!isOpen) return;
+
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
 
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === "Escape") onClose();
     };
     window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      window.removeEventListener("keydown", handleKeyDown);
+    };
   }, [isOpen, onClose]);
 
   // Restart video playback when opened
@@ -36,11 +45,22 @@ export function LivePreviewModal({ app, isOpen, onClose }: LivePreviewModalProps
 
   const isVideoWalkthrough = Boolean(app.livePreviewVideoUrl);
   const isInteractiveMobile = app.id === "a-task";
+  const iframeReady = loadedAppId === app.id;
+  const hasDistinctLiveUrl =
+    Boolean(app.liveUrl) &&
+    app.liveUrl !== "#contact" &&
+    app.liveUrl !== app.githubUrl;
+  const categoryText = lang === "fr" ? app.categoryFr : app.category;
 
   return (
     <AnimatePresence>
       {isOpen && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 overflow-y-auto">
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="live-preview-modal-title"
+          className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 overflow-y-auto"
+        >
           {/* Backdrop */}
           <motion.div
             initial={{ opacity: 0 }}
@@ -60,33 +80,34 @@ export function LivePreviewModal({ app, isOpen, onClose }: LivePreviewModalProps
             className="relative w-full max-w-4xl bg-stone-900 border-2 sm:border-3 border-stone-800 rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden z-10 flex flex-col text-white"
           >
             {/* Top Chrome Bar */}
-            <div className="flex items-center justify-between px-4 py-3 bg-stone-950/90 border-b border-stone-800 select-none">
+            <div className="flex items-center justify-between px-4 py-2.5 bg-stone-950/90 border-b border-stone-800 select-none">
               <div className="flex items-center gap-2">
                 <span className="w-3 h-3 rounded-full bg-red-500/80 inline-block" />
                 <span className="w-3 h-3 rounded-full bg-amber-500/80 inline-block" />
                 <span className="w-3 h-3 rounded-full bg-emerald-500/80 inline-block" />
-                <span className="ml-2 text-xs font-bold text-stone-400 hidden sm:inline-flex items-center gap-1.5">
+                <span
+                  id="live-preview-modal-title"
+                  className="ml-2 text-xs font-bold text-stone-300 hidden sm:inline-flex items-center gap-1.5"
+                >
                   {isInteractiveMobile ? (
                     <>
                       <Smartphone className="w-3.5 h-3.5 text-purple-400" />
-                      Mobile App Live Preview
+                      {app.shortName} · Interactive Flutter Build
                     </>
                   ) : (
                     <>
                       <Laptop className="w-3.5 h-3.5 text-blue-400" />
-                      Web Platform Live Preview
+                      {app.shortName} · Product Walkthrough
                     </>
                   )}
                 </span>
               </div>
 
-              {/* Fake browser URL pill */}
-              <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-stone-900 border border-stone-800 text-[11px] text-stone-300 font-mono max-w-[260px] sm:max-w-xs truncate">
-                <Lock className="w-3 h-3 text-emerald-400 shrink-0" />
+              {/* Honest preview mode indicator pill */}
+              <div className="flex items-center gap-1.5 px-3 py-1 rounded-full bg-stone-900 border border-stone-800 text-[11px] text-stone-300 font-mono max-w-[240px] sm:max-w-xs truncate">
+                <span className="w-2 h-2 rounded-full bg-emerald-400 shrink-0" />
                 <span className="truncate">
-                  {isInteractiveMobile
-                    ? "a-task.solutions/demo"
-                    : "a-store.solutions/live-preview"}
+                  {isInteractiveMobile ? "/a-task (Interactive)" : "Product Walkthrough"}
                 </span>
               </div>
 
@@ -94,7 +115,7 @@ export function LivePreviewModal({ app, isOpen, onClose }: LivePreviewModalProps
                 type="button"
                 onClick={onClose}
                 aria-label="Close live preview"
-                className="p-1.5 rounded-lg text-stone-400 hover:text-white hover:bg-stone-800 transition-colors cursor-pointer"
+                className="flex h-11 w-11 items-center justify-center rounded-lg text-stone-300 hover:text-white hover:bg-stone-800 transition-colors cursor-pointer"
               >
                 <X className="w-5 h-5" />
               </button>
@@ -115,15 +136,24 @@ export function LivePreviewModal({ app, isOpen, onClose }: LivePreviewModalProps
                   />
                 </div>
               ) : isInteractiveMobile ? (
-                <div className="relative w-full h-full flex flex-col items-center justify-center p-6 text-center">
+                <div className="relative w-full h-full flex flex-col items-center justify-center p-2 sm:p-4 text-center">
+                  {!iframeReady && (
+                    <div className="absolute inset-0 z-10 flex flex-col items-center justify-center gap-2.5 bg-stone-950 text-stone-300">
+                      <Loader2 className="h-7 w-7 animate-spin text-purple-400" />
+                      <p className="text-xs font-semibold tracking-wide">
+                        {t.showcase.loadingPreview}
+                      </p>
+                    </div>
+                  )}
                   <iframe
                     src="/a-task"
                     title="A-Task Interactive Preview"
+                    onLoad={() => setLoadedAppId(app.id)}
                     className="w-full h-full border-0 rounded-xl"
                   />
                 </div>
               ) : (
-                <div className="p-8 text-center text-stone-400">
+                <div className="p-8 text-center text-stone-300">
                   <p>Interactive preview available at live destination.</p>
                 </div>
               )}
@@ -139,7 +169,7 @@ export function LivePreviewModal({ app, isOpen, onClose }: LivePreviewModalProps
                   {app.namePart1}
                   {app.namePart2}
                 </span>
-                <span className="text-stone-500 hidden sm:inline">· {app.category}</span>
+                <span className="text-stone-400 hidden sm:inline">· {categoryText}</span>
               </div>
 
               <div className="flex items-center gap-2">
@@ -148,21 +178,21 @@ export function LivePreviewModal({ app, isOpen, onClose }: LivePreviewModalProps
                     href={app.githubUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-stone-800 hover:bg-stone-700 text-stone-200 font-bold transition-colors"
+                    className="inline-flex min-h-[40px] items-center gap-1.5 px-3.5 py-2 rounded-lg bg-stone-800 hover:bg-stone-700 text-stone-200 font-bold transition-colors"
                   >
-                    <span>GitHub Code</span>
-                    <ExternalLink className="w-3 h-3" />
+                    <span>{t.showcase.githubCode}</span>
+                    <ExternalLink className="w-3.5 h-3.5" />
                   </a>
                 )}
-                {app.liveUrl && app.liveUrl !== "#contact" && (
+                {hasDistinctLiveUrl && (
                   <a
                     href={app.liveUrl}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="inline-flex items-center gap-1.5 px-3.5 py-1.5 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-extrabold transition-colors"
+                    className="inline-flex min-h-[40px] items-center gap-1.5 px-3.5 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 text-white font-extrabold transition-colors"
                   >
-                    <span>Open Live Demo</span>
-                    <ExternalLink className="w-3 h-3" />
+                    <span>{t.showcase.openLiveDemo}</span>
+                    <ExternalLink className="w-3.5 h-3.5" />
                   </a>
                 )}
               </div>

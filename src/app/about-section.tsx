@@ -1,50 +1,32 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { motion } from "motion/react";
-import { BadgeModal } from "./about/BadgeModal";
+import Image from "next/image";
 import { FloatingCards } from "./about/FloatingCards";
 import { HeldBadge } from "./about/HeldBadge";
 import { TechRail } from "./about/TechRail";
 import { soundFx } from "./about/sound";
 import { TECH_ITEMS } from "./about/tech-items";
 import type { TechItem, TechTrack } from "./about/types";
-import { useReplaySection } from "./motion-coordinator";
+import {
+  useReplaySection,
+  useTouchScrollChoreography,
+} from "./motion-coordinator";
 import { useTranslation } from "@/i18n/LanguageContext";
 
 const PORTRAIT = "/images/aboutme.png";
 const CYCLE_SECONDS = 5;
-const PARALLAX_INTENSITY = 18;
-const NO_POINTER = { x: 0, y: 0 };
 
-/**
- * The About stage: the portrait, full height, with the active technology
- * levitating above his raised hand like a badge he is holding up. The
- * languages and tools the portfolio ships with live on the rail, and the
- * description card names and explains whichever one is in focus.
- *
- * The spotlight advances on its own every few seconds (and on any rail or
- * badge tap), the portrait and the badge sit at different pointer-parallax
- * depths, and the ambient orbs behind everything come from the shared
- * <SiteBackdrop /> rather than this section. The rail can be narrowed to one
- * discipline, which also narrows what the stage cycles through.
- */
 export default function AboutSection() {
   const { t } = useTranslation();
   const sectionRef = useRef<HTMLElement>(null);
-  // The shared observer tells us when the stage is on screen — used to gate
-  // the pointer listener and the auto-cycle so an offscreen about section
-  // never re-renders on every mouse move.
-  const { isVisible, reducedMotion } = useReplaySection(sectionRef);
+  const { isVisible, motionState, isReentry, reducedMotion } =
+    useReplaySection(sectionRef);
 
   const [activeItemId, setActiveItemId] = useState<string>(TECH_ITEMS[0].id);
   const [activeTrack, setActiveTrack] = useState<TechTrack | "all">("all");
-  const [activeModalItem, setActiveModalItem] = useState<TechItem | null>(null);
-  const [mousePos, setMousePos] = useState({ x: 0, y: 0 });
   const [isHovered, setIsHovered] = useState(false);
 
-  // The filter narrows the rail and, with it, the automatic cycle — the stage
-  // only ever shows something the visitor can see on the rail.
   const visibleItems = useMemo(
     () =>
       activeTrack === "all"
@@ -58,9 +40,7 @@ export default function AboutSection() {
     (activeIndex >= 0 ? visibleItems[activeIndex] : undefined) ||
     visibleItems[0] ||
     TECH_ITEMS[0];
-  const parallaxActive = isVisible && !reducedMotion;
 
-  // Advance to next tech in line
   const advanceSpotlight = useCallback(() => {
     setActiveItemId((prevId) => {
       const idx = visibleItems.findIndex((item) => item.id === prevId);
@@ -69,7 +49,6 @@ export default function AboutSection() {
     });
   }, [visibleItems]);
 
-  // Go back to previous tech in line
   const prevSpotlight = useCallback(() => {
     setActiveItemId((prevId) => {
       const idx = visibleItems.findIndex((item) => item.id === prevId);
@@ -78,12 +57,11 @@ export default function AboutSection() {
     });
   }, [visibleItems]);
 
-  // Automatic switching: advances while visible, pauses on card hover so user can read/click official link
+  // Automatic switching: advances only while visible on screen and not hovered
   useEffect(() => {
     if (!isVisible || reducedMotion || isHovered) return;
 
     const timer = window.setInterval(advanceSpotlight, CYCLE_SECONDS * 1000);
-
     return () => window.clearInterval(timer);
   }, [isVisible, reducedMotion, isHovered, advanceSpotlight]);
 
@@ -111,40 +89,16 @@ export default function AboutSection() {
     return () => window.removeEventListener("select-about-tech", handleSelectTech);
   }, [activeTrack]);
 
-  // Pointer parallax; rAF-throttled so a fast mouse cannot flood React. The
-  // listener only lives while the stage is on screen, and the resting position
-  // is derived rather than reset in an effect — so leaving view simply settles
-  // the layers back to centre.
-  useEffect(() => {
-    if (!parallaxActive) return;
-
-    let frame = 0;
-    const handleMouseMove = (event: MouseEvent) => {
-      if (frame) return;
-      frame = window.requestAnimationFrame(() => {
-        frame = 0;
-        const { innerWidth, innerHeight } = window;
-        setMousePos({
-          x: (event.clientX - innerWidth / 2) / (innerWidth / 2),
-          y: (event.clientY - innerHeight / 2) / (innerHeight / 2),
-        });
-      });
-    };
-
-    window.addEventListener("mousemove", handleMouseMove);
-    return () => {
-      window.removeEventListener("mousemove", handleMouseMove);
-      if (frame) window.cancelAnimationFrame(frame);
-    };
-  }, [parallaxActive]);
+  // Mobile centered hover trigger (IntersectionObserver-based, no scroll rAF)
+  useTouchScrollChoreography(sectionRef, {
+    enabled: isVisible && !reducedMotion,
+  });
 
   const handleSelectItem = (item: TechItem) => {
     soundFx.playChime();
     setActiveItemId(item.id);
   };
 
-  // Switching track keeps the spotlight valid: if what is on the card is not
-  // part of the new filter, the first entry of that filter takes its place.
   const handleSelectTrack = (track: TechTrack | "all") => {
     soundFx.playPop(520);
     const items =
@@ -157,114 +111,106 @@ export default function AboutSection() {
     setActiveTrack(track);
   };
 
-  const handleOpenDetails = () => {
-    soundFx.playPop(620);
-    setActiveModalItem(activeItem);
-  };
-
-  // Depth layers: the portrait drifts with the pointer while the card and the
-  // held badge counter-move, which is what sells the diorama.
-  const pointer = parallaxActive ? mousePos : NO_POINTER;
-  const p = PARALLAX_INTENSITY;
-  const portraitOffset = { x: pointer.x * p * 0.4, y: pointer.y * p * 0.3 };
-  const badgeOffset = { x: pointer.x * p * 0.7, y: pointer.y * p * 0.55 };
-  const cardsOffset = { x: pointer.x * p * -0.9, y: pointer.y * p * -0.8 };
-
   return (
     <section
       id="about"
       ref={sectionRef}
-      aria-label="About Aymane Eddahak"
-      className="about-section relative isolate flex min-h-[100svh] w-full flex-col overflow-hidden select-none"
+      aria-labelledby="about-heading"
+      data-visible={isVisible ? "true" : "false"}
+      data-motion-state={motionState}
+      data-motion-reentry={isReentry ? "true" : "false"}
+      className="about-section scroll-reveal-section relative isolate flex min-h-[520px] lg:min-h-[100svh] w-full flex-col justify-center overflow-hidden select-none pb-6 lg:pb-0"
     >
-      {/* Top Centered Header — Option C: Clean & Minimal */}
-      <div className="relative z-20 mx-auto max-w-3xl px-4 text-center pt-8 sm:pt-12 pb-2">
-        <h2 className="text-2xl sm:text-3xl md:text-4xl font-black tracking-tight text-neutral-900 font-jakarta">
+      {/* Top Centered Header */}
+      <div
+        data-reveal-step="1"
+        className="relative z-20 mx-auto w-full max-w-4xl px-3 sm:px-4 text-center pt-6 sm:pt-8 lg:pt-6 pb-2"
+      >
+        <h2
+          id="about-heading"
+          className="text-xl sm:text-3xl md:text-4xl font-black tracking-tight text-neutral-900 font-jakarta"
+        >
           {t.about.heading}
         </h2>
       </div>
 
-      {/* Stage: portrait centre, description card left, tool rail right. */}
-      <main className="relative z-10 mx-auto flex w-full max-w-7xl flex-1 flex-col items-center justify-center gap-8 px-4 pt-4 pb-8 sm:px-8 md:px-14 lg:flex-row lg:gap-0 lg:px-20 lg:py-6">
-        {/* Centre portrait, with the held badge levitating above his hand */}
-        <motion.div
-          initial={{ opacity: 0, y: 18 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true, amount: 0.2 }}
-          transition={{ duration: 0.7, ease: "easeOut" }}
-          className="relative z-10 flex justify-center transition-transform duration-500 ease-out"
-          style={{
-            transform: `translate3d(${portraitOffset.x}px, ${portraitOffset.y}px, 0)`,
-          }}
+      {/* Bounded Stage Wrapper: anchors Left Card, Portrait & Right Rail together across all aspect ratios (including 1024×1366 iPad Pro 13) */}
+      <div className="relative z-10 mx-auto flex w-full max-w-7xl flex-1 lg:flex-none lg:h-[500px] xl:h-[600px] 2xl:h-[660px] flex-col items-center justify-center gap-2 lg:gap-0 px-2 sm:px-6 lg:px-8 xl:px-14">
+        {/* Discipline filter (horizontal top on < lg, vertical right panel inside bounded stage on lg+) */}
+        <div
+          data-reveal-step="2"
+          className="order-1 lg:order-none relative z-30 w-full px-1 sm:px-2 mb-1 lg:mb-0 lg:w-auto lg:max-w-[480px] lg:absolute lg:top-1/2 lg:right-3 xl:right-6 lg:-translate-y-1/2 flex justify-center lg:justify-end"
         >
-          {/* Sized by width on phones and by height on desktop, so the pose
-              never overflows and the badge rides the hand at every size */}
-          <div className="relative aspect-[1402/1122] w-full max-w-[350px] sm:max-w-[470px] lg:h-[600px] lg:w-auto lg:max-w-none xl:h-[680px]">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
-              src={PORTRAIT}
-              alt="Aymane Eddahak"
-              className="h-full w-full object-contain object-bottom drop-shadow-[0_28px_38px_rgba(27,39,87,0.18)]"
-              referrerPolicy="no-referrer"
-            />
+          <TechRail
+            items={visibleItems}
+            activeItemId={activeItem.id}
+            activeTrack={activeTrack}
+            onSelectItem={handleSelectItem}
+            onSelectTrack={handleSelectTrack}
+            onNext={advanceSpotlight}
+            onPrev={prevSpotlight}
+          />
+        </div>
 
-            {/* The badge, hovering over the raised hand */}
+        {/* Stage Row: Smaller Left Description Card + Hero-sized Portrait */}
+        <div
+          data-reveal-step="3"
+          className="order-2 lg:order-none relative z-10 flex w-full flex-row items-center justify-center gap-0 sm:gap-4 lg:gap-0"
+        >
+          {/* Left Description Card — anchored to bounded stage bottom-left on lg+, never sinks under portrait on tall screens */}
+          <div
+            onMouseEnter={() => setIsHovered(true)}
+            onMouseLeave={() => setIsHovered(false)}
+            className="about3d-slot order-1 lg:order-none relative z-20 w-[124px] sm:w-[178px] lg:w-[215px] xl:w-[275px] -mr-6 sm:-mr-2 lg:mr-0 shrink-0 transition-transform duration-700 ease-out lg:absolute lg:bottom-4 lg:left-2 xl:bottom-8 xl:left-6"
+          >
             <div
-              className="absolute top-[31%] left-[93%] z-20 w-[19.5%]"
+              className="will-change-transform"
               style={{
-                transform: `translate3d(${badgeOffset.x}px, ${badgeOffset.y}px, 0)`,
+                transform:
+                  "translate3d(var(--cards-x, 0px), var(--cards-y, 0px), 0)",
               }}
             >
-              <div className="-translate-x-1/2 -translate-y-1/2">
-                <div className="about-float-badge w-full">
-                  <HeldBadge item={activeItem} />
+              <FloatingCards activeItem={activeItem} />
+            </div>
+          </div>
+
+          {/* Centre portrait matching Hero portrait scale, with the held badge levitating above his hand */}
+          <div
+            className="order-2 lg:order-none relative z-10 flex flex-1 lg:flex-none justify-center transition-transform duration-500 ease-out will-change-transform lg:-translate-x-10 xl:-translate-x-6 2xl:translate-x-0"
+            style={{
+              transform:
+                "translate3d(var(--portrait-x, 0px), var(--portrait-y, 0px), 0)",
+            }}
+          >
+            <div className="relative aspect-[1402/1122] h-[215px] min-[400px]:h-[230px] sm:h-[320px] md:h-[360px] w-auto lg:h-[390px] xl:h-[510px] 2xl:h-[580px]">
+              <Image
+                src={PORTRAIT}
+                alt="AED Solutions Tech Showcase"
+                width={1402}
+                height={1122}
+                sizes="(max-width: 640px) 288px, (max-width: 1024px) 425px, 780px"
+                className="h-full w-full object-contain object-bottom drop-shadow-[0_28px_38px_rgba(27,39,87,0.18)]"
+              />
+
+              {/* The badge, hovering over the raised hand */}
+              <div
+                className="absolute top-[31%] left-[93%] z-20 w-[19.5%] will-change-transform"
+                style={{
+                  transform:
+                    "translate3d(var(--badge-x, 0px), var(--badge-y, 0px), 0)",
+                }}
+              >
+                <div className="-translate-x-1/2 -translate-y-1/2">
+                  <div className="about-float-badge w-full">
+                    <HeldBadge item={activeItem} />
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </motion.div>
-
-        {/* Description card + official-site link: the 3D plate rides the
-            pointer parallax, so it needs its own perspective wrapper rather
-            than the flat card's translate only. Hovering pauses auto-cycling;
-            leaving resumes immediately. */}
-        <div
-          onMouseEnter={() => setIsHovered(true)}
-          onMouseLeave={() => {
-            setIsHovered(false);
-            advanceSpotlight();
-          }}
-          className="about3d-slot relative z-20 w-full max-w-[330px] transition-transform duration-700 ease-out lg:absolute lg:bottom-[180px] lg:left-[1%] xl:bottom-[194px]"
-        >
-          <div style={{ transform: `translate3d(${cardsOffset.x}px, ${cardsOffset.y}px, 0)` }}>
-            <div className="about-float-slow">
-              <FloatingCards activeItem={activeItem} onCardClick={handleOpenDetails} />
-            </div>
-          </div>
         </div>
-
-      </main>
-
-      {/* Every language and tool the portfolio ships with, plus the discipline
-          filter. A sibling of <main> on purpose: inside the centred max-w-7xl
-          container the group could only ever be anchored to the container's
-          edge, which is 100px inside the screen at 1440 — the filter crowded
-          the portrait's hand from there. Against the section it parks on the
-          real screen edge at every width. It is still a normal flow child
-          below lg, so phones stack it under the portrait as before. */}
-      <div className="relative z-20 w-full px-4 mt-6 lg:mt-0 lg:absolute lg:top-1/2 lg:right-4 xl:right-10 lg:w-auto lg:max-w-[480px] lg:-translate-y-1/2 flex justify-center lg:justify-end">
-        <TechRail
-          items={visibleItems}
-          activeItemId={activeItem.id}
-          activeTrack={activeTrack}
-          onSelectItem={handleSelectItem}
-          onSelectTrack={handleSelectTrack}
-          onNext={advanceSpotlight}
-          onPrev={prevSpotlight}
-        />
       </div>
 
-      <BadgeModal item={activeModalItem} onClose={() => setActiveModalItem(null)} />
     </section>
   );
 }

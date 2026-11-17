@@ -4,17 +4,23 @@ import { motion, AnimatePresence } from "motion/react";
 import type { ShowcaseApp } from "../showcase-apps";
 import { ShowcaseThreeCanvas } from "./ShowcaseThreeCanvas";
 
-export function AbstractBackdrop({ currentApp }: { currentApp: ShowcaseApp }) {
+export function AbstractBackdrop({
+  currentApp,
+  active = true,
+}: {
+  currentApp: ShowcaseApp;
+  active?: boolean;
+}) {
   return (
     <div className="absolute inset-0 pointer-events-none overflow-hidden z-0 select-none">
-      {/* 1. Three.js 3D Floating Cubes & Ambient Particle Field */}
+      {/* 1. Ambient Floating Particle Field (Lightweight 2D Canvas) */}
       <ShowcaseThreeCanvas
         accentColor={currentApp.accentColor}
         ambientColor={currentApp.ambientColor}
-        active={true}
+        active={active}
       />
 
-      {/* 2. Soft, clean ambient radial bloom (giant 3D ribbon & giant watermark removed) */}
+      {/* 2. Soft, clean ambient radial bloom */}
       <AnimatePresence mode="popLayout">
         <motion.div
           key={currentApp.id}
@@ -26,7 +32,7 @@ export function AbstractBackdrop({ currentApp }: { currentApp: ShowcaseApp }) {
         >
           {/* Subtle soft ambient radial glow behind the active card */}
           <div
-            className="absolute top-[10%] left-[8%] w-[55%] h-[65%] rounded-full blur-3xl opacity-35 transition-all duration-700 pointer-events-none"
+            className="absolute top-[10%] left-[8%] w-[55%] h-[65%] rounded-full opacity-35 transition-all duration-700 pointer-events-none"
             style={{
               background: `radial-gradient(circle, ${currentApp.accentColor} 0%, ${currentApp.ambientColor} 50%, transparent 75%)`,
             }}

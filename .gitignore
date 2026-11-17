@@ -41,6 +41,8 @@ contact/
 newdesigndevis-3Dcard/
 metadata.json
 start-dev.bat
+/card3D.mp4
+/cvs/
 *.zip
 
 # env files (can opt-in for committing if needed)

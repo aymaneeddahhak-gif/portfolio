@@ -1,36 +1,43 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# AED Solutions — Product Engineering Portfolio
 
-## Getting Started
+Official portfolio and interactive product showcase for **AED Solutions**, specializing in high-performance **Mobile Applications (iOS & Android)** and **Modern Web Platforms & Cloud APIs**.
 
-First, run the development server:
+## Key Highlights & Architecture
+
+- **Interactive Dual-Service Stage**: Stepped glass typography (`Mobile Service` & `Web Service`) paired with hardware-accelerated masked product stage videos and zero-CLS responsive transitions.
+- **Featured Case Studies**:
+  - **A-Task**: Cross-platform team task & productivity suite (`Flutter • Firebase • REST API`) with an embedded interactive web preview (`/a-task`).
+  - **A-Store**: High-conversion digital commerce storefront & merchant operations platform (`Next.js • Tailwind CSS • Supabase`).
+- **3D Studio Luminous Satin Ceramic Tech Stack**: Tactile CSS 3D extruded discipline explorer covering `React`, `Laravel`, `Next.js`, `Docker`, `REST API`, `Flutter`, `Supabase`, `GitHub`, and supporting cloud/UI tooling.
+- **Bilingual Experience (`EN` / `FR`)**: Instant client-side localization across navigation, hero copy, showcase case studies, resume preview modal, and contact workflows.
+- **Performance & Accessibility**:
+  - Built on **Next.js 16** & **React 19** with `next/image` optimization, `next/dynamic` modal code-splitting, and `IntersectionObserver`-gated offscreen animation/video lifecycle management.
+  - **WCAG 2.1 AA** verified color contrast, `44×44px` touch targets, semantic landmarks, and keyboard-accessible interactive controls.
+
+## Tech Stack
+
+- **Framework**: Next.js 16 (App Router), React 19, TypeScript 5
+- **Styling**: Tailwind CSS 4, Custom 3D CSS Transforms & Keyed Video Mattes
+- **Security & Contact**: Server-verified `/api/contact` route with Cloudflare Turnstile protection + graceful Gmail/Mailto fallback
+
+## Local Development
 
 ```bash
+npm install
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+Open `http://localhost:3000` in your browser.
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
+## Quality Checks
 
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
+```bash
+npx tsc --noEmit
+npm run lint
+```
 
-## Learn More
+## Contact
 
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+- **Studio**: AED Solutions
+- **Email**: `aedsolutionsdev@gmail.com`
+- **Phone**: `+212 617 415 506`

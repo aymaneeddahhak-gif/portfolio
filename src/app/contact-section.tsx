@@ -1,13 +1,18 @@
 "use client";
 
 import { useEffect, useRef, useState, type CSSProperties, type FormEvent } from "react";
-import { motion } from "motion/react";
+import Image from "next/image";
 import { CheckCircle2, ChevronDown, Mail, Phone } from "lucide-react";
 import { useTranslation } from "@/i18n/LanguageContext";
+import {
+  useReplaySection,
+  useTouchScrollChoreography,
+} from "./motion-coordinator";
 
 function ContourPattern({ className = "" }: { className?: string }) {
   return (
     <svg
+      aria-hidden="true"
       className={`pointer-events-none absolute inset-0 h-full w-full opacity-40 ${className}`}
       xmlns="http://www.w3.org/2000/svg"
       viewBox="0 0 800 500"
@@ -55,11 +60,13 @@ function ContourPattern({ className = "" }: { className?: string }) {
   );
 }
 
+type ServiceId = "web" | "mobile" | "other";
+const SERVICE_IDS: ServiceId[] = ["web", "mobile", "other"];
+
 const CONTACT_EMAIL = "aedsolutionsdev@gmail.com";
 const CONTACT_PHONE = "+212617415506";
 const CONTACT_PHONE_DISPLAY = "+212 617 415 506";
 const GITHUB_URL = "https://github.com/aymaneeddahhak-gif";
-const SERVICES = ["Web Service", "Mobile Service", "Other Service"];
 const DEFAULT_INQUIRY_SUBJECT = "Project Collaboration Inquiry — AED Solutions";
 const DEFAULT_WHATSAPP_BODY =
   "Hi AED Solutions! I checked out your portfolio and have a project in mind. Are you available for a quick discussion?";
@@ -94,18 +101,23 @@ function TurnstileWidget({
   onVerify,
   onExpire,
   resetRef,
+  passedLabel,
 }: {
   onVerify: (token: string) => void;
   onExpire?: () => void;
   resetRef?: React.MutableRefObject<(() => void) | null>;
+  passedLabel: string;
 }) {
   const containerRef = useRef<HTMLDivElement>(null);
   const widgetIdRef = useRef<string | null>(null);
   const [hasDomainError, setHasDomainError] = useState(false);
   const onVerifyRef = useRef(onVerify);
-  onVerifyRef.current = onVerify;
   const onExpireRef = useRef(onExpire);
-  onExpireRef.current = onExpire;
+
+  useEffect(() => {
+    onVerifyRef.current = onVerify;
+    onExpireRef.current = onExpire;
+  }, [onVerify, onExpire]);
 
   useEffect(() => {
     const isLocalhost =
@@ -115,7 +127,6 @@ function TurnstileWidget({
         window.location.hostname.startsWith("192.168."));
 
     const envKey = process.env.NEXT_PUBLIC_CLOUDFLARE_TURNSTILE_SITE_KEY;
-    // Use the real site key so Cloudflare does not display the "À des fins de test uniquement" testing banner
     const siteKey =
       envKey && envKey !== "1x00000000000000000000AA"
         ? envKey
@@ -240,24 +251,28 @@ function TurnstileWidget({
   if (hasDomainError) {
     return (
       <div className="w-full min-h-[46px] flex items-center justify-start py-1">
-        <div className="inline-flex items-center gap-2 rounded-xl bg-neutral-50 border border-neutral-200/90 px-3 py-2 text-xs text-neutral-600 font-medium shadow-2xs">
+        <div className="inline-flex items-center gap-2 rounded-xl bg-neutral-50 border border-neutral-200/90 px-3 py-2 text-xs text-neutral-700 font-medium shadow-2xs">
           <CheckCircle2 className="h-4 w-4 text-emerald-600 shrink-0" />
-          <span>Security check passed (Local Development Mode)</span>
+          <span>{passedLabel}</span>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="w-full min-h-[65px] flex items-center justify-start bg-transparent">
-      <div ref={containerRef} className="w-full" />
+    <div className="w-full min-h-[65px] flex items-center justify-start bg-transparent overflow-x-auto no-scrollbar">
+      <div
+        ref={containerRef}
+        className="w-full max-w-full max-[370px]:scale-[0.88] max-[370px]:origin-left"
+      />
     </div>
   );
 }
 
 export default function ContactSection() {
-  const { t, lang } = useTranslation();
+  const { t } = useTranslation();
   const contactVideoRef = useRef<HTMLVideoElement>(null);
+  const selectRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     const video = contactVideoRef.current;
@@ -278,10 +293,16 @@ export default function ContactSection() {
     return () => observer.disconnect();
   }, []);
 
-  const [formData, setFormData] = useState({
+  const [formData, setFormData] = useState<{
+    name: string;
+    email: string;
+    service: ServiceId;
+    budget: string;
+    message: string;
+  }>({
     name: "",
     email: "",
-    service: "",
+    service: "web",
     budget: "",
     message: "",
   });
@@ -291,14 +312,37 @@ export default function ContactSection() {
   const [turnstileToken, setTurnstileToken] = useState<string>("");
   const [captchaError, setCaptchaError] = useState(false);
   const turnstileResetRef = useRef<(() => void) | null>(null);
-  // Prefilled hand-off links, built at submit time so the visitor can still
-  // reach the inbox from their own Gmail if the API call fails.
   const [fallbackLinks, setFallbackLinks] = useState<{
     gmail: string;
     mailto: string;
   } | null>(null);
   const [serviceOpen, setServiceOpen] = useState(false);
   const sectionRef = useRef<HTMLElement>(null);
+  const { isVisible, motionState, isReentry, reducedMotion } =
+    useReplaySection(sectionRef);
+
+  useTouchScrollChoreography(sectionRef, {
+    enabled: isVisible && !reducedMotion,
+  });
+
+  // Close custom service dropdown on outside pointerdown or Escape key
+  useEffect(() => {
+    if (!serviceOpen) return;
+    const handlePointerDown = (e: PointerEvent) => {
+      if (selectRef.current && !selectRef.current.contains(e.target as Node)) {
+        setServiceOpen(false);
+      }
+    };
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === "Escape") setServiceOpen(false);
+    };
+    document.addEventListener("pointerdown", handlePointerDown);
+    document.addEventListener("keydown", handleKeyDown);
+    return () => {
+      document.removeEventListener("pointerdown", handlePointerDown);
+      document.removeEventListener("keydown", handleKeyDown);
+    };
+  }, [serviceOpen]);
 
   const handleResetForm = () => {
     setIsSubmitted(false);
@@ -306,7 +350,7 @@ export default function ContactSection() {
     setFormData({
       name: "",
       email: "",
-      service: "",
+      service: "web",
       budget: "",
       message: "",
     });
@@ -316,12 +360,8 @@ export default function ContactSection() {
     }, 100);
   };
 
-  // Primary path: Web3Forms delivers the inquiry straight to the inbox that
-  // owns NEXT_PUBLIC_WEB3FORMS_KEY. Web3Forms replies with HTTP 200 even for
-  // some rejections, so the body's `success` flag — not just res.ok — decides
-  // whether we may tell the visitor the message was delivered.
-  // Fallback: hand-off links (Gmail compose + mailto) prefilled with the
-  // message, shown as buttons so nothing depends on a blocked popup.
+  const selectedServiceLabel = t.contact.services[formData.service];
+
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     if (!turnstileToken) {
@@ -332,11 +372,11 @@ export default function ContactSection() {
     setIsSending(true);
     setSendFailed(false);
     const accessKey = process.env.NEXT_PUBLIC_WEB3FORMS_KEY;
-    const subject = `New ${formData.service || "project"} inquiry from ${formData.name || "portfolio visitor"}`;
+    const subject = `New ${selectedServiceLabel} inquiry from ${formData.name || "portfolio visitor"}`;
     const plainBody = [
       `Name: ${formData.name}`,
       `Email: ${formData.email}`,
-      `Service: ${formData.service}`,
+      `Service: ${selectedServiceLabel}`,
       `Timeline / Scope: ${formData.budget}`,
       "",
       formData.message,
@@ -349,19 +389,14 @@ export default function ContactSection() {
         headers: { "Content-Type": "application/json", Accept: "application/json" },
         body: JSON.stringify({
           access_key: accessKey,
-          // Cloudflare Turnstile verification response
           "cf-turnstile-response": turnstileToken,
-          // Honeypot: hidden from humans; bots that autofill every field get
-          // silently rejected by Web3Forms.
           botcheck: false,
           subject,
-          from_name: "Portfolio Contact Form",
-          // Web3Forms uses this field as the Reply-To address, so hitting
-          // "Reply" in Gmail answers the visitor directly.
+          from_name: "AED Solutions Contact Form",
           replyto: formData.email,
           name: formData.name,
           email: formData.email,
-          project: formData.service,
+          project: selectedServiceLabel,
           timeline: formData.budget,
           message: formData.message,
         }),
@@ -391,25 +426,25 @@ export default function ContactSection() {
     }
   };
 
+  const buttonLabel = isSending ? t.contact.sending : t.contact.submitButton;
 
   return (
     <section
       id="contact"
       ref={sectionRef}
       aria-labelledby="contact-heading"
-      className="relative w-full bg-transparent text-[#111827] overflow-x-hidden lg:flex lg:min-h-[100svh] lg:items-center"
+      data-motion-state={motionState}
+      data-motion-reentry={isReentry ? "true" : "false"}
+      className="contact-section scroll-reveal-section relative w-full bg-transparent text-[#111827] overflow-x-hidden lg:flex lg:min-h-[100svh] lg:items-center"
     >
       <ContourPattern className="text-neutral-300/40" />
 
-      <div className="relative z-10 px-3 sm:px-6 lg:px-12 py-8 sm:py-10 lg:py-4 max-w-7xl mx-auto w-full">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-5 sm:gap-6 lg:gap-8 items-stretch">
+      <div className="relative z-10 px-3 sm:px-6 lg:px-12 py-6 sm:py-10 lg:py-4 max-w-7xl mx-auto w-full">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8 items-stretch">
           {/* Form card */}
-          <motion.div
-            initial={{ opacity: 0, y: 24 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true, amount: 0.2 }}
-            transition={{ duration: 0.5, ease: "easeOut" }}
-            className="relative overflow-hidden rounded-3xl sm:rounded-[2.5rem] bg-gradient-to-b from-[#f7f8f7] to-[#e7e7e7] border border-neutral-200/80 shadow-[0_4px_35px_rgba(0,0,0,0.03)] p-4 sm:p-6 lg:p-6 flex flex-col justify-between"
+          <div
+            data-reveal-step="2"
+            className="order-2 lg:order-first relative overflow-hidden rounded-3xl sm:rounded-[2.5rem] bg-gradient-to-b from-[#f7f8f7] to-[#e7e7e7] border border-neutral-200/80 shadow-[0_4px_35px_rgba(0,0,0,0.03)] p-4 sm:p-6 lg:p-6 flex flex-col justify-between"
           >
             <div className="absolute top-0 left-0 right-0 h-28 sm:h-32 overflow-hidden pointer-events-none opacity-30">
               <ContourPattern className="text-neutral-400/70 -top-10" />
@@ -425,26 +460,22 @@ export default function ContactSection() {
                   id="contact-heading"
                   className="text-xl sm:text-2xl lg:text-3xl font-bold text-neutral-900 tracking-tight font-jakarta"
                 >
-                  {sendFailed ? "One more tap" : "Message sent!"}
+                  {sendFailed ? t.contact.sendFailedTitle : t.contact.successTitle}
                 </h2>
-                <p className="text-xs sm:text-sm text-neutral-500 max-w-sm mx-auto leading-relaxed px-4">
+                <p className="text-xs sm:text-sm text-neutral-600 max-w-sm mx-auto leading-relaxed px-4">
                   {sendFailed ? (
                     <>
-                      The automatic delivery didn&apos;t go through. Your details are ready
-                      to send — open Gmail and press send, or write to{" "}
+                      {t.contact.sendFailedBody}{" "}
                       <a
                         href={`mailto:${CONTACT_EMAIL}`}
-                        className="font-semibold text-neutral-900 underline decoration-neutral-300 underline-offset-2 hover:decoration-neutral-900 transition-colors"
+                        className="font-semibold text-neutral-900 underline decoration-neutral-400 underline-offset-2 hover:decoration-neutral-900 transition-colors"
                       >
                         {CONTACT_EMAIL}
                       </a>
                       .
                     </>
                   ) : (
-                    <>
-                      Thanks for reaching out! Your inquiry landed in my inbox and I&apos;ll
-                      get back to you within 24 hours.
-                    </>
+                    t.contact.successMessage
                   )}
                 </p>
                 {sendFailed && fallbackLinks && (
@@ -453,16 +484,16 @@ export default function ContactSection() {
                       href={fallbackLinks.gmail}
                       target="_blank"
                       rel="noreferrer"
-                      className="inline-flex items-center gap-2 rounded-full bg-neutral-900 px-4 py-2 text-xs font-semibold text-white transition-transform hover:-translate-y-0.5"
+                      className="inline-flex min-h-[44px] items-center gap-2 rounded-full bg-neutral-900 px-4 py-2 text-xs font-semibold text-white transition-transform hover:-translate-y-0.5"
                     >
                       <Mail className="h-3.5 w-3.5" />
-                      Open in Gmail
+                      {t.contact.openInGmail}
                     </a>
                     <a
                       href={fallbackLinks.mailto}
-                      className="inline-flex items-center gap-2 rounded-full border border-neutral-300 px-4 py-2 text-xs font-semibold text-neutral-800 transition-colors hover:border-neutral-900"
+                      className="inline-flex min-h-[44px] items-center gap-2 rounded-full border border-neutral-300 px-4 py-2 text-xs font-semibold text-neutral-800 transition-colors hover:border-neutral-900"
                     >
-                      Use my mail app
+                      {t.contact.useMailApp}
                     </a>
                   </div>
                 )}
@@ -470,31 +501,31 @@ export default function ContactSection() {
                   <button
                     type="button"
                     onClick={handleResetForm}
-                    className="text-xs font-medium text-neutral-500 hover:text-neutral-900 underline underline-offset-4 transition-colors cursor-pointer"
+                    className="min-h-[44px] px-3 text-xs font-semibold text-neutral-600 hover:text-neutral-900 underline underline-offset-4 transition-colors cursor-pointer"
                   >
-                    {sendFailed ? "← Try again with form" : "← Send another message"}
+                    {sendFailed ? t.contact.tryAgainForm : t.contact.sendAnother}
                   </button>
                 </div>
               </div>
             ) : (
               <div className="relative z-10 flex flex-col justify-between h-full space-y-3 sm:space-y-4">
                 <div className="space-y-1 pt-1">
-                  {/* Brand mark sits inline on the heading's line, so the logo
-                      finishes the sentence instead of stacking under it. */}
-                  <div className="flex flex-wrap items-center gap-x-2 gap-y-1">
+                  <div className="flex flex-nowrap items-center justify-between sm:justify-start gap-2">
                     <h2
                       id="contact-heading"
-                      className="text-xl sm:text-2xl lg:text-[1.75rem] font-extrabold tracking-tight text-neutral-950 font-jakarta leading-tight"
+                      className="text-lg sm:text-2xl lg:text-[1.75rem] font-extrabold tracking-tight text-neutral-950 font-jakarta leading-tight"
                     >
                       {t.contact.title}
                     </h2>
-                    <img
+                    <Image
                       src="/images/logosultion.png"
-                      alt="Logosolution"
-                      className="h-8 sm:h-9 lg:h-11 w-auto max-w-full self-center"
+                      alt="AED Solutions"
+                      width={1180}
+                      height={428}
+                      className="h-7 sm:h-9 lg:h-11 w-auto max-w-[110px] sm:max-w-full shrink-0 self-center"
                     />
                   </div>
-                  <p className="text-xs sm:text-sm text-neutral-500 font-medium">
+                  <p className="text-xs sm:text-sm text-neutral-600 font-medium">
                     {t.contact.subtitle}
                   </p>
                 </div>
@@ -511,29 +542,39 @@ export default function ContactSection() {
                   />
                   <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 sm:gap-2.5">
                     <div className="space-y-1">
-                      <label className="block text-[10px] font-semibold text-neutral-700">
+                      <label
+                        htmlFor="contact-name"
+                        className="block text-[11px] font-semibold text-neutral-700"
+                      >
                         {t.contact.nameLabel}
                       </label>
                       <input
+                        id="contact-name"
                         required
                         type="text"
+                        autoComplete="name"
                         placeholder={t.contact.namePlaceholder}
                         value={formData.name}
                         onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-                        className="contact-field w-full px-3 py-2 text-xs sm:text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none"
+                        className="contact-field w-full min-h-[42px] px-3 py-2 text-xs sm:text-sm text-neutral-900 placeholder:text-neutral-500 focus:outline-none"
                       />
                     </div>
                     <div className="space-y-1">
-                      <label className="block text-[10px] font-semibold text-neutral-700">
+                      <label
+                        htmlFor="contact-email"
+                        className="block text-[11px] font-semibold text-neutral-700"
+                      >
                         {t.contact.emailLabel}
                       </label>
                       <input
+                        id="contact-email"
                         required
                         type="email"
+                        autoComplete="email"
                         placeholder={t.contact.emailPlaceholder}
                         value={formData.email}
                         onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-                        className="contact-field w-full px-3 py-2 text-xs sm:text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none"
+                        className="contact-field w-full min-h-[42px] px-3 py-2 text-xs sm:text-sm text-neutral-900 placeholder:text-neutral-500 focus:outline-none"
                       />
                     </div>
                   </div>
@@ -542,26 +583,25 @@ export default function ContactSection() {
                     <div className="space-y-1">
                       <span
                         id="service-label"
-                        className="block text-[10px] font-semibold text-neutral-700"
+                        className="block text-[11px] font-semibold text-neutral-700"
                       >
                         {t.contact.serviceLabel}
                       </span>
                       <div
+                        ref={selectRef}
                         className="contact-select relative"
                         data-open={serviceOpen ? "true" : undefined}
                       >
                         <button
                           type="button"
                           aria-labelledby="service-label"
-                          aria-haspopup="true"
+                          aria-haspopup="listbox"
                           aria-expanded={serviceOpen}
                           onClick={() => setServiceOpen((open) => !open)}
-                          className="contact-field flex w-full cursor-pointer items-center justify-between gap-2 px-3 py-2 text-left text-xs sm:text-sm focus:outline-none"
+                          className="contact-field flex w-full min-h-[42px] cursor-pointer items-center justify-between gap-2 px-3 py-2 text-left text-xs sm:text-sm text-neutral-900 focus:outline-none"
                         >
-                          <span className={formData.service ? "" : "text-neutral-400"}>
-                            {formData.service || "Project type"}
-                          </span>
-                          <ChevronDown className="contact-select-chevron h-4 w-4 shrink-0 text-neutral-400" />
+                          <span>{selectedServiceLabel}</span>
+                          <ChevronDown className="contact-select-chevron h-4 w-4 shrink-0 text-neutral-500" />
                         </button>
 
                         <div
@@ -569,60 +609,71 @@ export default function ContactSection() {
                           aria-labelledby="service-label"
                           className="contact-select-panel"
                         >
-                          {SERVICES.map((service) => (
-                            <label key={service} className="contact-radio">
+                          {SERVICE_IDS.map((serviceId) => (
+                            <label key={serviceId} className="contact-radio">
                               <input
-                                required
                                 type="radio"
                                 name="service"
-                                value={service}
-                                checked={formData.service === service}
-                                onChange={(e) => {
-                                  setFormData({ ...formData, service: e.target.value });
+                                value={serviceId}
+                                checked={formData.service === serviceId}
+                                onChange={() => {
+                                  setFormData({ ...formData, service: serviceId });
                                   setServiceOpen(false);
                                 }}
                               />
                               <span className="contact-radio-circle" />
-                              <span className="contact-radio-text">{service}</span>
+                              <span className="contact-radio-text">
+                                {t.contact.services[serviceId]}
+                              </span>
                             </label>
                           ))}
                         </div>
                       </div>
                     </div>
                     <div className="space-y-1">
-                      <label className="block text-[10px] font-semibold text-neutral-700">
-                        Timeline / Scope
+                      <label
+                        htmlFor="contact-timeline"
+                        className="block text-[11px] font-semibold text-neutral-700"
+                      >
+                        {t.contact.timelineLabel}
                       </label>
                       <input
+                        id="contact-timeline"
                         type="text"
-                        placeholder="e.g. MVP in 3-4 weeks, flexible budget"
+                        placeholder={t.contact.timelinePlaceholder}
                         value={formData.budget}
                         onChange={(e) => setFormData({ ...formData, budget: e.target.value })}
-                        className="contact-field w-full px-3 py-2 text-xs sm:text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none"
+                        className="contact-field w-full min-h-[42px] px-3 py-2 text-xs sm:text-sm text-neutral-900 placeholder:text-neutral-500 focus:outline-none"
                       />
                     </div>
                   </div>
 
                   <div className="space-y-1">
-                    <label className="block text-[10px] font-semibold text-neutral-700">
+                    <label
+                      htmlFor="contact-message"
+                      className="block text-[11px] font-semibold text-neutral-700"
+                    >
                       {t.contact.messageLabel}
                     </label>
                     <textarea
+                      id="contact-message"
+                      required
                       rows={2}
                       placeholder={t.contact.messagePlaceholder}
                       value={formData.message}
                       onChange={(e) => setFormData({ ...formData, message: e.target.value })}
-                      className="contact-field w-full px-3 py-2 text-xs sm:text-sm text-neutral-900 placeholder:text-neutral-400 focus:outline-none resize-none"
+                      className="contact-field w-full px-3 py-2 text-xs sm:text-sm text-neutral-900 placeholder:text-neutral-500 focus:outline-none resize-none"
                     />
                   </div>
 
                   {/* Cloudflare Turnstile Captcha */}
                   <div className="space-y-1 pt-0.5">
-                    <span className="block text-[10px] font-semibold text-neutral-700">
+                    <span className="block text-[11px] font-semibold text-neutral-700">
                       {t.contact.securityVerification}
                     </span>
                     <TurnstileWidget
                       resetRef={turnstileResetRef}
+                      passedLabel={t.contact.securityPassed}
                       onVerify={(token) => {
                         setTurnstileToken(token);
                         setCaptchaError(false);
@@ -630,10 +681,8 @@ export default function ContactSection() {
                       onExpire={() => setTurnstileToken("")}
                     />
                     {captchaError && (
-                      <p className="text-[11px] font-bold text-red-500">
-                        {lang === "fr"
-                          ? "Veuillez compléter la vérification de sécurité Cloudflare avant d'envoyer."
-                          : "Please complete the Cloudflare security verification before sending."}
+                      <p role="alert" className="text-[11px] font-bold text-red-600">
+                        {t.contact.captchaError}
                       </p>
                     )}
                   </div>
@@ -642,6 +691,7 @@ export default function ContactSection() {
                     <button
                       type="submit"
                       disabled={isSending}
+                      data-sent={isSubmitted && !sendFailed ? "true" : undefined}
                       aria-live="polite"
                       className="uiverse-send-btn"
                     >
@@ -674,9 +724,9 @@ export default function ContactSection() {
                           </svg>
                         </div>
                         <p>
-                          {(isSending ? (lang === "fr" ? "Envoi..." : "Sending") : (lang === "fr" ? "Envoyer" : "SendMessage")).split("").map((ch, i) => (
+                          {buttonLabel.split("").map((ch, i) => (
                             <span key={i} style={{ "--i": i } as CSSProperties}>
-                              {ch}
+                              {ch === " " ? "\u00A0" : ch}
                             </span>
                           ))}
                         </p>
@@ -706,9 +756,9 @@ export default function ContactSection() {
                           </svg>
                         </div>
                         <p>
-                          {"Sent".split("").map((ch, i) => (
+                          {t.contact.sent.split("").map((ch, i) => (
                             <span key={i} style={{ "--i": i + 5 } as CSSProperties}>
-                              {ch}
+                              {ch === " " ? "\u00A0" : ch}
                             </span>
                           ))}
                         </p>
@@ -717,125 +767,128 @@ export default function ContactSection() {
                   </div>
                 </form>
 
-                {/* Social quick-links — circles that expand into labelled pills on hover */}
+                {/* Social quick-links — 44x44px touch targets that expand into pills on hover (and scroll on touch) */}
                 <div className="flex flex-col gap-1.5 pt-2">
-                  <p className="text-[10px] font-bold tracking-[0.2em] text-neutral-400 uppercase">
-                    Direct contact
+                  <p className="text-[10px] font-bold tracking-[0.2em] text-neutral-600 uppercase">
+                    {t.contact.directContact}
                   </p>
                   <div className="flex flex-wrap items-center gap-2">
-                  <a
-                    href={GMAIL_COMPOSE_URL}
-                    target="_blank"
-                    rel="noreferrer"
-                    title="Email me on Gmail (pre-filled message)"
-                    aria-label="Email me"
-                    className="group relative flex h-[42px] w-[42px] items-center justify-center overflow-hidden rounded-full bg-white border border-neutral-200 transition-all duration-400 hover:w-[190px] hover:rounded-[30px] cursor-pointer"
-                  >
-                    <svg
-                      className="absolute h-[20px] w-[20px] transition-opacity duration-300 group-hover:opacity-0"
-                      viewBox="0 0 512 512"
-                      fillRule="evenodd"
-                      aria-hidden="true"
+                    <a
+                      href={GMAIL_COMPOSE_URL}
+                      target="_blank"
+                      rel="noreferrer"
+                      title="Email AED Solutions on Gmail"
+                      aria-label="Email AED Solutions"
+                      className="contact-pill-wide group relative flex h-[44px] w-[44px] items-center justify-center overflow-hidden rounded-full bg-white border border-neutral-200 transition-all duration-400 lg:hover:w-[196px] lg:hover:rounded-[30px] cursor-pointer"
                     >
-                      <path fill="#4285F4" d="M34.91 448.818h81.454V251L0 163.727V413.91c0 19.287 15.622 34.91 34.91 34.91z" />
-                      <path fill="#34A853" d="M395.636 448.818h81.455c19.287 0 34.909-15.622 34.909-34.909V163.727L395.636 251z" />
-                      <path fill="#FBBC05" d="M395.636 99.727V251L512 163.727v-46.545c0-43.142-49.25-67.782-83.782-41.891z" />
-                      <path fill="#EA4335" d="M116.364 251V99.727L256 204.455 395.636 99.727V251L256 355.727z" />
-                      <path fill="#C5221F" d="M0 117.182v46.545L116.364 251V99.727L83.782 75.291C49.25 49.4 0 74.04 0 117.18z" />
-                    </svg>
-                    <span className="absolute w-[190px] text-center text-[11px] font-bold text-neutral-900 opacity-0 transition-opacity duration-400 group-hover:opacity-100">
-                      {CONTACT_EMAIL}
-                    </span>
-                  </a>
-                  <a
-                    href={GITHUB_URL}
-                    target="_blank"
-                    rel="noreferrer"
-                    title="GitHub profile"
-                    aria-label="GitHub profile"
-                    className="group relative flex h-[42px] w-[42px] items-center justify-center overflow-hidden rounded-full bg-stone-900 transition-all duration-400 hover:w-[190px] hover:rounded-[30px] cursor-pointer"
-                  >
-                    <i className="fa-brands fa-github absolute text-[18px] text-white transition-opacity duration-300 group-hover:opacity-0" aria-hidden="true" />
-                    <span className="absolute w-[190px] text-center text-[11px] font-bold text-white opacity-0 transition-opacity duration-400 group-hover:opacity-100">
-                      github.com/aymaneeddahhak-gif
-                    </span>
-                  </a>
-                  <a
-                    href={`tel:${CONTACT_PHONE}`}
-                    title="Direct phone call"
-                    aria-label="Direct phone call"
-                    className="group relative flex h-[42px] w-[42px] items-center justify-center overflow-hidden rounded-full bg-emerald-600 transition-all duration-400 hover:w-[112px] hover:rounded-[30px] cursor-pointer"
-                  >
-                    <Phone className="absolute h-[17px] w-[17px] text-white transition-opacity duration-300 group-hover:opacity-0" />
-                    <span className="absolute w-[112px] text-center text-[12px] font-semibold text-white opacity-0 transition-opacity duration-400 group-hover:opacity-100">
-                      Direct call
-                    </span>
-                  </a>
-                  <a
-                    href={WHATSAPP_URL}
-                    target="_blank"
-                    rel="noreferrer"
-                    title="Chat on WhatsApp"
-                    aria-label="Chat on WhatsApp"
-                    className="group relative flex h-[42px] w-[42px] items-center justify-center overflow-hidden rounded-full bg-[#25D366] transition-all duration-400 hover:w-[112px] hover:rounded-[30px] cursor-pointer"
-                  >
-                    <svg
-                      className="absolute h-[18px] w-[18px] fill-white transition-opacity duration-300 group-hover:opacity-0"
-                      viewBox="0 0 16 16"
-                      aria-hidden="true"
+                      <svg
+                        className="contact-pill-icon absolute h-[20px] w-[20px] transition-opacity duration-300 lg:group-hover:opacity-0"
+                        viewBox="0 0 512 512"
+                        fillRule="evenodd"
+                        aria-hidden="true"
+                      >
+                        <path fill="#4285F4" d="M34.91 448.818h81.454V251L0 163.727V413.91c0 19.287 15.622 34.91 34.91 34.91z" />
+                        <path fill="#34A853" d="M395.636 448.818h81.455c19.287 0 34.909-15.622 34.909-34.909V163.727L395.636 251z" />
+                        <path fill="#FBBC05" d="M395.636 99.727V251L512 163.727v-46.545c0-43.142-49.25-67.782-83.782-41.891z" />
+                        <path fill="#EA4335" d="M116.364 251V99.727L256 204.455 395.636 99.727V251L256 355.727z" />
+                        <path fill="#C5221F" d="M0 117.182v46.545L116.364 251V99.727L83.782 75.291C49.25 49.4 0 74.04 0 117.18z" />
+                      </svg>
+                      <span className="contact-pill-label hidden lg:block absolute w-[196px] text-center text-[11px] font-bold text-neutral-900 opacity-0 transition-opacity duration-400 lg:group-hover:opacity-100">
+                        {CONTACT_EMAIL}
+                      </span>
+                    </a>
+                    <a
+                      href={GITHUB_URL}
+                      target="_blank"
+                      rel="noreferrer"
+                      title="GitHub profile"
+                      aria-label="GitHub profile"
+                      className="contact-pill-wide group relative flex h-[44px] w-[44px] items-center justify-center overflow-hidden rounded-full bg-stone-900 transition-all duration-400 lg:hover:w-[196px] lg:hover:rounded-[30px] cursor-pointer"
                     >
-                      <path d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.933 7.933 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.898 7.898 0 0 0 13.6 2.326zM7.994 14.521a6.573 6.573 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.557 6.557 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592zm3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.729.729 0 0 0-.529.247c-.182.198-.691.677-.691 1.654 0 .977.71 1.916.81 2.049.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232z" />
-                    </svg>
-                    <span className="absolute w-[112px] text-center text-[13px] font-semibold text-white opacity-0 transition-opacity duration-400 group-hover:opacity-100">
-                      WhatsApp
-                    </span>
-                  </a>
+                      <svg
+                        className="contact-pill-icon absolute h-[19px] w-[19px] fill-white transition-opacity duration-300 lg:group-hover:opacity-0"
+                        viewBox="0 0 24 24"
+                        aria-hidden="true"
+                      >
+                        <path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z" />
+                      </svg>
+                      <span className="contact-pill-label hidden lg:block absolute w-[196px] text-center text-[11px] font-bold text-white opacity-0 transition-opacity duration-400 lg:group-hover:opacity-100">
+                        github.com/aymaneeddahhak-gif
+                      </span>
+                    </a>
+                    <a
+                      href={`tel:${CONTACT_PHONE}`}
+                      title={t.contact.directCall}
+                      aria-label={t.contact.directCall}
+                      className="contact-pill-compact group relative flex h-[44px] w-[44px] items-center justify-center overflow-hidden rounded-full bg-emerald-700 transition-all duration-400 lg:hover:w-[116px] lg:hover:rounded-[30px] cursor-pointer"
+                    >
+                      <Phone className="contact-pill-icon absolute h-[17px] w-[17px] text-white transition-opacity duration-300 lg:group-hover:opacity-0" />
+                      <span className="contact-pill-label hidden lg:block absolute w-[116px] text-center text-[12px] font-semibold text-white opacity-0 transition-opacity duration-400 lg:group-hover:opacity-100">
+                        {t.contact.directCall}
+                      </span>
+                    </a>
+                    <a
+                      href={WHATSAPP_URL}
+                      target="_blank"
+                      rel="noreferrer"
+                      title="Chat on WhatsApp"
+                      aria-label="Chat on WhatsApp"
+                      className="contact-pill-compact group relative flex h-[44px] w-[44px] items-center justify-center overflow-hidden rounded-full bg-[#15803d] transition-all duration-400 lg:hover:w-[116px] lg:hover:rounded-[30px] cursor-pointer"
+                    >
+                      <svg
+                        className="contact-pill-icon absolute h-[18px] w-[18px] fill-white transition-opacity duration-300 lg:group-hover:opacity-0"
+                        viewBox="0 0 16 16"
+                        aria-hidden="true"
+                      >
+                        <path d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.933 7.933 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.898 7.898 0 0 0 13.6 2.326zM7.994 14.521a6.573 6.573 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.557 6.557 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592zm3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.729.729 0 0 0-.529.247c-.182.198-.691.677-.691 1.654 0 .977.71 1.916.81 2.049.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232z" />
+                      </svg>
+                      <span className="contact-pill-label hidden lg:block absolute w-[116px] text-center text-[13px] font-semibold text-white opacity-0 transition-opacity duration-400 lg:group-hover:opacity-100">
+                        WhatsApp
+                      </span>
+                    </a>
                   </div>
                 </div>
 
                 {/* Contact info rows */}
-                <div className="flex flex-wrap items-center gap-x-4 gap-y-1 text-[11px] sm:text-xs text-neutral-500 border-t border-neutral-200/70 pt-2.5 mt-2">
+                <div className="flex flex-wrap items-center gap-x-4 gap-y-1.5 text-[11px] sm:text-xs text-neutral-600 border-t border-neutral-200/70 pt-2.5 mt-2">
                   <a
                     href={MAILTO_COMPOSE_URL}
-                    className="flex items-center gap-2 font-medium hover:text-neutral-900 transition-colors w-fit"
+                    className="flex items-center gap-2 font-medium hover:text-neutral-950 transition-colors w-fit"
                   >
-                    <Mail className="h-3.5 w-3.5 text-neutral-400" />
+                    <Mail className="h-3.5 w-3.5 text-neutral-500" />
                     {CONTACT_EMAIL}
                   </a>
                   <a
                     href={WHATSAPP_URL}
                     target="_blank"
                     rel="noreferrer"
-                    className="flex items-center gap-2 font-medium hover:text-neutral-900 transition-colors w-fit"
+                    className="flex items-center gap-2 font-medium hover:text-neutral-950 transition-colors w-fit"
                   >
-                    <svg className="h-3.5 w-3.5 fill-neutral-400" viewBox="0 0 16 16" aria-hidden="true">
+                    <svg className="h-3.5 w-3.5 fill-neutral-500" viewBox="0 0 16 16" aria-hidden="true">
                       <path d="M13.601 2.326A7.854 7.854 0 0 0 7.994 0C3.627 0 .068 3.558.064 7.926c0 1.399.366 2.76 1.057 3.965L0 16l4.204-1.102a7.933 7.933 0 0 0 3.79.965h.004c4.368 0 7.926-3.558 7.93-7.93A7.898 7.898 0 0 0 13.6 2.326zM7.994 14.521a6.573 6.573 0 0 1-3.356-.92l-.24-.144-2.494.654.666-2.433-.156-.251a6.56 6.56 0 0 1-1.007-3.505c0-3.626 2.957-6.584 6.591-6.584a6.56 6.56 0 0 1 4.66 1.931 6.557 6.557 0 0 1 1.928 4.66c-.004 3.639-2.961 6.592-6.592 6.592zm3.615-4.934c-.197-.099-1.17-.578-1.353-.646-.182-.065-.315-.099-.445.099-.133.197-.513.646-.627.775-.114.133-.232.148-.43.05-.197-.1-.836-.308-1.592-.985-.59-.525-.985-1.175-1.103-1.372-.114-.198-.011-.304.088-.403.087-.088.197-.232.296-.346.1-.114.133-.198.198-.33.065-.134.034-.248-.015-.347-.05-.099-.445-1.076-.612-1.47-.16-.389-.323-.335-.445-.34-.114-.007-.247-.007-.38-.007a.729.729 0 0 0-.529.247c-.182.198-.691.677-.691 1.654 0 .977.71 1.916.81 2.049.098.133 1.394 2.132 3.383 2.992.47.205.84.326 1.129.418.475.152.904.129 1.246.08.38-.058 1.171-.48 1.338-.943.164-.464.164-.86.114-.943-.049-.084-.182-.133-.38-.232z" />
                     </svg>
                     WhatsApp&nbsp;{CONTACT_PHONE_DISPLAY}
                   </a>
                   <a
                     href={`tel:${CONTACT_PHONE}`}
-                    className="flex items-center gap-2 font-medium hover:text-neutral-900 transition-colors w-fit"
+                    className="flex items-center gap-2 font-medium hover:text-neutral-950 transition-colors w-fit"
                   >
-                    <Phone className="h-3.5 w-3.5 text-neutral-400" />
+                    <Phone className="h-3.5 w-3.5 text-neutral-500" />
                     {CONTACT_PHONE_DISPLAY}
                   </a>
                   <span className="flex items-center gap-2 font-medium">
-                    <CheckCircle2 className="h-3.5 w-3.5 text-neutral-400" />
-                    Marrakech, Morocco · Available worldwide · Response within 24h
+                    <CheckCircle2 className="h-3.5 w-3.5 text-neutral-500" />
+                    {t.contact.locationBadge}
                   </span>
                 </div>
               </div>
             )}
-          </motion.div>
+          </div>
 
-          {/* Mascot Video — steady continuous loop like hero section, no moving angle, no fullscreen overlay */}
-          <motion.div
-            initial={{ opacity: 0, scale: 0.96 }}
-            whileInView={{ opacity: 1, scale: 1 }}
-            viewport={{ once: true, amount: 0.2 }}
-            transition={{ duration: 0.7, ease: "easeOut" }}
-            className="relative flex items-center justify-center h-[320px] sm:h-[400px] md:h-[450px] lg:h-full lg:min-h-[500px] w-full select-none"
+          {/* Mascot Video — shows FIRST on mobile above the form, stays on the right on laptop */}
+          <div
+            data-reveal-step="1"
+            className="order-first lg:order-last relative flex items-center justify-center h-[230px] sm:h-[360px] md:h-[420px] lg:h-full lg:min-h-[500px] w-full select-none"
           >
             <div className="relative h-full w-full flex items-center justify-center">
               <div
@@ -853,11 +906,11 @@ export default function ContactSection() {
                 controlsList="nodownload noplaybackrate nofullscreen"
                 disablePictureInPicture
                 disableRemotePlayback
-                aria-label="Animated 3D mascot of Aymane"
+                aria-label="AED Solutions 3D Mascot"
                 className="video-mask--contact absolute inset-0 h-full w-full object-contain object-center"
               />
             </div>
-          </motion.div>
+          </div>
         </div>
       </div>
     </section>

@@ -11,18 +11,17 @@ export function SiteBackdrop() {
     <div
       aria-hidden="true"
       className="site-backdrop pointer-events-none fixed inset-0 -z-10 overflow-hidden select-none"
+      style={{ contain: "strict" }}
     >
       {/* 1. Subtle Architectural Little Squares Grid across all pages */}
       <div
-        className="site-little-squares-grid absolute inset-0 pointer-events-none opacity-45"
+        className="site-little-squares-grid absolute inset-0 pointer-events-none opacity-30"
         style={{
           backgroundImage: `
-            linear-gradient(to right, rgba(0, 0, 0, 0.055) 1px, transparent 1px),
-            linear-gradient(to bottom, rgba(0, 0, 0, 0.055) 1px, transparent 1px)
+            linear-gradient(to right, rgba(0, 0, 0, 0.05) 1px, transparent 1px),
+            linear-gradient(to bottom, rgba(0, 0, 0, 0.05) 1px, transparent 1px)
           `,
           backgroundSize: "20px 20px",
-          maskImage: "radial-gradient(ellipse 85% 80% at 50% 50%, black 45%, transparent 100%)",
-          WebkitMaskImage: "radial-gradient(ellipse 85% 80% at 50% 50%, black 45%, transparent 100%)",
         }}
       />
 
@@ -35,29 +34,25 @@ export function SiteBackdrop() {
         }}
       />
 
-      {/* 3. Floating 3D Orbs with smooth GPU keyframes */}
+      {/* 3. Static 3D Orbs (0fps — zero background compositing) */}
       {/* Bottom-left (largest) */}
       <div
-        className="about-orb-gradient about-float-orb transform-gpu will-change-transform absolute bottom-[12%] left-[4%] h-20 w-20 rounded-full opacity-80 sm:h-28 sm:w-28 lg:h-32 lg:w-32"
-        style={{ animationDuration: "9s" }}
+        className="about-orb-gradient absolute bottom-[12%] left-[4%] h-20 w-20 rounded-full opacity-80 sm:h-28 sm:w-28 lg:h-32 lg:w-32"
       />
 
       {/* Mid-left */}
       <div
-        className="about-orb-gradient about-float-slow transform-gpu will-change-transform absolute top-[38%] left-[2%] h-9 w-9 rounded-full opacity-70 sm:h-12 sm:w-12 lg:h-14 lg:w-14"
-        style={{ animationDuration: "7s" }}
+        className="about-orb-gradient absolute top-[38%] left-[2%] h-9 w-9 rounded-full opacity-70 sm:h-12 sm:w-12 lg:h-14 lg:w-14"
       />
 
       {/* Top-right */}
       <div
-        className="about-orb-gradient about-float-reverse transform-gpu will-change-transform absolute top-[14%] right-[8%] h-12 w-12 rounded-full opacity-65 sm:h-16 sm:w-16 lg:h-20 lg:w-20"
-        style={{ animationDuration: "8s" }}
+        className="about-orb-gradient absolute top-[14%] right-[8%] h-12 w-12 rounded-full opacity-65 sm:h-16 sm:w-16 lg:h-20 lg:w-20"
       />
 
       {/* Bottom-centre, soft into the light */}
       <div
-        className="about-orb-gradient about-float-slow transform-gpu will-change-transform absolute bottom-[-4%] left-1/2 h-32 w-32 -translate-x-1/2 rounded-full opacity-40 sm:h-44 sm:w-44 lg:h-56 lg:w-56"
-        style={{ animationDuration: "10s" }}
+        className="about-orb-gradient absolute bottom-[-4%] left-1/2 h-32 w-32 -translate-x-1/2 rounded-full opacity-40 sm:h-44 sm:w-44 lg:h-56 lg:w-56"
       />
     </div>
   );

@@ -1,6 +1,7 @@
 "use client";
 
 import { useState } from "react";
+import Image from "next/image";
 import { motion, AnimatePresence } from "motion/react";
 import { ExternalLink } from "lucide-react";
 import type { ShowcaseApp } from "../showcase-apps";
@@ -17,12 +18,15 @@ interface AppDetailPanelProps {
 // 3D squircle icons from the existing project image set
 const STACK_LOGOS: Record<string, string> = {
   flutter: "/images/tech/flutter.webp",
-  "react native": "/images/tech/react.webp",
+  dart: "/images/tech/flutter.webp",
   react: "/images/tech/react.webp",
   "next.js": "/images/tech/nextjs.webp",
   nextjs: "/images/tech/nextjs.webp",
   laravel: "/images/tech/laravel.webp",
-  firebase: "/images/tech/api.webp",
+  firebase: "/images/tech/supabase.webp",
+  "rest api": "/images/tech/api.webp",
+  api: "/images/tech/api.webp",
+  github: "/images/tech/github.webp",
   typescript: "/images/tech/javascript.webp",
   javascript: "/images/tech/javascript.webp",
   "node.js": "/images/tech/api.webp",
@@ -42,13 +46,13 @@ const TECH_NAME_TO_ABOUT_ID: Record<string, string> = {
   "next.js": "nextjs",
   nextjs: "nextjs",
   react: "react",
-  "react native": "react",
   github: "github",
   docker: "docker",
   "cloud native": "cloud-native",
   "cloud-native": "cloud-native",
   supabase: "supabase",
   flutter: "flutter",
+  dart: "flutter",
   typescript: "javascript",
   javascript: "javascript",
   html5: "html5",
@@ -62,9 +66,10 @@ const TECH_NAME_TO_ABOUT_ID: Record<string, string> = {
   mysql: "mysql",
   mongodb: "mongodb",
   api: "api",
+  "rest api": "api",
   "node.js": "api",
   nodejs: "api",
-  firebase: "api",
+  firebase: "supabase",
   android: "flutter",
   ios: "flutter",
   git: "git",
@@ -79,10 +84,15 @@ export function AppDetailPanel({
   direction = 1,
   onViewApp,
 }: AppDetailPanelProps) {
-  const { lang } = useTranslation();
+  const { lang, t } = useTranslation();
   const [showDetails, setShowDetails] = useState(false);
   const stackItems = app.techStack.split("•").map((item) => item.trim());
   const displayItems = stackItems.slice(0, 4);
+
+  const categoryText = lang === "fr" ? app.categoryFr : app.category;
+  const rankText = lang === "fr" ? app.rankLabelFr : app.rankLabel;
+  const descriptionText = lang === "fr" ? app.descriptionFr : app.description;
+  const featuresList = lang === "fr" ? app.featuresFr : app.features;
 
   const handleTechClick = (tech: string) => {
     const key = tech.toLowerCase();
@@ -93,7 +103,7 @@ export function AppDetailPanel({
   };
 
   return (
-    <div className="relative w-full max-w-[540px] mx-auto select-none z-10 transition-all duration-300">
+    <div className="relative w-full max-w-[390px] sm:max-w-[410px] lg:max-w-[420px] mx-auto select-none z-10 transition-all duration-300">
       <AnimatePresence mode="popLayout" custom={direction}>
         <motion.div
           key={app.id}
@@ -131,7 +141,7 @@ export function AppDetailPanel({
           <div className="neo-card-overlay-dots" />
 
           {/* Top-right corner SVG hatch */}
-          <div className="neo-bold-pattern">
+          <div className="neo-bold-pattern" aria-hidden="true">
             <svg viewBox="0 0 100 100">
               <path
                 strokeDasharray="15 10"
@@ -143,15 +153,15 @@ export function AppDetailPanel({
             </svg>
           </div>
 
-          {/* Card Title Ribbon showing the kind of app (e.g. TASK MANAGEMENT APP, E-COMMERCE APP) */}
+          {/* Card Title Ribbon showing the kind of app */}
           <div className="neo-card-title-area">
-            <span>{app.category}</span>
-            <span className="neo-card-tag">{app.rankLabel}</span>
+            <span>{categoryText}</span>
+            <span className="neo-card-tag">{rankText}</span>
           </div>
 
           {/* Unified Card Body */}
           <div className="neo-card-body">
-            {/* Platform Badge (Case study removed) */}
+            {/* Platform Badge */}
             <div className="flex flex-wrap items-center gap-2 mb-2.5">
               <span className="px-2.5 py-0.5 rounded-md bg-amber-100 text-amber-950 border-2 border-black text-[10px] font-black uppercase tracking-wider shadow-[2px_2px_0_#000]">
                 {app.platform}
@@ -159,22 +169,23 @@ export function AppDetailPanel({
             </div>
 
             {/* Big Prominent Project Name with 'A-' prefix */}
-            <div className="mb-3">
-              <h2 className="font-syne font-black text-3xl sm:text-4xl lg:text-[42px] text-black uppercase tracking-tight leading-[0.92]">
+            <div className="mb-2">
+              <h2 className="font-syne font-black text-2xl sm:text-3xl lg:text-[32px] text-black uppercase tracking-tight leading-[0.94]">
                 <span className="text-black">{app.namePart1}</span>
                 <span className="text-stone-700">{app.namePart2}</span>
               </h2>
             </div>
 
             {/* Project Description with View More toggle */}
-            <div className="neo-card-description mb-3">
-              <span>{app.description}</span>
+            <div className="neo-card-description mb-2">
+              <span>{descriptionText}</span>
               <button
                 type="button"
                 onClick={() => setShowDetails(!showDetails)}
-                className="inline-flex items-center gap-1 ml-1.5 font-black text-black hover:text-purple-600 underline decoration-2 underline-offset-2 cursor-pointer transition-colors text-[11px] uppercase tracking-wide"
+                aria-expanded={showDetails}
+                className="inline-flex items-center gap-1 ml-1.5 py-1 px-1 font-black text-black hover:text-purple-700 underline decoration-2 underline-offset-2 cursor-pointer transition-colors text-[11px] uppercase tracking-wide focus-visible:outline-2 focus-visible:outline-purple-700"
               >
-                {showDetails ? "View Less ▲" : "View More ▼"}
+                {showDetails ? t.showcase.viewLess : t.showcase.viewMore}
               </button>
 
               {/* Expanded details in same card same style */}
@@ -188,10 +199,10 @@ export function AppDetailPanel({
                     className="overflow-hidden mt-2.5 pt-2 border-t-2 border-dashed border-black/20"
                   >
                     <p className="text-[10px] font-black uppercase text-black tracking-wider mb-1.5">
-                      Key Highlights & Architecture:
+                      {t.showcase.highlightsHeading}
                     </p>
                     <div className="grid grid-cols-1 sm:grid-cols-2 gap-1.5">
-                      {app.features.map((feat) => (
+                      {featuresList.map((feat) => (
                         <div
                           key={feat.id}
                           className="p-1.5 rounded-md bg-stone-50 border-2 border-black text-[11px] shadow-[1px_1px_0_#000]"
@@ -199,7 +210,7 @@ export function AppDetailPanel({
                           <span className="font-extrabold text-black block leading-tight">
                             {feat.name}
                           </span>
-                          <span className="text-stone-600 text-[10px] leading-tight block mt-0.5">
+                          <span className="text-stone-700 text-[10px] leading-tight block mt-0.5">
                             {feat.detail}
                           </span>
                         </div>
@@ -210,7 +221,7 @@ export function AppDetailPanel({
               </AnimatePresence>
             </div>
 
-            {/* Feature & Tech Grid with existing 3D project icons — Clickable to guide to About Me */}
+            {/* Feature & Tech Grid with 3D project icons */}
             <div className="neo-feature-grid">
               {displayItems.map((tech) => {
                 const key = tech.toLowerCase();
@@ -221,17 +232,17 @@ export function AppDetailPanel({
                     key={tech}
                     type="button"
                     onClick={() => handleTechClick(tech)}
-                    title={`Click to explore ${tech} in About Me section`}
-                    className="neo-feature-item cursor-pointer text-left group/tech transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 focus:outline-none"
+                    title={`Explore ${tech}`}
+                    className="neo-feature-item min-h-[44px] cursor-pointer text-left group/tech transition-all duration-200 hover:-translate-y-0.5 active:translate-y-0 focus-visible:outline-2 focus-visible:outline-purple-700 rounded-lg"
                   >
                     <div className="neo-feature-icon transition-transform duration-200 group-hover/tech:scale-110">
                       {logo ? (
-                        // eslint-disable-next-line @next/next/no-img-element
-                        <img
+                        <Image
                           src={logo}
                           alt={tech}
+                          width={40}
+                          height={40}
                           className="h-full w-full object-contain"
-                          referrerPolicy="no-referrer"
                         />
                       ) : (
                         <span className="text-[10px] font-black uppercase text-stone-700">
@@ -240,11 +251,11 @@ export function AppDetailPanel({
                       )}
                     </div>
                     <div className="flex flex-col min-w-0">
-                      <span className="neo-feature-text transition-colors group-hover/tech:text-purple-600">
+                      <span className="neo-feature-text transition-colors group-hover/tech:text-purple-700">
                         {tech}
                       </span>
-                      <span className="text-[9px] font-bold text-stone-400 uppercase tracking-wider -mt-0.5 group-hover/tech:text-purple-500">
-                        Explore ↗
+                      <span className="text-[9px] font-bold text-stone-600 uppercase tracking-wider -mt-0.5 group-hover/tech:text-purple-700">
+                        {t.showcase.exploreTech}
                       </span>
                     </div>
                   </button>
@@ -252,7 +263,7 @@ export function AppDetailPanel({
               })}
             </div>
 
-            {/* Dashed cut-line with scissors & Action Row - Explore App centered */}
+            {/* Dashed cut-line with scissors & Action Row */}
             <div className="neo-card-actions justify-center gap-3">
               {app.githubUrl && (
                 <a
@@ -260,7 +271,7 @@ export function AppDetailPanel({
                   target="_blank"
                   rel="noopener noreferrer"
                   title="View GitHub Repository"
-                  className="p-2.5 rounded-lg border-2 border-black bg-white hover:bg-stone-100 text-black shadow-[2px_2px_0_#000] hover:shadow-[3px_3px_0_#000] transition-all active:translate-x-[1px] active:translate-y-[1px]"
+                  className="inline-flex h-[44px] w-[44px] items-center justify-center rounded-lg border-2 border-black bg-white hover:bg-stone-100 text-black shadow-[2px_2px_0_#000] hover:shadow-[3px_3px_0_#000] transition-all active:translate-x-[1px] active:translate-y-[1px]"
                   aria-label={`View GitHub repository for ${app.shortName}`}
                 >
                   <svg className="w-4 h-4 fill-current" viewBox="0 0 24 24" aria-hidden="true">
@@ -271,17 +282,17 @@ export function AppDetailPanel({
               <button
                 type="button"
                 onClick={() => onViewApp?.(app)}
-                className="neo-card-button px-6 cursor-pointer"
+                className="neo-card-button min-h-[44px] px-6 cursor-pointer"
                 aria-label={`View live preview of ${app.shortName}`}
               >
-                <span>{lang === "fr" ? "Voir l'App" : "View App"}</span>
+                <span>{t.showcase.viewApp}</span>
                 <ExternalLink className="w-3.5 h-3.5 stroke-[2.5]" />
               </button>
             </div>
           </div>
 
           {/* Decorative Dot Pattern */}
-          <div className="neo-dots-pattern">
+          <div className="neo-dots-pattern" aria-hidden="true">
             <svg viewBox="0 0 80 40">
               <circle fill="#000" r="3" cy="10" cx="10" />
               <circle fill="#000" r="3" cy="10" cx="30" />
@@ -298,11 +309,11 @@ export function AppDetailPanel({
           </div>
 
           {/* Accent Shapes */}
-          <div className="neo-accent-shape" />
-          <div className="neo-corner-slice" />
+          <div className="neo-accent-shape" aria-hidden="true" />
+          <div className="neo-corner-slice" aria-hidden="true" />
 
           {/* Approved Stamp */}
-          <div className="neo-stamp">
+          <div className="neo-stamp" aria-hidden="true">
             <span className="neo-stamp-text">Approved</span>
           </div>
         </motion.div>

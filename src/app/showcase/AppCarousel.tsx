@@ -23,16 +23,17 @@ export function AppCarousel({
   const containerRef = useRef<HTMLDivElement>(null);
   const itemRefs = useRef<(HTMLDivElement | null)[]>([]);
 
-  // Auto-scroll active card into center view
+  // Center active thumbnail horizontally inside the rail ONLY (never yank vertical window scroll)
   useEffect(() => {
+    const rail = containerRef.current;
     const activeEl = itemRefs.current[currentAppIndex];
-    if (activeEl) {
-      activeEl.scrollIntoView({
-        behavior: "smooth",
-        block: "nearest",
-        inline: "center",
-      });
-    }
+    if (!rail || !activeEl) return;
+    const targetLeft =
+      activeEl.offsetLeft - rail.clientWidth / 2 + activeEl.offsetWidth / 2;
+    rail.scrollTo({
+      left: Math.max(0, targetLeft),
+      behavior: "smooth",
+    });
   }, [currentAppIndex]);
 
   return (
@@ -40,14 +41,14 @@ export function AppCarousel({
       <button
         onClick={onPrev}
         aria-label="Previous app"
-        className="uiverse-arrow group relative h-[52px] w-[52px] flex-shrink-0 cursor-pointer overflow-hidden rounded-full outline-none"
+        className="uiverse-arrow group relative h-9 w-9 sm:h-[52px] sm:w-[52px] flex-shrink-0 cursor-pointer overflow-hidden rounded-full outline-none"
       >
-        <span className="absolute inset-[7px] rounded-full border-[3px] border-stone-900 transition-[opacity,transform] duration-500 ease-[cubic-bezier(0.455,0.03,0.515,0.955)] group-hover:scale-[0.7] group-hover:opacity-0" />
-        <span className="absolute inset-[7px] scale-[1.3] rounded-full border-4 border-[#599a53] opacity-0 transition-[opacity,transform] duration-500 group-hover:scale-100 group-hover:opacity-100" />
+        <span className="absolute inset-[5px] sm:inset-[7px] rounded-full border-[2.5px] sm:border-[3px] border-stone-900 transition-[opacity,transform] duration-500 ease-[cubic-bezier(0.455,0.03,0.515,0.955)] group-hover:scale-[0.7] group-hover:opacity-0" />
+        <span className="absolute inset-[5px] sm:inset-[7px] scale-[1.3] rounded-full border-4 border-[#599a53] opacity-0 transition-[opacity,transform] duration-500 group-hover:scale-100 group-hover:opacity-100" />
         <span className="absolute inset-0 flex items-center justify-center overflow-hidden">
           <svg
             viewBox="0 0 24 24"
-            className="h-[26px] w-[26px] fill-stone-900 transition-transform duration-400 group-hover:-translate-x-[42px]"
+            className="h-5 w-5 sm:h-[26px] sm:w-[26px] fill-stone-900 transition-transform duration-400 group-hover:-translate-x-[42px]"
             xmlns="http://www.w3.org/2000/svg"
             aria-hidden="true"
           >
@@ -132,14 +133,14 @@ export function AppCarousel({
       <button
         onClick={onNext}
         aria-label="Next app"
-        className="uiverse-arrow group relative h-[52px] w-[52px] flex-shrink-0 cursor-pointer overflow-hidden rounded-full outline-none"
+        className="uiverse-arrow group relative h-9 w-9 sm:h-[52px] sm:w-[52px] flex-shrink-0 cursor-pointer overflow-hidden rounded-full outline-none"
       >
-        <span className="absolute inset-[7px] rounded-full border-[3px] border-stone-900 transition-[opacity,transform] duration-500 ease-[cubic-bezier(0.455,0.03,0.515,0.955)] group-hover:scale-[0.7] group-hover:opacity-0" />
-        <span className="absolute inset-[7px] scale-[1.3] rounded-full border-4 border-[#599a53] opacity-0 transition-[opacity,transform] duration-500 group-hover:scale-100 group-hover:opacity-100" />
+        <span className="absolute inset-[5px] sm:inset-[7px] rounded-full border-[2.5px] sm:border-[3px] border-stone-900 transition-[opacity,transform] duration-500 ease-[cubic-bezier(0.455,0.03,0.515,0.955)] group-hover:scale-[0.7] group-hover:opacity-0" />
+        <span className="absolute inset-[5px] sm:inset-[7px] scale-[1.3] rounded-full border-4 border-[#599a53] opacity-0 transition-[opacity,transform] duration-500 group-hover:scale-100 group-hover:opacity-100" />
         <span className="absolute inset-0 flex items-center justify-center overflow-hidden">
           <svg
             viewBox="0 0 24 24"
-            className="h-[26px] w-[26px] fill-stone-900 transition-transform duration-400 group-hover:translate-x-[42px]"
+            className="h-5 w-5 sm:h-[26px] sm:w-[26px] fill-stone-900 transition-transform duration-400 group-hover:translate-x-[42px]"
             xmlns="http://www.w3.org/2000/svg"
             aria-hidden="true"
           >

@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect } from "react";
+import Image from "next/image";
 import { ExternalLink, Layers, Sparkles, Terminal, X } from "lucide-react";
 import type { TechItem } from "./types";
 
@@ -13,11 +14,17 @@ interface BadgeModalProps {
 export function BadgeModal({ item, onClose }: BadgeModalProps) {
   useEffect(() => {
     if (!item) return;
+    const prevOverflow = document.body.style.overflow;
+    document.body.style.overflow = "hidden";
+
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") onClose();
     };
     window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
+    return () => {
+      document.body.style.overflow = prevOverflow;
+      window.removeEventListener("keydown", onKeyDown);
+    };
   }, [item, onClose]);
 
   if (!item) return null;
@@ -41,21 +48,19 @@ export function BadgeModal({ item, onClose }: BadgeModalProps) {
           onClick={onClose}
           aria-label="Close details"
           autoFocus
-          className="absolute top-5 right-5 flex h-9 w-9 cursor-pointer items-center justify-center rounded-full bg-gray-100 text-gray-500 transition-colors hover:bg-gray-200 hover:text-gray-800"
+          className="absolute top-4 right-4 flex h-11 w-11 cursor-pointer items-center justify-center rounded-full bg-gray-100 text-gray-600 transition-colors hover:bg-gray-200 hover:text-gray-900"
         >
           <X aria-hidden="true" className="h-5 w-5" />
         </button>
 
         <div className="flex flex-col items-center text-center">
-          {/* The logo art is already cut out, so it floats on the card light
-              with a soft shadow instead of sitting in a plate. */}
           <div className="mb-4 flex h-28 w-28 items-center justify-center sm:h-32 sm:w-32">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+            <Image
               src={item.image}
               alt={item.name}
+              width={128}
+              height={128}
               className="h-full w-full object-contain drop-shadow-[0_16px_24px_rgba(27,39,87,0.28)]"
-              referrerPolicy="no-referrer"
             />
           </div>
 
@@ -70,14 +75,14 @@ export function BadgeModal({ item, onClose }: BadgeModalProps) {
           >
             {item.name}
           </h3>
-          <p className="mt-3 max-w-md text-sm leading-relaxed text-[#5a6475]">
+          <p className="mt-3 max-w-md text-sm leading-relaxed text-[#475569]">
             {item.fullDescription}
           </p>
         </div>
 
         <div className="mt-6 flex flex-col space-y-4 border-t border-gray-100 pt-5">
           <div className="flex items-center justify-between gap-3 text-xs">
-            <span className="flex items-center space-x-1.5 font-semibold text-gray-400">
+            <span className="flex items-center space-x-1.5 font-semibold text-gray-600">
               <Layers aria-hidden="true" className="h-3.5 w-3.5" />
               <span>Key domains</span>
             </span>
@@ -85,7 +90,7 @@ export function BadgeModal({ item, onClose }: BadgeModalProps) {
               {item.tags.map((tag) => (
                 <span
                   key={tag}
-                  className="rounded-md bg-gray-100 px-2.5 py-0.5 text-[11px] font-medium text-gray-700"
+                  className="rounded-md bg-gray-100 px-2.5 py-0.5 text-[11px] font-medium text-gray-800"
                 >
                   {tag}
                 </span>
@@ -94,7 +99,7 @@ export function BadgeModal({ item, onClose }: BadgeModalProps) {
           </div>
 
           <div className="flex items-center justify-between gap-3 text-xs">
-            <span className="flex items-center space-x-1.5 font-semibold text-gray-400">
+            <span className="flex items-center space-x-1.5 font-semibold text-gray-600">
               <Terminal aria-hidden="true" className="h-3.5 w-3.5" />
               <span>Official domain</span>
             </span>
@@ -109,7 +114,7 @@ export function BadgeModal({ item, onClose }: BadgeModalProps) {
             href={item.officialUrl}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex flex-1 items-center justify-center space-x-1.5 rounded-xl bg-[#313bac] px-4 py-3 text-xs font-semibold tracking-wider text-white uppercase shadow-md shadow-[#313bac]/25 transition-all hover:bg-[#272f8d] active:scale-98"
+            className="flex min-h-[44px] flex-1 items-center justify-center space-x-1.5 rounded-xl bg-[#313bac] px-4 py-3 text-xs font-semibold tracking-wider text-white uppercase shadow-md shadow-[#313bac]/25 transition-all hover:bg-[#272f8d] active:scale-98"
           >
             <span>Visit documentation</span>
             <ExternalLink aria-hidden="true" className="h-3.5 w-3.5" />
@@ -117,7 +122,7 @@ export function BadgeModal({ item, onClose }: BadgeModalProps) {
           <button
             type="button"
             onClick={onClose}
-            className="cursor-pointer rounded-xl border border-gray-200 px-5 py-3 text-xs font-semibold tracking-wider text-gray-600 uppercase transition-colors hover:bg-gray-50 active:scale-98"
+            className="min-h-[44px] cursor-pointer rounded-xl border border-gray-200 px-5 py-3 text-xs font-semibold tracking-wider text-gray-700 uppercase transition-colors hover:bg-gray-50 active:scale-98"
           >
             Close
           </button>
